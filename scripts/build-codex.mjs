@@ -1,4 +1,4 @@
-import { cp, mkdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -6,7 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const distDir = path.join(root, "dist", "codex");
-const skillsSourceDir = path.join(root, "skills");
+const sharedSkillsSourceDir = path.join(root, "skills");
+const codexSkillsSourceDir = path.join(root, "codex-skills");
 const mcpConfig = {
   "wordpress-studio": {
     command: "studio",
@@ -55,7 +56,7 @@ const pluginManifest = {
 
 const pluginReadme = `# Build with WordPress Plugin
 
-This Codex plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo.
+This Codex plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo, plus Codex-only skills when the workflow depends on Codex-specific capabilities.
 
 It is intentionally Studio-MCP-first:
 
@@ -66,17 +67,35 @@ It is intentionally Studio-MCP-first:
 
 ## Included skills
 
+Shared:
 - \`spec-builder\`
 - \`studio-mcp\`
 - \`theme-builder\`
 - \`site-builder\`
 - \`block-builder\`
+
+Codex-only:
+- \`site-image-builder\`
 `;
+
+async function copySkillSet(sourceDir, targetDir) {
+  const entries = await readdir(sourceDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+    await cp(path.join(sourceDir, entry.name), path.join(targetDir, entry.name), {
+      recursive: true
+    });
+  }
+}
 
 async function main() {
   await rm(distDir, { recursive: true, force: true });
   await mkdir(path.join(distDir, ".codex-plugin"), { recursive: true });
-  await cp(skillsSourceDir, path.join(distDir, "skills"), { recursive: true });
+  await mkdir(path.join(distDir, "skills"), { recursive: true });
+  await copySkillSet(sharedSkillsSourceDir, path.join(distDir, "skills"));
+  await copySkillSet(codexSkillsSourceDir, path.join(distDir, "skills"));
   await writeFile(
     path.join(distDir, ".mcp.json"),
     `${JSON.stringify(mcpConfig, null, 2)}\n`,

@@ -12,14 +12,23 @@ This scaffold now starts with a Codex plugin build that follows the Studio AI ap
 
 - Shared skills for:
   - site specification
-  - Studio MCP setup and verification
-  - Studio MCP usage
+  - Studio MCP workflows
   - block theme building
   - site building orchestration
   - Studio-backed custom block development
+- Codex-only skills for capabilities that depend on Codex tooling
 - Generated Codex MCP config in the packaged plugin output
 - Codex packaging output in `dist/codex/`
 - `pnpm` scripts for build and verification
+
+## Skill layout
+
+- `skills/`
+  Shared skills intended to stay portable across agent surfaces.
+- `codex-skills/`
+  Codex-only skills that rely on capabilities available in Codex but not necessarily in other agent runtimes.
+
+The build merges both folders into the packaged Codex plugin under `dist/codex/skills/`.
 
 ## Commands
 

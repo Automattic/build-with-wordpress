@@ -92,3 +92,4 @@ Write theme files under the selected Studio site, not under the Codex launch dir
 
 - theme code belongs in `<site-path>/wp-content/themes/<theme-slug>/`
 - if the workflow produces extra theme assets or intermediate files, keep them inside the selected Studio site unless the user explicitly asks for a different location
+- if a `site-image-builder` skill is available, use it to generate 3-5 relevant images, including photorealistic imagery where appropriate, to be used on the site landing page when the design would benefit from generated visuals

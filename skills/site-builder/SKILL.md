@@ -14,6 +14,7 @@ This skill is an orchestrator. It should:
 - get the brief from `spec-builder`
 - use `theme-builder` for theme implementation rules
 - use `studio-mcp` for WordPress site operations, review, and iteration
+- if a `site-image-builder` skill is available, use it to generate 3-5 relevant images, including photorealistic imagery where appropriate, to be used on the site landing page when the design would benefit from generated visuals
 
 Do not duplicate specialist guidance here when another skill already owns it.
 

@@ -1,0 +1,94 @@
+---
+name: theme-builder
+description: Build a modern WordPress block theme.
+---
+
+# Block Theme Builder
+
+Use this skill when the user wants a new WordPress theme or a substantial visual overhaul of a local Studio site.
+
+## Ownership
+
+This skill owns:
+
+- block theme implementation rules
+- landing page and template composition
+- WordPress-native layout structure for theme content
+- theme-local artifact placement inside the selected Studio site
+
+Use `studio-mcp` for the review loop after making changes.
+
+## Principles
+
+- Build block themes, not classic themes.
+- Use modern WordPress patterns: `theme.json`, template parts, templates, core blocks.
+- Prefer CSS and block composition over raw HTML blocks.
+- Keep the theme editable in the Site Editor.
+- Use Studio MCP tools for activation, validation, and screenshots.
+
+## Required files
+
+At minimum:
+
+```text
+<theme-slug>/
+├── theme.json
+├── style.css
+├── functions.php
+├── templates/
+│   ├── index.html
+│   └── page.html
+└── parts/
+    ├── header.html
+    └── footer.html
+```
+
+## Design approach
+
+Follow the Studio AI style of work:
+
+- choose a clear visual direction
+- build a strong landing page, not a generic shell
+- use purposeful typography, spacing, and color
+- avoid generic AI-looking aesthetics
+- design for desktop and mobile
+
+## Theme rules
+
+- No `core/html` blocks for layout sections or normal text content.
+- Use proper block markup only.
+- No decorative HTML comments outside block delimiters.
+- Put visual styling in `style.css`.
+- Enqueue editor styles so the editor resembles the front end.
+- Add `prefers-reduced-motion` handling when using animations.
+
+## Layout rules
+
+- Choose the layout approach that best fits the brief. Do not force every site into full-width landing-page bands.
+- If you decide full-width sections are appropriate for this site type or brief, use WordPress-native full-width section structure first.
+- For those sections, make the outer top-level `core/group` block use `{"align":"full","layout":{"type":"default"}}`.
+- For full-width landing-page sections, use a strict shell pattern:
+  - outer section: `core/group` with `align:"full"` and `layout.type:"default"`
+  - inner content shell: immediate child `core/group` with `align:"wide"`
+  - primary `core/columns` inside that shell should also use `align:"wide"` when the section is meant to feel expansive
+- Keep readable text and card grids inside an inner container block instead of constraining the outer full-width section itself.
+- Do not leave intermediate groups or columns at constrained or default width between the full-width section and the main content shell unless the design intentionally calls for a narrow reading measure.
+- Keep `theme.json` layout settings aligned with the design, including sensible `contentSize` and `wideSize` values.
+- Do not rely on CSS alone to make a constrained block look full width when Gutenberg block alignment should carry that responsibility.
+- If a screenshot still looks boxed, audit nested wrapper alignment and `theme.json` layout sizes before changing CSS.
+- If screenshots still show boxed or constrained sections after using full-width blocks, inspect the block markup, serialized classes, template layout, and `theme.json` before adding custom breakout CSS.
+
+## Verification flow
+
+After writing or updating block theme files:
+
+1. activate the theme with `wp_cli`
+2. update site settings if needed with `wp_cli`
+3. follow the review and iteration workflow in `studio-mcp`
+
+## Artifact placement
+
+Write theme files under the selected Studio site, not under the Codex launch directory.
+
+- theme code belongs in `<site-path>/wp-content/themes/<theme-slug>/`
+- if the workflow produces extra theme assets or intermediate files, keep them inside the selected Studio site unless the user explicitly asks for a different location

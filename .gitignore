@@ -1,0 +1,5 @@
+dist/
+.agents/
+.mcp.json
+node_modules/
+.DS_Store

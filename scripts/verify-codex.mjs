@@ -14,8 +14,7 @@ const requiredPaths = [
   path.join(distDir, "skills", "studio", "SKILL.md"),
   path.join(distDir, "skills", "theme-creator", "SKILL.md"),
   path.join(distDir, "skills", "site-creator", "SKILL.md"),
-  path.join(distDir, "skills", "block-creator", "SKILL.md"),
-  path.join(distDir, "skills", "site-image-builder", "SKILL.md")
+  path.join(distDir, "skills", "block-creator", "SKILL.md")
 ];
 
 async function main() {

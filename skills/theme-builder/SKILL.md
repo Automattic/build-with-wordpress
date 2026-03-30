@@ -1,11 +1,11 @@
 ---
-name: theme-creator
-description: Create a modern WordPress block theme.
+name: theme-builder
+description: Build a modern WordPress block theme.
 ---
 
-# Theme Creator
+# Block Theme Builder
 
-Use this skill when the user wants a new WordPress theme or a substantial visual overhaul for a local Studio site.
+Use this skill when the user wants a new WordPress theme or a substantial visual overhaul of a local Studio site.
 
 ## Ownership
 
@@ -16,7 +16,7 @@ This skill owns:
 - WordPress-native layout structure for theme content
 - theme-local artifact placement inside the selected Studio site
 
-Use `studio` for the review loop after making changes.
+Use `studio-mcp` for the review loop after making changes.
 
 ## Principles
 
@@ -24,7 +24,7 @@ Use `studio` for the review loop after making changes.
 - Use modern WordPress patterns: `theme.json`, template parts, templates, core blocks.
 - Prefer CSS and block composition over raw HTML blocks.
 - Keep the theme editable in the Site Editor.
-- Use Studio tools for activation, validation, and screenshots.
+- Use Studio MCP tools for activation, validation, and screenshots.
 
 ## Required files
 
@@ -82,7 +82,7 @@ After writing or updating block theme files:
 
 1. activate the theme with `wp_cli`
 2. update site settings if needed with `wp_cli`
-3. follow the review and iteration workflow in `studio`
+3. follow the review and iteration workflow in `studio-mcp`
 
 ## Artifact placement
 
@@ -90,3 +90,4 @@ Write theme files under the selected Studio site, not under the Codex launch dir
 
 - theme code belongs in `<site-path>/wp-content/themes/<theme-slug>/`
 - if the workflow produces extra theme assets or intermediate files, keep them inside the selected Studio site unless the user explicitly asks for a different location
+- if a `site-image-builder` skill is available, use it to generate 3-5 relevant images, including photorealistic imagery where appropriate, to be used on the site landing page when the design would benefit from generated visuals

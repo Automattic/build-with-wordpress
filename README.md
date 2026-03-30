@@ -2,12 +2,13 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This scaffold now starts with a Codex plugin build that follows the Studio AI approach more closely:
-- prefer the WordPress Studio MCP server for site management, screenshots, and block validation
-- fall back to the Studio CLI through a shared Studio skill when MCP is unavailable
-- use `wp_cli` through the MCP server as the general-purpose WordPress escape hatch
-- include a custom block development skill for Gutenberg block plugins inside selected Studio sites
-- keep skills shared so other surfaces can reuse them later
+This repo currently just has a Codex plugin that:
+
+- prefers the WordPress Studio MCP server for site management, screenshots, and block validation
+- falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
+- uses `wp_cli` through the MCP server as the general-purpose WordPress escape hatch
+- includes a custom block development skill for Gutenberg block plugins inside selected Studio sites
+- keeps skills shared so other surfaces can reuse them later
 
 ## Current scope
 
@@ -16,7 +17,6 @@ This scaffold now starts with a Codex plugin build that follows the Studio AI ap
   - block theme creation
   - site creation orchestration
   - Studio-backed custom block creation
-- Codex-only skills for capabilities that depend on Codex tooling
 - Generated Codex MCP config in the packaged plugin output
 - Codex packaging output in `dist/codex/`
 - `pnpm` scripts for build and verification
@@ -25,10 +25,8 @@ This scaffold now starts with a Codex plugin build that follows the Studio AI ap
 
 - `skills/`
   Shared skills intended to stay portable across agent surfaces.
-- `codex-skills/`
-  Codex-only skills that rely on capabilities available in Codex but not necessarily in other agent runtimes.
 
-The build merges both folders into the packaged Codex plugin under `dist/codex/skills/`.
+The build packages this folder into the Codex plugin under `dist/codex/skills/`.
 
 ## Commands
 

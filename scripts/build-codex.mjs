@@ -7,7 +7,6 @@ const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const distDir = path.join(root, "dist", "codex");
 const sharedSkillsSourceDir = path.join(root, "skills");
-const codexSkillsSourceDir = path.join(root, "codex-skills");
 const mcpConfig = {
   "wordpress-studio": {
     command: "studio",
@@ -56,7 +55,7 @@ const pluginManifest = {
 
 const pluginReadme = `# Build with WordPress Plugin
 
-This Codex plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo, plus Codex-only skills when the workflow depends on Codex-specific capabilities.
+This Codex plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo.
 
 It is intentionally Studio-MCP-first:
 
@@ -72,9 +71,6 @@ Shared:
 - \`theme-creator\`
 - \`site-creator\`
 - \`block-creator\`
-
-Codex-only:
-- \`site-image-builder\`
 `;
 
 async function copySkillSet(sourceDir, targetDir) {
@@ -94,7 +90,6 @@ async function main() {
   await mkdir(path.join(distDir, ".codex-plugin"), { recursive: true });
   await mkdir(path.join(distDir, "skills"), { recursive: true });
   await copySkillSet(sharedSkillsSourceDir, path.join(distDir, "skills"));
-  await copySkillSet(codexSkillsSourceDir, path.join(distDir, "skills"));
   await writeFile(
     path.join(distDir, ".mcp.json"),
     `${JSON.stringify(mcpConfig, null, 2)}\n`,

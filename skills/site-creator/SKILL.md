@@ -14,7 +14,6 @@ This skill is an orchestrator. It should:
 - extract or infer the site brief at the start of the workflow
 - use `theme-creator` for theme implementation
 - use `studio` for WordPress site operations, review, and iteration
-- if a `site-image-builder` skill is available, use it to generate 3-5 relevant images, including photorealistic imagery where appropriate, when the design would benefit from custom visuals
 
 Do not duplicate specialist guidance here when another skill already owns it.
 

@@ -1,11 +1,11 @@
 ---
-name: block-builder
+name: block-creator
 description: Create, edit, build, and review a custom Gutenberg block plugin inside a Studio-backed site.
 ---
 
-# Block Development
+# Block Creator
 
-Use this skill when the user wants to create or modify a custom WordPress Gutenberg block inside a local Studio site.
+Use this skill when the user wants to create or modify a custom Gutenberg block inside a local Studio site.
 
 ## Ownership
 
@@ -15,17 +15,17 @@ This skill is the single entry point for custom block work. It owns:
 - structural decisions such as static versus dynamic blocks
 - implementation rules for block plugin code
 
-Use `studio-mcp` for review and iteration after changes are built into a site.
+Use `studio` for review and iteration after the block is built into a site.
 
 ## Workflow
 
-### 1. Verify Studio MCP readiness
+### 1. Verify Studio readiness
 
-Start with `studio-mcp` so you know the selected site can be managed and reviewed with Studio MCP tools.
+Start with `studio` so the selected site can be managed and reviewed with Studio tools.
 
 ### 2. Resolve the target site
 
-Use Studio MCP tools to:
+Use Studio tools to:
 
 - list available sites
 - select or confirm the working site
@@ -42,10 +42,9 @@ If the request is vague, clarify:
 
 ### 4. Decide static or dynamic
 
-Default to static unless the user clearly needs server-rendered data.
+Default to a static block unless the user clearly needs server-rendered data.
 
 Use a static block when the content can be serialized at edit time.
-
 Use a dynamic block when the frontend output depends on server-side data or computation.
 
 Keep the implementation consistent with standard Gutenberg block conventions.
@@ -98,7 +97,7 @@ Use the selected Studio site as the root for all block-related files. Do not cre
 
 ### 2. Match editor and frontend output
 
-The editor preview should look and behave as close as possible to the frontend.
+The editor preview should look and behave as close to the frontend as possible.
 
 - use matching class names
 - use real block UI, not placeholder boxes unless absolutely necessary
@@ -108,7 +107,7 @@ The editor preview should look and behave as close as possible to the frontend.
 
 Prefer controls the editor already provides when they fit the request.
 
-Reach for components such as:
+Prefer components such as:
 
 - `InspectorControls`
 - `BlockControls`
@@ -140,7 +139,7 @@ The plugin main file should:
 
 ## HTML rule
 
-Each block should render a single wrapper element. Do not nest identical wrapper tags accidentally.
+Each block should render a single wrapper element. Do not accidentally nest identical wrapper tags.
 
 ## Defaults
 
@@ -167,7 +166,7 @@ pnpm exec wp-scripts build
 
 If the generated block package is being used outside this repo and only npm is available, `npm install && npx wp-scripts build` is fine too.
 
-This block plugin should live inside a Studio site plugin directory:
+This block plugin should live in a Studio site plugin directory:
 
 ```text
 <site-path>/wp-content/plugins/<slug>/
@@ -177,7 +176,7 @@ After a successful build:
 
 - activate the plugin with `wp_cli`
 - insert the block into a test page or post with `wp_cli`
-- follow the review and iteration workflow in `studio-mcp`
+- follow the review and iteration workflow in `studio`
 
 When editing an existing block:
 
@@ -186,7 +185,7 @@ When editing an existing block:
 3. update only the necessary files
 4. rebuild
 5. re-run activation or page setup steps if needed
-6. follow the review and iteration workflow in `studio-mcp`
+6. follow the review and iteration workflow in `studio`
 
 ## Error recovery
 

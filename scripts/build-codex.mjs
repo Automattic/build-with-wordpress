@@ -32,8 +32,8 @@ const pluginManifest = {
     "mcp",
     "wp-cli",
     "block-theme",
-    "site-builder",
-    "block-builder",
+    "site-creator",
+    "block-creator",
     "gutenberg",
     "codex"
   ],
@@ -68,11 +68,10 @@ It is intentionally Studio-MCP-first:
 ## Included skills
 
 Shared:
-- \`spec-builder\`
-- \`studio-mcp\`
-- \`theme-builder\`
-- \`site-builder\`
-- \`block-builder\`
+- \`studio\`
+- \`theme-creator\`
+- \`site-creator\`
+- \`block-creator\`
 
 Codex-only:
 - \`site-image-builder\`

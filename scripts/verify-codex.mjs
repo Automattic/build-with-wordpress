@@ -11,11 +11,10 @@ const requiredPaths = [
   path.join(distDir, ".codex-plugin", "plugin.json"),
   path.join(distDir, ".mcp.json"),
   path.join(distDir, "README.md"),
-  path.join(distDir, "skills", "spec-builder", "SKILL.md"),
-  path.join(distDir, "skills", "studio-mcp", "SKILL.md"),
-  path.join(distDir, "skills", "theme-builder", "SKILL.md"),
-  path.join(distDir, "skills", "site-builder", "SKILL.md"),
-  path.join(distDir, "skills", "block-builder", "SKILL.md"),
+  path.join(distDir, "skills", "studio", "SKILL.md"),
+  path.join(distDir, "skills", "theme-creator", "SKILL.md"),
+  path.join(distDir, "skills", "site-creator", "SKILL.md"),
+  path.join(distDir, "skills", "block-creator", "SKILL.md"),
   path.join(distDir, "skills", "site-image-builder", "SKILL.md")
 ];
 

@@ -5,7 +5,7 @@ description: Generate image assets for a WordPress site build in Codex, using GP
 
 # Site Image Builder
 
-Use this skill when a WordPress site build in Codex needs generated imagery that should become part of the site's design, including photorealistic images.
+Use this skill when a WordPress site created in Codex needs generated imagery that should become part of the design, including photorealistic images.
 
 ## Ownership
 

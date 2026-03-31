@@ -22,7 +22,7 @@ This repo currently just has a Codex plugin that:
   - plugin creation
   - Studio-backed custom block creation
 - Generated Codex MCP config in the packaged plugin output
-- Codex packaging output in `dist/codex/`
+- Codex packaging output in `plugins/codex/`
 - `pnpm` scripts for build and verification
 
 ## Skill layout
@@ -30,7 +30,7 @@ This repo currently just has a Codex plugin that:
 - `skills/`
   Shared skills intended to stay portable across agent surfaces.
 
-The build packages this folder into the Codex plugin under `dist/codex/skills/`.
+The build packages this folder into the Codex plugin under `plugins/codex/skills/`.
 
 ## Commands
 
@@ -45,7 +45,7 @@ pnpm verify
 The Codex plugin is generated to:
 
 ```text
-dist/codex/
+plugins/codex/
 ```
 
 That folder contains:

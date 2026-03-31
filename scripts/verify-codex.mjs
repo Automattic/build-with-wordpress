@@ -5,16 +5,18 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
-const distDir = path.join(root, "dist", "codex");
+const pluginDir = path.join(root, "plugins", "codex");
 
 const requiredPaths = [
-  path.join(distDir, ".codex-plugin", "plugin.json"),
-  path.join(distDir, ".mcp.json"),
-  path.join(distDir, "README.md"),
-  path.join(distDir, "skills", "studio", "SKILL.md"),
-  path.join(distDir, "skills", "theme-creator", "SKILL.md"),
-  path.join(distDir, "skills", "site-creator", "SKILL.md"),
-  path.join(distDir, "skills", "block-creator", "SKILL.md")
+  path.join(pluginDir, ".codex-plugin", "plugin.json"),
+  path.join(pluginDir, ".mcp.json"),
+  path.join(pluginDir, "README.md"),
+  path.join(pluginDir, "skills", "studio", "SKILL.md"),
+  path.join(pluginDir, "skills", "theme-creator", "SKILL.md"),
+  path.join(pluginDir, "skills", "site-creator", "SKILL.md"),
+  path.join(pluginDir, "skills", "block-creator", "SKILL.md"),
+  path.join(pluginDir, "skills", "plugin-creator", "SKILL.md"),
+  path.join(pluginDir, "skills", "wordpress-creator", "SKILL.md")
 ];
 
 async function main() {
@@ -23,7 +25,7 @@ async function main() {
   }
 
   const manifestRaw = await readFile(
-    path.join(distDir, ".codex-plugin", "plugin.json"),
+    path.join(pluginDir, ".codex-plugin", "plugin.json"),
     "utf8"
   );
   const manifest = JSON.parse(manifestRaw);
@@ -40,7 +42,7 @@ async function main() {
     throw new Error("Codex plugin manifest is missing the MCP config path");
   }
 
-  const mcpRaw = await readFile(path.join(distDir, ".mcp.json"), "utf8");
+  const mcpRaw = await readFile(path.join(pluginDir, ".mcp.json"), "utf8");
   const mcp = JSON.parse(mcpRaw);
 
   if (!mcp["wordpress-studio"]) {

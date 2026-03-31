@@ -5,22 +5,22 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
-const distDir = path.join(root, "dist", "codex");
+const pluginDir = path.join(root, "plugins", "codex");
 const sharedSkillsSourceDir = path.join(root, "skills");
 const mcpConfig = {
   "wordpress-studio": {
     command: "studio",
-    args: ["mcp"]
-  }
+    args: ["mcp"],
+  },
 };
 
 const pluginManifest = {
   name: "build-with-wordpress",
-  version: "0.2.0",
+  version: "0.3.0",
   description:
-    "Build WordPress sites and block plugins with shared workflows for Studio MCP, validation, screenshots, and Studio-backed block development.",
+    "Route and build WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows for MCP, validation, screenshots, and site iteration.",
   author: {
-    name: "Automattic"
+    name: "Automattic",
   },
   homepage: "https://developer.wordpress.com/",
   repository: "https://github.com/Automattic/build-with-wordpress",
@@ -28,29 +28,31 @@ const pluginManifest = {
   keywords: [
     "wordpress",
     "studio",
-    "mcp",
     "wp-cli",
+    "wordpress-creator",
     "block-theme",
     "site-creator",
+    "theme-creator",
     "block-creator",
+    "plugin-creator",
     "gutenberg",
-    "codex"
+    "codex",
   ],
   skills: "./skills/",
   mcpServers: "./.mcp.json",
   interface: {
     displayName: "Build with WordPress",
     shortDescription:
-      "MCP-first WordPress site and block building with Studio, screenshots, validation, and Studio-backed block workflows",
+      "MCP-first WordPress site, theme, block, and plugin building with Studio backed routing and review",
     longDescription:
-      "Use Build with WordPress to scaffold and iterate on WordPress sites with the WordPress Studio MCP server, generate block themes, run block validation, take screenshots, and create custom Gutenberg block plugins inside selected Studio sites.",
+      "Use Build with WordPress to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, and review changes with screenshots.",
     developerName: "Automattic",
     category: "Coding",
     capabilities: ["Interactive", "Read", "Write"],
     websiteURL: "https://developer.wordpress.com/",
     defaultPrompt:
-      "Build me a WordPress site with Studio MCP, or create a custom Gutenberg block plugin inside a selected Studio site"
-  }
+      "Help me choose the right WordPress approach for this task, then build it with Studio MCP",
+  },
 };
 
 const pluginReadme = `# Build with WordPress Plugin
@@ -62,12 +64,16 @@ It is intentionally Studio-MCP-first:
 - local site workflows use the WordPress Studio MCP server
 - screenshots and block validation come from Studio MCP tools
 - \`wp_cli\` is the flexible escape hatch for arbitrary WordPress operations
+- \`wordpress-creator\` routes requests to the right WordPress implementation path
+- custom WordPress plugins can be scaffolded inside a selected Studio site and reviewed there
 - custom Gutenberg blocks can be scaffolded inside a selected Studio site and reviewed there
 
 ## Included skills
 
 Shared:
+- \`wordpress-creator\`
 - \`studio\`
+- \`plugin-creator\`
 - \`theme-creator\`
 - \`site-creator\`
 - \`block-creator\`
@@ -79,29 +85,33 @@ async function copySkillSet(sourceDir, targetDir) {
     if (!entry.isDirectory()) {
       continue;
     }
-    await cp(path.join(sourceDir, entry.name), path.join(targetDir, entry.name), {
-      recursive: true
-    });
+    await cp(
+      path.join(sourceDir, entry.name),
+      path.join(targetDir, entry.name),
+      {
+        recursive: true,
+      },
+    );
   }
 }
 
 async function main() {
-  await rm(distDir, { recursive: true, force: true });
-  await mkdir(path.join(distDir, ".codex-plugin"), { recursive: true });
-  await mkdir(path.join(distDir, "skills"), { recursive: true });
-  await copySkillSet(sharedSkillsSourceDir, path.join(distDir, "skills"));
+  await rm(pluginDir, { recursive: true, force: true });
+  await mkdir(path.join(pluginDir, ".codex-plugin"), { recursive: true });
+  await mkdir(path.join(pluginDir, "skills"), { recursive: true });
+  await copySkillSet(sharedSkillsSourceDir, path.join(pluginDir, "skills"));
   await writeFile(
-    path.join(distDir, ".mcp.json"),
+    path.join(pluginDir, ".mcp.json"),
     `${JSON.stringify(mcpConfig, null, 2)}\n`,
-    "utf8"
+    "utf8",
   );
   await writeFile(
-    path.join(distDir, ".codex-plugin", "plugin.json"),
+    path.join(pluginDir, ".codex-plugin", "plugin.json"),
     `${JSON.stringify(pluginManifest, null, 2)}\n`,
-    "utf8"
+    "utf8",
   );
-  await writeFile(path.join(distDir, "README.md"), pluginReadme, "utf8");
-  console.log(`Built Codex plugin at ${distDir}`);
+  await writeFile(path.join(pluginDir, "README.md"), pluginReadme, "utf8");
+  console.log(`Built Codex plugin at ${pluginDir}`);
 }
 
 main().catch((error) => {

@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
-const pluginDir = path.join(root, "plugins", "codex");
+const pluginsDir = path.join(root, "plugins");
+const pluginDir = path.join(pluginsDir, "build-with-wordpress");
+const legacyPluginDir = path.join(pluginsDir, "codex", "build-with-wordpress");
 const sharedSkillsSourceDir = path.join(root, "skills");
 const mcpConfig = {
   "wordpress-studio": {
@@ -96,7 +98,9 @@ async function copySkillSet(sourceDir, targetDir) {
 }
 
 async function main() {
+  await mkdir(pluginsDir, { recursive: true });
   await rm(pluginDir, { recursive: true, force: true });
+  await rm(legacyPluginDir, { recursive: true, force: true });
   await mkdir(path.join(pluginDir, ".codex-plugin"), { recursive: true });
   await mkdir(path.join(pluginDir, "skills"), { recursive: true });
   await copySkillSet(sharedSkillsSourceDir, path.join(pluginDir, "skills"));

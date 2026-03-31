@@ -58,13 +58,11 @@ Guidance:
 
 ### 2. Verify Studio readiness
 
-Start with `studio`.
+Use `studio`.
 
 ### 3. Resolve the site
 
-Use `studio` to decide whether to create a new site or use an existing one, then make sure the chosen site is running.
-
-Once the site is resolved, treat that `<site-path>` as the root for all generated outputs related to the build.
+Use `studio` to decide whether to create a new site or use an existing one.
 
 ### 4. Create the theme
 
@@ -72,7 +70,7 @@ Use `theme-creator` to create or update the theme.
 
 ### 5. Configure WordPress
 
-Use `studio` and `wp_cli` for any required WordPress configuration.
+Use `studio` for any required WordPress configuration.
 
 ### 6. Validate and review
 
@@ -80,7 +78,5 @@ Use the review and iteration workflow from `studio` after content or visible sit
 
 ## Important
 
-- Prefer Studio MCP tools over shell commands when the MCP tool exists.
 - Keep the finished site editable in WordPress.
-- If MCP is unavailable, fall back through the `studio` skill rather than inlining a separate operations workflow here.
-- Do not place generated artifacts in the Codex launch directory by default. Put them inside the selected Studio site instead.
+- Do not restate Studio operational guidance here; rely on `studio` for MCP preference, site-path handling, and fallback behavior.

@@ -1,6 +1,6 @@
 ---
 name: block-creator
-description: Create, edit, build, and review a custom Gutenberg block plugin inside a Studio-backed site.
+description: Create, edit, build, and review a custom WordPress Gutenberg block plugin inside a Studio-backed site.
 ---
 
 # Block Creator
@@ -21,7 +21,7 @@ Use `studio` for review and iteration after the block is built into a site.
 
 ### 1. Verify Studio readiness
 
-Start with `studio` so the selected site can be managed and reviewed with Studio tools.
+Use `studio` so the selected site can be managed and reviewed with Studio tools.
 
 ### 2. Resolve the target site
 
@@ -82,7 +82,7 @@ Then write:
 
 After the build, compiled assets live in `build/`.
 
-Use the selected Studio site as the root for all block-related files. Do not create block project artifacts in the Codex launch directory unless the user explicitly asks for that.
+Use the selected Studio site as the root for all block-related files.
 
 ## Core rules
 
@@ -166,12 +166,6 @@ pnpm exec wp-scripts build
 
 If the generated block package is being used outside this repo and only npm is available, `npm install && npx wp-scripts build` is fine too.
 
-This block plugin should live in a Studio site plugin directory:
-
-```text
-<site-path>/wp-content/plugins/<slug>/
-```
-
 After a successful build:
 
 - activate the plugin with `wp_cli`
@@ -196,12 +190,3 @@ When a build fails:
 3. fix only the relevant file
 4. rebuild without reinstalling packages
 5. retry up to 3 times before escalating to the user
-
-## Typical file responsibilities
-
-- `edit.js`: editor UI and controls
-- `save.js`: static frontend markup
-- `render.php`: dynamic output
-- `view.js`: frontend interaction only
-- `style.scss`: frontend plus shared visual styles
-- `editor.scss`: editor-only adjustments

@@ -73,8 +73,7 @@ At minimum:
 - Do not leave intermediate groups or columns at constrained or default width between the full-width section and the main content shell unless the design intentionally calls for a narrow reading measure.
 - Keep `theme.json` layout settings aligned with the design, including sensible `contentSize` and `wideSize` values.
 - Do not rely on CSS alone to make a constrained block look full width when Gutenberg block alignment should carry that responsibility.
-- If a screenshot still looks boxed, audit nested wrapper alignment and `theme.json` layout sizes before changing CSS.
-- If screenshots still show boxed or constrained sections after using full-width blocks, inspect the block markup, serialized classes, template layout, and `theme.json` before adding custom breakout CSS.
+- If screenshots still show boxed or constrained sections after using full-width blocks, inspect wrapper alignment, serialized block markup, template layout, and `theme.json` before adding custom breakout CSS.
 
 ## Verification flow
 
@@ -83,10 +82,3 @@ After writing or updating block theme files:
 1. activate the theme with `wp_cli`
 2. update site settings if needed with `wp_cli`
 3. follow the review and iteration workflow in `studio`
-
-## Artifact placement
-
-Write theme files under the selected Studio site, not under the Codex launch directory.
-
-- theme code belongs in `<site-path>/wp-content/themes/<theme-slug>/`
-- if the workflow produces extra theme assets or intermediate files, keep them inside the selected Studio site unless the user explicitly asks for a different location

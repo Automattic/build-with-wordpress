@@ -45,7 +45,11 @@ async function main() {
   const mcpRaw = await readFile(path.join(pluginDir, ".mcp.json"), "utf8");
   const mcp = JSON.parse(mcpRaw);
 
-  if (!mcp["wordpress-studio"]) {
+  if (!mcp.mcpServers || typeof mcp.mcpServers !== "object") {
+    throw new Error("Codex plugin MCP config is missing the mcpServers wrapper");
+  }
+
+  if (!mcp.mcpServers["wordpress-studio"]) {
     throw new Error("wordpress-studio MCP entry is missing");
   }
 

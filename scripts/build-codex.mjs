@@ -10,9 +10,11 @@ const pluginDir = path.join(pluginsDir, "build-with-wordpress");
 const legacyPluginDir = path.join(pluginsDir, "codex", "build-with-wordpress");
 const sharedSkillsSourceDir = path.join(root, "skills");
 const mcpConfig = {
-  "wordpress-studio": {
-    command: "studio",
-    args: ["mcp"],
+  mcpServers: {
+    "wordpress-studio": {
+      command: "studio",
+      args: ["mcp"],
+    },
   },
 };
 

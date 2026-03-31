@@ -18,14 +18,15 @@ This skill owns:
 ## Routing rules
 
 - Use `site-creator` when the user wants a new site, homepage, landing page, or a full site built from a brief.
-- Use `theme-creator` when the main work is templates, layout, styling, presentation, or a visual redesign.
-- Use `block-creator` when the main deliverable is an editor-insertable content block.
-- Use `plugin-creator` when the request is reusable site functionality, admin/settings UI, REST endpoints, scheduled tasks, integrations, or backend behavior that should survive theme changes.
+- Use `theme-creator` when the main work is theme templates, layout, styling, presentation, or a visual redesign.
+- Use `block-creator` when the main deliverable is an editor-insertable content block that can't be achieved with existing core blocks or aleady installed custom blocks.
+- Use `plugin-creator` when the request is reusable site functionality, admin/settings UI, REST endpoints, scheduled tasks, integrations, or backend behavior that should survive theme changes, and that can't be achieved with an existing plugin.
 - If the request could fit more than one path, choose the smallest abstraction that cleanly solves it.
 
 ## Guardrails
 
 - Do not reach for a plugin when a theme or block would solve the request more directly.
+- Do not reach for a plugin when an existing installed, or well known plugin is available. For example, `Set up an ecommerce system` could be accomplished with the WooCommerce plugin.
 - Do not route pure presentation work into `plugin-creator`.
 - Do not route reusable backend behavior into `theme-creator`.
 - Once the path is clear, rely on the specialist skill instead of restating its workflow here.

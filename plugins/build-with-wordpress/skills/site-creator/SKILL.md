@@ -51,7 +51,7 @@ Guidance:
 - decide whether the site should feel like full-width landing-page bands, a more contained editorial layout, or a mix of both
 - if full-width sections fit the brief, note that in `Layout Intent` and carry it into the implementation
 
-### 4. Present the brief and ask user if they want to see design options
+### 4. Present the brief and ask for the next step
 
 Present the brief in this exact shape:
 
@@ -64,7 +64,19 @@ Present the brief in this exact shape:
 **Key Sections:** ...
 **Layout Intent:** ...
 
-Then ALWAYS ask the user "Do you want to see some design options, or just proceed with the build?".
+Then ask a single combined question that both validates the brief and chooses the next step.
+
+Use this exact wording:
+
+"Does this brief look right? If you'd like changes, tell me what to adjust. Otherwise, do you want to see some design options, or just proceed with the build?"
+
+Wait for the user's answer before continuing.
+
+If the user requests changes to the brief:
+
+- update the brief
+- present the revised brief in the same shape
+- ask the same combined question again
 
 If the user wants design options:
 

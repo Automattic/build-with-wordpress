@@ -12,6 +12,7 @@ Use this skill when the user wants a new WordPress site created from a prompt, b
 This skill is an orchestrator. It should:
 
 - extract or infer the site brief at the start of the workflow
+- use `design-previews-creator` to present the user with design directions
 - use `theme-creator` for theme implementation
 - use `studio` for WordPress site operations, review, and iteration
 
@@ -19,7 +20,15 @@ Do not duplicate specialist guidance here when another skill already owns it.
 
 ## Workflow
 
-### 1. Build the brief
+### 1. Verify Studio readiness
+
+Use `studio`.
+
+### 2. Resolve the site
+
+Use `studio` to decide whether to create a new site or use an existing one.
+
+### 3. Build the brief
 
 Extract or infer:
 
@@ -34,6 +43,16 @@ Extract or infer:
 
 If the user shared images, logos, or design documents, inspect them for clues about the brand and visual direction.
 
+Guidance:
+
+- infer intelligently, but do not pretend certainty where there is none
+- keep the brief concise and practical
+- favor modern, block-theme-friendly section structures
+- decide whether the site should feel like full-width landing-page bands, a more contained editorial layout, or a mix of both
+- if full-width sections fit the brief, note that in `Layout Intent` and carry it into the implementation
+
+### 4. Present the brief and ask user if they want to see design options
+
 Present the brief in this exact shape:
 
 **Site Name:** ...
@@ -45,28 +64,18 @@ Present the brief in this exact shape:
 **Key Sections:** ...
 **Layout Intent:** ...
 
-Then ask for confirmation before creating the site unless the user clearly asked you to proceed without pausing.
+Then ALWAYS ask the user "Do you want to see some design options, or just proceed with the build?".
 
-Guidance:
+If the user wants design options:
 
-- infer intelligently, but do not pretend certainty where there is none
-- keep the brief concise and practical
-- favor modern, block-theme-friendly section structures
-- decide whether the site should feel like full-width landing-page bands, a more contained editorial layout, or a mix of both
-- if full-width sections fit the brief, note that in `Layout Intent` and carry it into the implementation
-- if the user says "surprise me" or "just build it," choose a strong direction and proceed
+- create a design workspace inside the selected site
+- use `design-previews-creator` to generate three previews in parallel
+- wait for the user to choose a direction, or request modifications
+- pass the selected preview and any requested changes into `theme-creator`
 
-### 2. Verify Studio readiness
+If the user wants to proceed with the build:
 
-Use `studio`.
-
-### 3. Resolve the site
-
-Use `studio` to decide whether to create a new site or use an existing one.
-
-### 4. Create the theme
-
-Use `theme-creator` to create or update the theme.
+- use `theme-creator` to create or update the theme from the confirmed brief
 
 ### 5. Configure WordPress
 

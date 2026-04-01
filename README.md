@@ -10,6 +10,7 @@ This repo currently just has a Codex plugin that:
 - includes a top-level WordPress routing skill for choosing the right implementation path
 - includes a custom block development skill for custom Gutenberg block plugins
 - includes a custom plugin development skill for extending functionality outside what themes and blocks can offer
+- can optionally generate three design preview directions before building a site theme
 - keeps skills shared so other surfaces can reuse them later
 
 ## Testing
@@ -27,6 +28,7 @@ This repo currently just has a Codex plugin that:
   - Studio workflows
   - Block theme creation
   - Site creation orchestration
+  - Design preview generation and selection
   - Custom block creation
   - Plugin creation
 - Generated Codex MCP config in the packaged plugin output

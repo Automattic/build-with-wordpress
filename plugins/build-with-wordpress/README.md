@@ -19,4 +19,5 @@ Shared:
 - `plugin-creator`
 - `theme-creator`
 - `site-creator`
+- `design-previews-creator`
 - `block-creator`

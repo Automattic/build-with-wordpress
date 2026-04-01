@@ -14,6 +14,7 @@ const requiredPaths = [
   path.join(pluginDir, "skills", "studio", "SKILL.md"),
   path.join(pluginDir, "skills", "theme-creator", "SKILL.md"),
   path.join(pluginDir, "skills", "site-creator", "SKILL.md"),
+  path.join(pluginDir, "skills", "design-previews-creator", "SKILL.md"),
   path.join(pluginDir, "skills", "block-creator", "SKILL.md"),
   path.join(pluginDir, "skills", "plugin-creator", "SKILL.md"),
   path.join(pluginDir, "skills", "wordpress-creator", "SKILL.md")

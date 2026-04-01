@@ -34,6 +34,7 @@ const pluginManifest = {
     "studio",
     "wp-cli",
     "wordpress-creator",
+    "design-previews-creator",
     "block-theme",
     "site-creator",
     "theme-creator",
@@ -80,6 +81,7 @@ Shared:
 - \`plugin-creator\`
 - \`theme-creator\`
 - \`site-creator\`
+- \`design-previews-creator\`
 - \`block-creator\`
 `;
 

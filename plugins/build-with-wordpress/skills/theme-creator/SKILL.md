@@ -50,6 +50,7 @@ At minimum:
 - use purposeful typography, spacing, and color
 - avoid generic AI-looking aesthetics
 - design for desktop and mobile
+- if the caller provides a selected design preview, treat that preview as the primary visual source for the theme's header, hero, and overall design language
 
 ## Theme rules
 

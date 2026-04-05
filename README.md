@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently just has a Codex plugin that:
+This repo currently packages shared skills for both Codex and Claude Code:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -31,8 +31,9 @@ This repo currently just has a Codex plugin that:
   - Design preview generation and selection
   - Custom block creation
   - Plugin creation
-- Generated Codex MCP config in the packaged plugin output
+- Generated MCP config in the packaged plugin outputs
 - Codex packaging output in `plugins/build-with-wordpress/`
+- Claude Code packaging output in `plugins/claude-code/`
 - `pnpm` scripts for build and verification
 
 ## Skill layout
@@ -40,7 +41,10 @@ This repo currently just has a Codex plugin that:
 - `skills/`
   Shared skills intended to stay portable across agent surfaces.
 
-The build packages the shared skills into the Codex plugin under `plugins/build-with-wordpress/skills/`.
+The build packages the shared skills into:
+
+- `plugins/build-with-wordpress/skills/`
+- `plugins/claude-code/skills/`
 
 ## Commands
 
@@ -61,6 +65,19 @@ plugins/build-with-wordpress/
 That folder contains:
 
 - `.codex-plugin/plugin.json`
+- `.mcp.json`
+- `skills/`
+- `README.md`
+
+The Claude Code plugin is generated to:
+
+```text
+plugins/claude-code/
+```
+
+That folder currently contains:
+
+- `.claude-plugin/plugin.json`
 - `.mcp.json`
 - `skills/`
 - `README.md`

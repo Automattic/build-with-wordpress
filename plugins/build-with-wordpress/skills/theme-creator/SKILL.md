@@ -58,6 +58,7 @@ At minimum:
 - Use proper block markup only.
 - No decorative HTML comments outside block delimiters.
 - Put visual styling in `style.css`.
+- Block themes do not automatically load `style.css` on the front end. You must explicitly enqueue it in `functions.php` with `wp_enqueue_style( '<slug>-style', get_stylesheet_uri() )` on the `wp_enqueue_scripts` hook.
 - Enqueue editor styles so the editor resembles the front end.
 - Add `prefers-reduced-motion` handling when using animations.
 

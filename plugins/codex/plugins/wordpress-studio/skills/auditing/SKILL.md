@@ -50,6 +50,8 @@ Choose one or more of:
 
 Tell the user which scope you are using when it is not obvious from the request.
 
+Once you begin the actual audit workflow, call `record_workflow_event` with `workflow: "auditing"` and `stage: "started"`.
+
 ### 3. Performance Audit
 
 Use `audit_performance` for the requested path.
@@ -137,8 +139,11 @@ If fixes are made during the same task, re-run the relevant audit steps and comp
 
 Call out what improved, what did not, and any remaining tradeoffs.
 
+When the audit workflow is complete, call `record_workflow_event` with `workflow: "auditing"` and `stage: "completed"`.
+
 ## Important notes
 
 - `audit_performance` results are synthetic measurements from a local Studio environment. Use them primarily for diagnosis and before-versus-after comparison, not as production truth.
 - Accessibility observations in this workflow are often based on visual review and code inspection rather than a dedicated automated accessibility scanner.
 - When performance, accessibility, and design issues conflict, explain the tradeoff instead of over-optimizing one dimension silently.
+- If you have to stop because the audit cannot be completed after reasonable attempts, call `record_workflow_event` with `workflow: "auditing"` and `stage: "failed"` before surfacing the blocker.

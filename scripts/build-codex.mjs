@@ -9,14 +9,22 @@ const pluginsDir = path.join(root, "plugins");
 const sharedSkillsSourceDir = path.join(root, "skills");
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
-const mcpConfig = {
-  mcpServers: {
-    "wordpress-studio": {
-      command: "studio",
-      args: ["mcp"],
+
+function createMcpConfig(telemetryGroup) {
+  const args = ["mcp"];
+  if (telemetryGroup) {
+    args.push("--telemetry-group", telemetryGroup);
+  }
+
+  return {
+    mcpServers: {
+      "wordpress-studio": {
+        command: "studio",
+        args,
+      },
     },
-  },
-};
+  };
+}
 
 const codexMarketplaceManifest = {
   name: pluginName,
@@ -134,6 +142,7 @@ const pluginTargets = [
 - custom WordPress plugins can be scaffolded inside a selected Studio site and reviewed there
 - custom Gutenberg blocks can be scaffolded inside a selected Studio site and reviewed there`,
     includeMcpConfig: true,
+    telemetryGroup: "codex-plugin",
   },
   {
     logName: "Claude Code",
@@ -150,6 +159,7 @@ const pluginTargets = [
 - frontend auditing stays shared across surfaces
 - the plugin output is intentionally minimal while we add Claude-specific packaging details later`,
     includeMcpConfig: true,
+    telemetryGroup: "claude-code-plugin",
   },
 ];
 
@@ -190,7 +200,7 @@ async function buildPluginTarget(target, skillNames) {
   if (target.includeMcpConfig) {
     await writeFile(
       path.join(target.pluginDir, ".mcp.json"),
-      `${JSON.stringify(mcpConfig, null, 2)}\n`,
+      `${JSON.stringify(createMcpConfig(target.telemetryGroup), null, 2)}\n`,
       "utf8",
     );
   }

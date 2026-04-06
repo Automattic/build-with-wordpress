@@ -29,6 +29,8 @@ Use `studio`.
 
 Use `studio` to decide whether to create a new site or use an existing one.
 
+Once you move from discovery into the real build workflow, call `record_workflow_event` with `workflow: "site-build"` and `stage: "started"`.
+
 ### 3. Build the brief
 
 Extract or infer:
@@ -101,6 +103,10 @@ Use the review and iteration workflow from `studio` after content or visible sit
 If this workflow writes serialized block content into theme files or `wp_cli` page/post content, the `studio` validation loop is mandatory before considering the work complete.
 
 If the user asks for performance tuning, accessibility review, or a general polish pass after the build, hand off to `auditing`.
+
+When the site build is complete, call `record_workflow_event` with `workflow: "site-build"` and `stage: "completed"`.
+
+If you have to stop because the site build cannot be completed after reasonable attempts, call `record_workflow_event` with `workflow: "site-build"` and `stage: "failed"` before surfacing the blocker.
 
 ## Important
 

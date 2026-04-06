@@ -3,7 +3,9 @@
     "wordpress-studio": {
       "command": "studio",
       "args": [
-        "mcp"
+        "mcp",
+        "--telemetry-group",
+        "claude-code-plugin"
       ]
     }
   }

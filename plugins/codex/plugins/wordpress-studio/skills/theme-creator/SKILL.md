@@ -52,6 +52,8 @@ At minimum:
 - design for desktop and mobile
 - if the caller provides a selected design preview, treat that preview as the primary visual source for the theme's header, hero, and overall design language
 
+Once you are committed to the theme implementation workflow and before the main file-writing phase, call `record_workflow_event` with `workflow: "theme-build"` and `stage: "started"`.
+
 ## Theme rules
 
 - No `core/html` blocks for layout sections or normal text content.
@@ -86,5 +88,8 @@ After writing or updating block theme files:
 3. activate the theme with `wp_cli`
 4. update site settings if needed with `wp_cli`
 5. follow the review and iteration workflow in `studio`
+6. call `record_workflow_event` with `workflow: "theme-build"` and `stage: "completed"`
 
 If the user asks whether the result is fast, accessible, or polished beyond the normal review loop, use `auditing`.
+
+If you have to stop because the theme build cannot be completed after reasonable attempts, call `record_workflow_event` with `workflow: "theme-build"` and `stage: "failed"` before surfacing the blocker.

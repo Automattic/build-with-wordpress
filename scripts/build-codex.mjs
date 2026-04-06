@@ -6,23 +6,52 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const pluginsDir = path.join(root, "plugins");
-const pluginDir = path.join(pluginsDir, "build-with-wordpress");
-const legacyPluginDir = path.join(pluginsDir, "codex", "build-with-wordpress");
 const sharedSkillsSourceDir = path.join(root, "skills");
-const mcpConfig = {
-  mcpServers: {
-    "wordpress-studio": {
-      command: "studio",
-      args: ["mcp"],
+const pluginName = "wordpress-studio";
+const pluginDisplayName = "WordPress Studio";
+
+function createMcpConfig(telemetryGroup) {
+  const args = ["mcp"];
+  if (telemetryGroup) {
+    args.push("--telemetry-group", telemetryGroup);
+  }
+
+  return {
+    mcpServers: {
+      "wordpress-studio": {
+        command: "studio",
+        args,
+      },
     },
+  };
+}
+
+const codexMarketplaceManifest = {
+  name: pluginName,
+  interface: {
+    displayName: pluginDisplayName,
   },
+  plugins: [
+    {
+      name: pluginName,
+      source: {
+        source: "local",
+        path: `./plugins/${pluginName}`,
+      },
+      policy: {
+        installation: "AVAILABLE",
+        authentication: "ON_INSTALL",
+      },
+      category: "Coding",
+    },
+  ],
 };
 
-const pluginManifest = {
-  name: "build-with-wordpress",
+const codexPluginManifest = {
+  name: pluginName,
   version: "0.3.0",
   description:
-    "Route and build WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows for MCP, validation, screenshots, and site iteration.",
+    "Route, build, and audit WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows for MCP, validation, screenshots, site iteration, and frontend review.",
   author: {
     name: "Automattic",
   },
@@ -33,6 +62,7 @@ const pluginManifest = {
     "wordpress",
     "studio",
     "wp-cli",
+    "auditing",
     "wordpress-creator",
     "design-previews-creator",
     "block-theme",
@@ -46,11 +76,11 @@ const pluginManifest = {
   skills: "./skills/",
   mcpServers: "./.mcp.json",
   interface: {
-    displayName: "Build with WordPress",
+    displayName: pluginDisplayName,
     shortDescription:
-      "MCP-first WordPress site, theme, block, and plugin building with Studio backed routing and review",
+      "MCP-first WordPress site building and auditing with Studio backed routing and review",
     longDescription:
-      "Use Build with WordPress to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, and review changes with screenshots.",
+      "Use WordPress Studio to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, audit frontend quality, and review changes with screenshots.",
     developerName: "Automattic",
     category: "Coding",
     capabilities: ["Interactive", "Read", "Write"],
@@ -60,30 +90,78 @@ const pluginManifest = {
   },
 };
 
-const pluginReadme = `# Build with WordPress Plugin
+const claudePluginManifest = {
+  name: pluginName,
+  version: "0.3.0",
+  description:
+    "Use shared WordPress Studio skills to route, build, and audit WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows.",
+  author: {
+    name: "Automattic",
+  },
+};
 
-This Codex plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo.
+function buildReadme({ surfaceName, intro, skillNames }) {
+  const skillList = skillNames.map((skillName) => `- \`${skillName}\``).join("\n");
 
-It is intentionally Studio-MCP-first:
+  return `# ${pluginDisplayName} Plugin
 
-- local site workflows use the WordPress Studio MCP server
-- screenshots and block validation come from Studio MCP tools
-- \`wp_cli\` is the flexible escape hatch for arbitrary WordPress operations
-- \`wordpress-creator\` routes requests to the right WordPress implementation path
-- custom WordPress plugins can be scaffolded inside a selected Studio site and reviewed there
-- custom Gutenberg blocks can be scaffolded inside a selected Studio site and reviewed there
+This ${surfaceName} plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo as ${pluginDisplayName}.
+
+${intro}
+
+It currently ships the same shared skills as the Codex plugin so both surfaces stay aligned while we iterate on any Claude-specific additions later.
 
 ## Included skills
 
-Shared:
-- \`wordpress-creator\`
-- \`studio\`
-- \`plugin-creator\`
-- \`theme-creator\`
-- \`site-creator\`
-- \`design-previews-creator\`
-- \`block-creator\`
+${skillList}
 `;
+}
+
+const pluginTargets = [
+  {
+    logName: "Codex",
+    buildRootDir: path.join(pluginsDir, "codex"),
+    pluginDir: path.join(pluginsDir, "codex", "plugins", pluginName),
+    legacyCleanupPaths: [
+      path.join(pluginsDir, "build-with-wordpress"),
+      path.join(pluginsDir, "codex", "build-with-wordpress"),
+      path.join(root, ".agents", "plugins", "marketplace.json"),
+    ],
+    manifestDir: ".codex-plugin",
+    manifestFileName: "plugin.json",
+    manifestContents: codexPluginManifest,
+    marketplacePath: path.join(pluginsDir, "codex", ".agents", "plugins", "marketplace.json"),
+    marketplaceContents: codexMarketplaceManifest,
+    readmeIntro: `It is intentionally Studio-MCP-first:
+
+- local site workflows use the WordPress Studio MCP server
+- screenshots and block validation come from Studio MCP tools
+- frontend audits can use Studio MCP performance tooling
+- \`wp_cli\` is the flexible escape hatch for arbitrary WordPress operations
+- \`wordpress-creator\` routes requests to the right WordPress implementation path
+- custom WordPress plugins can be scaffolded inside a selected Studio site and reviewed there
+- custom Gutenberg blocks can be scaffolded inside a selected Studio site and reviewed there`,
+    includeMcpConfig: true,
+    telemetryGroup: "codex-plugin",
+  },
+  {
+    logName: "Claude Code",
+    buildRootDir: path.join(pluginsDir, "claude-code"),
+    pluginDir: path.join(pluginsDir, "claude-code"),
+    legacyCleanupPaths: [],
+    manifestDir: ".claude-plugin",
+    manifestFileName: "plugin.json",
+    manifestContents: claudePluginManifest,
+    readmeIntro: `It is a first-pass Claude Code package built from the same shared skills as the Codex plugin.
+
+- WordPress request routing stays shared across surfaces
+- Studio-backed site, theme, block, and plugin workflows stay shared
+- frontend auditing stays shared across surfaces
+- the plugin output is intentionally minimal while we add Claude-specific packaging details later`,
+    includeMcpConfig: true,
+    telemetryGroup: "claude-code-plugin",
+  },
+];
 
 async function copySkillSet(sourceDir, targetDir) {
   const entries = await readdir(sourceDir, { withFileTypes: true });
@@ -101,25 +179,66 @@ async function copySkillSet(sourceDir, targetDir) {
   }
 }
 
+async function getSharedSkillNames(sourceDir) {
+  const entries = await readdir(sourceDir, { withFileTypes: true });
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+}
+
+async function buildPluginTarget(target, skillNames) {
+  await rm(target.buildRootDir, { recursive: true, force: true });
+  for (const cleanupPath of target.legacyCleanupPaths) {
+    await rm(cleanupPath, { recursive: true, force: true });
+  }
+
+  await mkdir(path.join(target.pluginDir, target.manifestDir), { recursive: true });
+  await mkdir(path.join(target.pluginDir, "skills"), { recursive: true });
+  await copySkillSet(sharedSkillsSourceDir, path.join(target.pluginDir, "skills"));
+
+  if (target.includeMcpConfig) {
+    await writeFile(
+      path.join(target.pluginDir, ".mcp.json"),
+      `${JSON.stringify(createMcpConfig(target.telemetryGroup), null, 2)}\n`,
+      "utf8",
+    );
+  }
+
+  await writeFile(
+    path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
+    `${JSON.stringify(target.manifestContents, null, 2)}\n`,
+    "utf8",
+  );
+  await writeFile(
+    path.join(target.pluginDir, "README.md"),
+    buildReadme({
+      surfaceName: target.logName,
+      intro: target.readmeIntro,
+      skillNames,
+    }),
+    "utf8",
+  );
+
+  if (target.marketplacePath && target.marketplaceContents) {
+    await mkdir(path.dirname(target.marketplacePath), { recursive: true });
+    await writeFile(
+      target.marketplacePath,
+      `${JSON.stringify(target.marketplaceContents, null, 2)}\n`,
+      "utf8",
+    );
+  }
+
+  console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);
+}
+
 async function main() {
   await mkdir(pluginsDir, { recursive: true });
-  await rm(pluginDir, { recursive: true, force: true });
-  await rm(legacyPluginDir, { recursive: true, force: true });
-  await mkdir(path.join(pluginDir, ".codex-plugin"), { recursive: true });
-  await mkdir(path.join(pluginDir, "skills"), { recursive: true });
-  await copySkillSet(sharedSkillsSourceDir, path.join(pluginDir, "skills"));
-  await writeFile(
-    path.join(pluginDir, ".mcp.json"),
-    `${JSON.stringify(mcpConfig, null, 2)}\n`,
-    "utf8",
-  );
-  await writeFile(
-    path.join(pluginDir, ".codex-plugin", "plugin.json"),
-    `${JSON.stringify(pluginManifest, null, 2)}\n`,
-    "utf8",
-  );
-  await writeFile(path.join(pluginDir, "README.md"), pluginReadme, "utf8");
-  console.log(`Built Codex plugin at ${pluginDir}`);
+  const skillNames = await getSharedSkillNames(sharedSkillsSourceDir);
+
+  for (const target of pluginTargets) {
+    await buildPluginTarget(target, skillNames);
+  }
 }
 
 main().catch((error) => {

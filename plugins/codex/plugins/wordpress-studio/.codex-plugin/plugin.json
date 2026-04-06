@@ -1,0 +1,42 @@
+{
+  "name": "wordpress-studio",
+  "version": "0.3.0",
+  "description": "Route, build, and audit WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows for MCP, validation, screenshots, site iteration, and frontend review.",
+  "author": {
+    "name": "Automattic"
+  },
+  "homepage": "https://developer.wordpress.com/",
+  "repository": "https://github.com/Automattic/build-with-wordpress",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "wordpress",
+    "studio",
+    "wp-cli",
+    "auditing",
+    "wordpress-creator",
+    "design-previews-creator",
+    "block-theme",
+    "site-creator",
+    "theme-creator",
+    "block-creator",
+    "plugin-creator",
+    "gutenberg",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "WordPress Studio",
+    "shortDescription": "MCP-first WordPress site building and auditing with Studio backed routing and review",
+    "longDescription": "Use WordPress Studio to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, audit frontend quality, and review changes with screenshots.",
+    "developerName": "Automattic",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://developer.wordpress.com/",
+    "defaultPrompt": "Help me choose the right WordPress approach for this task, then build it with Studio MCP"
+  }
+}

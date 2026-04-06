@@ -1,0 +1,8 @@
+{
+  "name": "wordpress-studio",
+  "version": "0.3.0",
+  "description": "Use shared WordPress Studio skills to route, build, and audit WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows.",
+  "author": {
+    "name": "Automattic"
+  }
+}

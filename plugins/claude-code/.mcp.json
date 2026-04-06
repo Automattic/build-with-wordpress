@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "wordpress-studio": {
+      "command": "studio",
+      "args": [
+        "mcp",
+        "--telemetry-group",
+        "claude-code-plugin"
+      ]
+    }
+  }
+}

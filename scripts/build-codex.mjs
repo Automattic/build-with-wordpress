@@ -43,7 +43,7 @@ const codexPluginManifest = {
   name: pluginName,
   version: "0.3.0",
   description:
-    "Route and build WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows for MCP, validation, screenshots, and site iteration.",
+    "Route, build, and audit WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows for MCP, validation, screenshots, site iteration, and frontend review.",
   author: {
     name: "Automattic",
   },
@@ -54,6 +54,7 @@ const codexPluginManifest = {
     "wordpress",
     "studio",
     "wp-cli",
+    "auditing",
     "wordpress-creator",
     "design-previews-creator",
     "block-theme",
@@ -69,9 +70,9 @@ const codexPluginManifest = {
   interface: {
     displayName: pluginDisplayName,
     shortDescription:
-      "MCP-first WordPress site, theme, block, and plugin building with Studio backed routing and review",
+      "MCP-first WordPress site building and auditing with Studio backed routing and review",
     longDescription:
-      "Use WordPress Studio to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, and review changes with screenshots.",
+      "Use WordPress Studio to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, audit frontend quality, and review changes with screenshots.",
     developerName: "Automattic",
     category: "Coding",
     capabilities: ["Interactive", "Read", "Write"],
@@ -85,7 +86,7 @@ const claudePluginManifest = {
   name: pluginName,
   version: "0.3.0",
   description:
-    "Use shared WordPress Studio skills to route and build WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows.",
+    "Use shared WordPress Studio skills to route, build, and audit WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows.",
   author: {
     name: "Automattic",
   },
@@ -127,6 +128,7 @@ const pluginTargets = [
 
 - local site workflows use the WordPress Studio MCP server
 - screenshots and block validation come from Studio MCP tools
+- frontend audits can use Studio MCP performance tooling
 - \`wp_cli\` is the flexible escape hatch for arbitrary WordPress operations
 - \`wordpress-creator\` routes requests to the right WordPress implementation path
 - custom WordPress plugins can be scaffolded inside a selected Studio site and reviewed there
@@ -145,6 +147,7 @@ const pluginTargets = [
 
 - WordPress request routing stays shared across surfaces
 - Studio-backed site, theme, block, and plugin workflows stay shared
+- frontend auditing stays shared across surfaces
 - the plugin output is intentionally minimal while we add Claude-specific packaging details later`,
     includeMcpConfig: true,
   },

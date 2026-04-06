@@ -14,6 +14,7 @@ This skill is an orchestrator. It should:
 - extract or infer the site brief at the start of the workflow
 - use `design-previews-creator` to present the user with design directions
 - use `theme-creator` for theme implementation
+- use `auditing` for post-build performance, accessibility, or QA requests
 - use `studio` for WordPress site operations, review, and iteration
 
 Do not duplicate specialist guidance here when another skill already owns it.
@@ -96,6 +97,10 @@ Use `studio` for any required WordPress configuration.
 ### 6. Validate and review
 
 Use the review and iteration workflow from `studio` after content or visible site changes.
+
+If this workflow writes serialized block content into theme files or `wp_cli` page/post content, the `studio` validation loop is mandatory before considering the work complete.
+
+If the user asks for performance tuning, accessibility review, or a general polish pass after the build, hand off to `auditing`.
 
 ## Important
 

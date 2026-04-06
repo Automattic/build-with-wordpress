@@ -16,7 +16,7 @@ This skill owns:
 - WordPress-native layout structure for theme content
 - theme-local artifact placement inside the selected Studio site
 
-Use `studio` for the review loop after making changes.
+Use `studio` for the review loop after making changes. Use `auditing` when the user wants performance, accessibility, or broader frontend QA after the theme work.
 
 ## Principles
 
@@ -81,6 +81,10 @@ At minimum:
 
 After writing or updating block theme files:
 
-1. activate the theme with `wp_cli`
-2. update site settings if needed with `wp_cli`
-3. follow the review and iteration workflow in `studio`
+1. run the `studio` block validation loop on every template or template-part file containing serialized block markup
+2. if validation reports invalid blocks, repair the markup and re-run until all blocks validate cleanly
+3. activate the theme with `wp_cli`
+4. update site settings if needed with `wp_cli`
+5. follow the review and iteration workflow in `studio`
+
+If the user asks whether the result is fast, accessible, or polished beyond the normal review loop, use `auditing`.

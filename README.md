@@ -10,6 +10,7 @@ This repo currently packages shared skills for both Codex and Claude Code:
 - includes a top-level WordPress routing skill for choosing the right implementation path
 - includes a custom block development skill for custom Gutenberg block plugins
 - includes a custom plugin development skill for extending functionality outside what themes and blocks can offer
+- includes an auditing skill for performance, accessibility, and frontend quality review
 - can optionally generate three design preview directions before building a site theme
 - keeps skills shared so other surfaces can reuse them later
 
@@ -26,6 +27,7 @@ This repo currently packages shared skills for both Codex and Claude Code:
 - Shared skills for:
   - WordPress request routing
   - Studio workflows
+  - Performance, accessibility, and frontend auditing
   - Block theme creation
   - Site creation orchestration
   - Design preview generation and selection

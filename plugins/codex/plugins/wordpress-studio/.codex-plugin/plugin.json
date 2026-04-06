@@ -1,7 +1,7 @@
 {
   "name": "wordpress-studio",
   "version": "0.3.0",
-  "description": "Route, build, and audit WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows for MCP, validation, screenshots, site iteration, and frontend review.",
+  "description": "Craft production-grade WordPress sites and applications. Everything from themes and plugins to commerce and deployment.",
   "author": {
     "name": "Automattic"
   },
@@ -27,7 +27,7 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "WordPress Studio",
-    "shortDescription": "MCP-first WordPress site building and auditing with Studio backed routing and review",
+    "shortDescription": "WordPress site building and auditing with Studio backed routing and review",
     "longDescription": "Use WordPress Studio to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, audit frontend quality, and review changes with screenshots.",
     "developerName": "Automattic",
     "category": "Coding",

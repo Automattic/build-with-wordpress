@@ -51,7 +51,7 @@ const codexPluginManifest = {
   name: pluginName,
   version: "0.3.0",
   description:
-    "Route, build, and audit WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows for MCP, validation, screenshots, site iteration, and frontend review.",
+    "Craft production-grade WordPress sites and applications. Everything from themes and plugins to commerce and deployment.",
   author: {
     name: "Automattic",
   },
@@ -78,7 +78,7 @@ const codexPluginManifest = {
   interface: {
     displayName: pluginDisplayName,
     shortDescription:
-      "MCP-first WordPress site building and auditing with Studio backed routing and review",
+      "WordPress site building and auditing with Studio backed routing and review",
     longDescription:
       "Use WordPress Studio to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, audit frontend quality, and review changes with screenshots.",
     developerName: "Automattic",
@@ -94,14 +94,16 @@ const claudePluginManifest = {
   name: pluginName,
   version: "0.3.0",
   description:
-    "Use shared WordPress Studio skills to route, build, and audit WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows.",
+    "Craft production-grade WordPress sites and applications. Everything from themes and plugins to commerce and deployment.",
   author: {
     name: "Automattic",
   },
 };
 
 function buildReadme({ surfaceName, intro, skillNames }) {
-  const skillList = skillNames.map((skillName) => `- \`${skillName}\``).join("\n");
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
 
   return `# ${pluginDisplayName} Plugin
 
@@ -130,7 +132,13 @@ const pluginTargets = [
     manifestDir: ".codex-plugin",
     manifestFileName: "plugin.json",
     manifestContents: codexPluginManifest,
-    marketplacePath: path.join(pluginsDir, "codex", ".agents", "plugins", "marketplace.json"),
+    marketplacePath: path.join(
+      pluginsDir,
+      "codex",
+      ".agents",
+      "plugins",
+      "marketplace.json",
+    ),
     marketplaceContents: codexMarketplaceManifest,
     readmeIntro: `It is intentionally Studio-MCP-first:
 
@@ -193,9 +201,14 @@ async function buildPluginTarget(target, skillNames) {
     await rm(cleanupPath, { recursive: true, force: true });
   }
 
-  await mkdir(path.join(target.pluginDir, target.manifestDir), { recursive: true });
+  await mkdir(path.join(target.pluginDir, target.manifestDir), {
+    recursive: true,
+  });
   await mkdir(path.join(target.pluginDir, "skills"), { recursive: true });
-  await copySkillSet(sharedSkillsSourceDir, path.join(target.pluginDir, "skills"));
+  await copySkillSet(
+    sharedSkillsSourceDir,
+    path.join(target.pluginDir, "skills"),
+  );
 
   if (target.includeMcpConfig) {
     await writeFile(

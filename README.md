@@ -17,8 +17,8 @@ This repo currently packages shared skills for both Codex and Claude Code:
 
 - Make sure you have WordPress Studio installed
 - Clone this repo
-- Open a new project in Codex app with the repo folder you just created and under Plugins you should see a `Build with WordPress` option. Install this plugin
-- If you are using the Claude CLI run it in the repo folder and then under `/plugins` you should see the `Build with WordPress` option. Select it and install
+- Open a new project in Codex app with `plugins/codex` and under Plugins you should see a `WordPress Studio` option. Install this plugin
+- If you are using the Claude CLI, point it at `plugins/claude-code` as the plugin directory and install `WordPress Studio`
 - Try a range of WordPress tasks from creating a new site, building/editing a theme, creating a custom block, installing a plugin, creating a new plugin
 
 ## Current scope
@@ -32,7 +32,7 @@ This repo currently packages shared skills for both Codex and Claude Code:
   - Custom block creation
   - Plugin creation
 - Generated MCP config in the packaged plugin outputs
-- Codex packaging output in `plugins/build-with-wordpress/`
+- Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
 - `pnpm` scripts for build and verification
 
@@ -43,7 +43,7 @@ This repo currently packages shared skills for both Codex and Claude Code:
 
 The build packages the shared skills into:
 
-- `plugins/build-with-wordpress/skills/`
+- `plugins/codex/plugins/wordpress-studio/skills/`
 - `plugins/claude-code/skills/`
 
 ## Commands
@@ -56,18 +56,19 @@ pnpm verify
 
 ## Output
 
-The Codex plugin is generated to:
+The Codex plugin repo is generated to:
 
 ```text
-plugins/build-with-wordpress/
+plugins/codex/
 ```
 
 That folder contains:
 
-- `.codex-plugin/plugin.json`
-- `.mcp.json`
-- `skills/`
-- `README.md`
+- `.agents/plugins/marketplace.json`
+- `plugins/wordpress-studio/.codex-plugin/plugin.json`
+- `plugins/wordpress-studio/.mcp.json`
+- `plugins/wordpress-studio/skills/`
+- `plugins/wordpress-studio/README.md`
 
 The Claude Code plugin is generated to:
 

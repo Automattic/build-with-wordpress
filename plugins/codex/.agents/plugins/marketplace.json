@@ -1,14 +1,14 @@
 {
-  "name": "build-with-wordpress",
+  "name": "wordpress-studio",
   "interface": {
-    "displayName": "Build with WordPress"
+    "displayName": "WordPress Studio"
   },
   "plugins": [
     {
-      "name": "build-with-wordpress",
+      "name": "wordpress-studio",
       "source": {
         "source": "local",
-        "path": "./plugins/build-with-wordpress"
+        "path": "./plugins/wordpress-studio"
       },
       "policy": {
         "installation": "AVAILABLE",

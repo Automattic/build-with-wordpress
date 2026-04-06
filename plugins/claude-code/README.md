@@ -1,6 +1,6 @@
-# Build with WordPress Plugin
+# WordPress Studio Plugin
 
-This Claude Code plugin packages shared WordPress skills from the `build-with-wordpress` source repo.
+This Claude Code plugin packages shared WordPress skills from the `build-with-wordpress` source repo as WordPress Studio.
 
 It is a first-pass Claude Code package built from the same shared skills as the Codex plugin.
 

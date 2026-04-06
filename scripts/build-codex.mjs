@@ -7,6 +7,8 @@ const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const pluginsDir = path.join(root, "plugins");
 const sharedSkillsSourceDir = path.join(root, "skills");
+const pluginName = "wordpress-studio";
+const pluginDisplayName = "WordPress Studio";
 const mcpConfig = {
   mcpServers: {
     "wordpress-studio": {
@@ -16,8 +18,29 @@ const mcpConfig = {
   },
 };
 
+const codexMarketplaceManifest = {
+  name: pluginName,
+  interface: {
+    displayName: pluginDisplayName,
+  },
+  plugins: [
+    {
+      name: pluginName,
+      source: {
+        source: "local",
+        path: `./plugins/${pluginName}`,
+      },
+      policy: {
+        installation: "AVAILABLE",
+        authentication: "ON_INSTALL",
+      },
+      category: "Coding",
+    },
+  ],
+};
+
 const codexPluginManifest = {
-  name: "build-with-wordpress",
+  name: pluginName,
   version: "0.3.0",
   description:
     "Route and build WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows for MCP, validation, screenshots, and site iteration.",
@@ -44,11 +67,11 @@ const codexPluginManifest = {
   skills: "./skills/",
   mcpServers: "./.mcp.json",
   interface: {
-    displayName: "Build with WordPress",
+    displayName: pluginDisplayName,
     shortDescription:
       "MCP-first WordPress site, theme, block, and plugin building with Studio backed routing and review",
     longDescription:
-      "Use Build with WordPress to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, and review changes with screenshots.",
+      "Use WordPress Studio to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, and review changes with screenshots.",
     developerName: "Automattic",
     category: "Coding",
     capabilities: ["Interactive", "Read", "Write"],
@@ -59,10 +82,10 @@ const codexPluginManifest = {
 };
 
 const claudePluginManifest = {
-  name: "build-with-wordpress",
+  name: pluginName,
   version: "0.3.0",
   description:
-    "Use shared Build with WordPress skills to route and build WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows.",
+    "Use shared WordPress Studio skills to route and build WordPress sites, themes, custom blocks, and plugins with WordPress Studio backed workflows.",
   author: {
     name: "Automattic",
   },
@@ -71,9 +94,9 @@ const claudePluginManifest = {
 function buildReadme({ surfaceName, intro, skillNames }) {
   const skillList = skillNames.map((skillName) => `- \`${skillName}\``).join("\n");
 
-  return `# Build with WordPress Plugin
+  return `# ${pluginDisplayName} Plugin
 
-This ${surfaceName} plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo.
+This ${surfaceName} plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo as ${pluginDisplayName}.
 
 ${intro}
 
@@ -88,11 +111,18 @@ ${skillList}
 const pluginTargets = [
   {
     logName: "Codex",
-    pluginDir: path.join(pluginsDir, "build-with-wordpress"),
-    legacyDirs: [path.join(pluginsDir, "codex", "build-with-wordpress")],
+    buildRootDir: path.join(pluginsDir, "codex"),
+    pluginDir: path.join(pluginsDir, "codex", "plugins", pluginName),
+    legacyCleanupPaths: [
+      path.join(pluginsDir, "build-with-wordpress"),
+      path.join(pluginsDir, "codex", "build-with-wordpress"),
+      path.join(root, ".agents", "plugins", "marketplace.json"),
+    ],
     manifestDir: ".codex-plugin",
     manifestFileName: "plugin.json",
     manifestContents: codexPluginManifest,
+    marketplacePath: path.join(pluginsDir, "codex", ".agents", "plugins", "marketplace.json"),
+    marketplaceContents: codexMarketplaceManifest,
     readmeIntro: `It is intentionally Studio-MCP-first:
 
 - local site workflows use the WordPress Studio MCP server
@@ -105,8 +135,9 @@ const pluginTargets = [
   },
   {
     logName: "Claude Code",
+    buildRootDir: path.join(pluginsDir, "claude-code"),
     pluginDir: path.join(pluginsDir, "claude-code"),
-    legacyDirs: [],
+    legacyCleanupPaths: [],
     manifestDir: ".claude-plugin",
     manifestFileName: "plugin.json",
     manifestContents: claudePluginManifest,
@@ -144,9 +175,9 @@ async function getSharedSkillNames(sourceDir) {
 }
 
 async function buildPluginTarget(target, skillNames) {
-  await rm(target.pluginDir, { recursive: true, force: true });
-  for (const legacyDir of target.legacyDirs) {
-    await rm(legacyDir, { recursive: true, force: true });
+  await rm(target.buildRootDir, { recursive: true, force: true });
+  for (const cleanupPath of target.legacyCleanupPaths) {
+    await rm(cleanupPath, { recursive: true, force: true });
   }
 
   await mkdir(path.join(target.pluginDir, target.manifestDir), { recursive: true });
@@ -175,6 +206,15 @@ async function buildPluginTarget(target, skillNames) {
     }),
     "utf8",
   );
+
+  if (target.marketplacePath && target.marketplaceContents) {
+    await mkdir(path.dirname(target.marketplacePath), { recursive: true });
+    await writeFile(
+      target.marketplacePath,
+      `${JSON.stringify(target.marketplaceContents, null, 2)}\n`,
+      "utf8",
+    );
+  }
 
   console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);
 }

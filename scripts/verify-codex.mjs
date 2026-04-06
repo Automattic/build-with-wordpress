@@ -6,7 +6,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const sharedSkillsDir = path.join(root, "skills");
-const codexPluginDir = path.join(root, "plugins", "build-with-wordpress");
+const pluginName = "wordpress-studio";
+const pluginDisplayName = "WordPress Studio";
+const codexRootDir = path.join(root, "plugins", "codex");
+const codexPluginDir = path.join(codexRootDir, "plugins", pluginName);
+const codexMarketplacePath = path.join(
+  codexRootDir,
+  ".agents",
+  "plugins",
+  "marketplace.json"
+);
 const claudePluginDir = path.join(root, "plugins", "claude-code");
 
 async function getSharedSkillNames() {
@@ -41,6 +50,7 @@ async function verifyMcpConfig(pluginDir, surfaceName) {
 async function verifyCodexPlugin(skillNames) {
   await access(path.join(codexPluginDir, ".codex-plugin", "plugin.json"));
   await access(path.join(codexPluginDir, "README.md"));
+  await access(codexMarketplacePath);
   await verifySharedSkillSet(codexPluginDir, skillNames);
   await verifyMcpConfig(codexPluginDir, "Codex plugin");
 
@@ -50,7 +60,7 @@ async function verifyCodexPlugin(skillNames) {
   );
   const manifest = JSON.parse(manifestRaw);
 
-  if (manifest.name !== "build-with-wordpress") {
+  if (manifest.name !== pluginName) {
     throw new Error("Unexpected Codex plugin name");
   }
 
@@ -60,6 +70,30 @@ async function verifyCodexPlugin(skillNames) {
 
   if (manifest.mcpServers !== "./.mcp.json") {
     throw new Error("Codex plugin manifest is missing the MCP config path");
+  }
+
+  if (manifest.interface?.displayName !== pluginDisplayName) {
+    throw new Error("Codex plugin manifest has the wrong display name");
+  }
+
+  const marketplaceRaw = await readFile(codexMarketplacePath, "utf8");
+  const marketplace = JSON.parse(marketplaceRaw);
+  const pluginEntry = marketplace.plugins?.find((entry) => entry.name === pluginName);
+
+  if (marketplace.name !== pluginName) {
+    throw new Error("Codex marketplace has the wrong name");
+  }
+
+  if (marketplace.interface?.displayName !== pluginDisplayName) {
+    throw new Error("Codex marketplace has the wrong display name");
+  }
+
+  if (!pluginEntry) {
+    throw new Error("Codex marketplace is missing the wordpress-studio plugin entry");
+  }
+
+  if (pluginEntry.source?.path !== `./plugins/${pluginName}`) {
+    throw new Error("Codex marketplace has the wrong plugin path");
   }
 }
 
@@ -75,7 +109,7 @@ async function verifyClaudePlugin(skillNames) {
   );
   const manifest = JSON.parse(manifestRaw);
 
-  if (manifest.name !== "build-with-wordpress") {
+  if (manifest.name !== pluginName) {
     throw new Error("Unexpected Claude plugin name");
   }
 }

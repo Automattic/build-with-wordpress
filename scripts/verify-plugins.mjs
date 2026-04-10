@@ -45,6 +45,18 @@ async function verifyMcpConfig(pluginDir, surfaceName) {
   if (!mcp.mcpServers["wordpress-studio"]) {
     throw new Error(`${surfaceName} MCP config is missing the wordpress-studio entry`);
   }
+
+  if (!mcp.mcpServers["workflow-telemetry"]) {
+    throw new Error(`${surfaceName} MCP config is missing the workflow-telemetry entry`);
+  }
+}
+
+async function verifyTelemetryScript(pluginDir, surfaceName) {
+  try {
+    await access(path.join(pluginDir, "scripts", "workflow-telemetry-mcp.mjs"));
+  } catch (error) {
+    throw new Error(`${surfaceName} plugin is missing scripts/workflow-telemetry-mcp.mjs`);
+  }
 }
 
 async function verifyCodexPlugin(skillNames) {
@@ -53,6 +65,7 @@ async function verifyCodexPlugin(skillNames) {
   await access(codexMarketplacePath);
   await verifySharedSkillSet(codexPluginDir, skillNames);
   await verifyMcpConfig(codexPluginDir, "Codex plugin");
+  await verifyTelemetryScript(codexPluginDir, "Codex");
 
   const manifestRaw = await readFile(
     path.join(codexPluginDir, ".codex-plugin", "plugin.json"),
@@ -102,6 +115,7 @@ async function verifyClaudePlugin(skillNames) {
   await access(path.join(claudePluginDir, "README.md"));
   await verifySharedSkillSet(claudePluginDir, skillNames);
   await verifyMcpConfig(claudePluginDir, "Claude plugin");
+  await verifyTelemetryScript(claudePluginDir, "Claude");
 
   const manifestRaw = await readFile(
     path.join(claudePluginDir, ".claude-plugin", "plugin.json"),

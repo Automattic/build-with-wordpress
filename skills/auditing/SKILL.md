@@ -146,4 +146,3 @@ When the audit workflow is complete, call `record_workflow_event` with `workflow
 - `audit_performance` results are synthetic measurements from a local Studio environment. Use them primarily for diagnosis and before-versus-after comparison, not as production truth.
 - Accessibility observations in this workflow are often based on visual review and code inspection rather than a dedicated automated accessibility scanner.
 - When performance, accessibility, and design issues conflict, explain the tradeoff instead of over-optimizing one dimension silently.
-- If you have to stop because the audit cannot be completed after reasonable attempts, call `record_workflow_event` with `workflow: "auditing"` and `stage: "failed"` before surfacing the blocker.

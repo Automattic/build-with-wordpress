@@ -3,9 +3,15 @@
     "wordpress-studio": {
       "command": "studio",
       "args": [
-        "mcp",
-        "--telemetry-group",
-        "codex-plugin"
+        "mcp"
+      ]
+    },
+    "workflow-telemetry": {
+      "command": "node",
+      "args": [
+        "plugins/wordpress-studio/scripts/workflow-telemetry-mcp.mjs",
+        "--surface",
+        "codex"
       ]
     }
   }

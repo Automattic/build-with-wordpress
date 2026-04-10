@@ -1,4 +1,4 @@
-import { cp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
+import { access, cp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,20 +7,24 @@ const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const pluginsDir = path.join(root, "plugins");
 const sharedSkillsSourceDir = path.join(root, "skills");
+const telemetryMcpServerDistPath = path.join(
+  root,
+  "dist",
+  "workflow-telemetry-mcp.mjs",
+);
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
 
-function createMcpConfig(telemetryGroup) {
-  const args = ["mcp"];
-  if (telemetryGroup) {
-    args.push("--telemetry-group", telemetryGroup);
-  }
-
+function createMcpConfig({ surface, telemetryCommandPath }) {
   return {
     mcpServers: {
       "wordpress-studio": {
         command: "studio",
-        args,
+        args: ["mcp"],
+      },
+      "workflow-telemetry": {
+        command: "node",
+        args: [telemetryCommandPath, "--surface", surface],
       },
     },
   };
@@ -150,7 +154,7 @@ const pluginTargets = [
 - custom WordPress plugins can be scaffolded inside a selected Studio site and reviewed there
 - custom Gutenberg blocks can be scaffolded inside a selected Studio site and reviewed there`,
     includeMcpConfig: true,
-    telemetryGroup: "codex-plugin",
+    surface: "codex",
   },
   {
     logName: "Claude Code",
@@ -167,7 +171,7 @@ const pluginTargets = [
 - frontend auditing stays shared across surfaces
 - the plugin output is intentionally minimal while we add Claude-specific packaging details later`,
     includeMcpConfig: true,
-    telemetryGroup: "claude-code-plugin",
+    surface: "claude-code",
   },
 ];
 
@@ -204,16 +208,37 @@ async function buildPluginTarget(target, skillNames) {
   await mkdir(path.join(target.pluginDir, target.manifestDir), {
     recursive: true,
   });
+  await mkdir(path.join(target.pluginDir, "scripts"), { recursive: true });
   await mkdir(path.join(target.pluginDir, "skills"), { recursive: true });
   await copySkillSet(
     sharedSkillsSourceDir,
     path.join(target.pluginDir, "skills"),
   );
+  await cp(
+    telemetryMcpServerDistPath,
+    path.join(target.pluginDir, "scripts", "workflow-telemetry-mcp.mjs"),
+  );
+  const telemetryScriptPath = path.join(
+    target.pluginDir,
+    "scripts",
+    "workflow-telemetry-mcp.mjs",
+  );
+  const telemetryCommandPath = path.relative(
+    target.buildRootDir,
+    telemetryScriptPath,
+  );
 
   if (target.includeMcpConfig) {
     await writeFile(
       path.join(target.pluginDir, ".mcp.json"),
-      `${JSON.stringify(createMcpConfig(target.telemetryGroup), null, 2)}\n`,
+      `${JSON.stringify(
+        createMcpConfig({
+          surface: target.surface,
+          telemetryCommandPath,
+        }),
+        null,
+        2,
+      )}\n`,
       "utf8",
     );
   }
@@ -247,6 +272,7 @@ async function buildPluginTarget(target, skillNames) {
 
 async function main() {
   await mkdir(pluginsDir, { recursive: true });
+  await access(telemetryMcpServerDistPath);
   const skillNames = await getSharedSkillNames(sharedSkillsSourceDir);
 
   for (const target of pluginTargets) {

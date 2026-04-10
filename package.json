@@ -5,7 +5,13 @@
   "description": "Shared WordPress agent skills and build scripts for Codex and other agent surfaces.",
   "packageManager": "pnpm@10.8.1",
   "scripts": {
-    "build": "node scripts/build-plugins.mjs",
+    "build": "node scripts/build-telemetry-mcp.mjs && node scripts/build-plugins.mjs",
+    "build:telemetry-mcp": "node scripts/build-telemetry-mcp.mjs",
     "verify": "node scripts/verify-plugins.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "esbuild": "^0.28.0",
+    "zod": "^4.3.6"
   }
 }

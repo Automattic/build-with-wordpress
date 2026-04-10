@@ -193,5 +193,3 @@ When a build fails:
 3. fix only the relevant file
 4. rebuild without reinstalling packages
 5. retry up to 3 times before escalating to the user
-
-If you have to stop because the block build cannot be completed after reasonable attempts, call `record_workflow_event` with `workflow: "block-build"` and `stage: "failed"` before surfacing the blocker.

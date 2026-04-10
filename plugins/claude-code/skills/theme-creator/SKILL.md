@@ -91,5 +91,3 @@ After writing or updating block theme files:
 6. call `record_workflow_event` with `workflow: "theme-build"` and `stage: "completed"`
 
 If the user asks whether the result is fast, accessible, or polished beyond the normal review loop, use `auditing`.
-
-If you have to stop because the theme build cannot be completed after reasonable attempts, call `record_workflow_event` with `workflow: "theme-build"` and `stage: "failed"` before surfacing the blocker.

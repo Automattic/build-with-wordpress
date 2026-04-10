@@ -12,7 +12,7 @@ This repo currently packages shared skills for both Codex and Claude Code as sep
 - includes a custom plugin development skill for extending functionality outside what themes and blocks can offer
 - includes an auditing skill for performance, accessibility, and frontend quality review
 - can optionally generate three design preview directions before building a site theme
-- injects plugin-specific MCP launch arguments so Studio can distinguish Codex and Claude plugin telemetry
+- bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
 - keeps skills shared so other surfaces can reuse them later
 
 ## Testing
@@ -32,13 +32,14 @@ pnpm verify
 1. Open a new project in the Codex app using `./plugins/codex` as the project root.
 2. Under Plugins, install `WordPress Studio`.
 3. Confirm the generated MCP config exists at `plugins/codex/plugins/wordpress-studio/.mcp.json`.
-4. Try representative tasks such as:
+4. Confirm the bundled telemetry server exists at `plugins/codex/plugins/wordpress-studio/scripts/workflow-telemetry-mcp.mjs`.
+5. Try representative tasks such as:
    - creating a new site
    - building or editing a theme
    - creating a custom block
    - creating a custom plugin
    - running an audit request
-5. For workflow telemetry coverage, make sure Studio is launched through the generated Codex plugin so the MCP server starts with the Codex telemetry group.
+6. For workflow telemetry coverage, make sure the generated `workflow-telemetry` MCP server starts alongside `wordpress-studio`.
 
 ### Test in Claude Code
 
@@ -50,13 +51,14 @@ claude --plugin-dir ./plugins/claude-code
 
 2. Install or enable the `WordPress Studio` plugin in Claude Code.
 3. Confirm the generated MCP config exists at `plugins/claude-code/.mcp.json`.
-4. Try the same representative tasks:
+4. Confirm the bundled telemetry server exists at `plugins/claude-code/scripts/workflow-telemetry-mcp.mjs`.
+5. Try the same representative tasks:
    - creating a new site
    - building or editing a theme
    - creating a custom block
    - creating a custom plugin
    - running an audit request
-5. For workflow telemetry coverage, make sure Studio is launched through this generated Claude plugin so the MCP server starts with the Claude telemetry group.
+6. For workflow telemetry coverage, make sure the generated `workflow-telemetry` MCP server starts alongside `wordpress-studio`.
 
 ## Current scope
 
@@ -69,10 +71,11 @@ claude --plugin-dir ./plugins/claude-code
   - Design preview generation and selection
   - Custom block creation
   - Plugin creation
-- Generated MCP config in the packaged plugin outputs
-- Plugin-specific MCP launch arguments for Codex and Claude telemetry grouping
+- Generated MCP configs in the packaged plugin outputs
+- A bundled standalone telemetry MCP server built from repo-local Node dependencies
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
+- Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
 ## Skill layout
@@ -90,10 +93,15 @@ It also generates plugin-specific MCP configs for each surface:
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
 
+The telemetry server source lives in `scripts/workflow-telemetry-mcp.mjs` and is bundled to:
+
+- `dist/workflow-telemetry-mcp.mjs`
+
 ## Commands
 
 ```bash
 pnpm install
+pnpm build:telemetry-mcp
 pnpm build
 pnpm verify
 ```
@@ -111,10 +119,11 @@ That folder contains:
 - `.agents/plugins/marketplace.json`
 - `plugins/wordpress-studio/.codex-plugin/plugin.json`
 - `plugins/wordpress-studio/.mcp.json`
+- `plugins/wordpress-studio/scripts/workflow-telemetry-mcp.mjs`
 - `plugins/wordpress-studio/skills/`
 - `plugins/wordpress-studio/README.md`
 
-The generated Codex MCP config launches Studio with the Codex plugin telemetry group.
+The generated Codex MCP config launches both `studio mcp` and the bundled `workflow-telemetry` MCP server.
 
 The Claude Code plugin is generated to:
 
@@ -126,7 +135,8 @@ That folder currently contains:
 
 - `.claude-plugin/plugin.json`
 - `.mcp.json`
+- `scripts/workflow-telemetry-mcp.mjs`
 - `skills/`
 - `README.md`
 
-The generated Claude Code MCP config launches Studio with the Claude plugin telemetry group.
+The generated Claude Code MCP config launches both `studio mcp` and the bundled `workflow-telemetry` MCP server.

@@ -35,4 +35,3 @@ Use `studio` for site selection, activation, `wp_cli`, and review.
 - Do not create a plugin for pure styling or template work.
 - Keep the plugin editable and easy to reason about.
 - Prefer the smallest viable file set and dependency footprint.
-- If you have to stop because the plugin build cannot be completed after reasonable attempts, call `record_workflow_event` with `workflow: "plugin-build"` and `stage: "failed"` before surfacing the blocker.

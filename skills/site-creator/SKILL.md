@@ -106,8 +106,6 @@ If the user asks for performance tuning, accessibility review, or a general poli
 
 When the site build is complete, call `record_workflow_event` with `workflow: "site-build"` and `stage: "completed"`.
 
-If you have to stop because the site build cannot be completed after reasonable attempts, call `record_workflow_event` with `workflow: "site-build"` and `stage: "failed"` before surfacing the blocker.
-
 ## Important
 
 - Keep the finished site editable in WordPress.

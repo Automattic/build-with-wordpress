@@ -82,4 +82,4 @@ Use direct file edits for theme and plugin files when writing code.
 - Keep review loops proportional to the task; do not force screenshots or validation when they add no value.
 - Do not place generated artifacts in the Codex launch directory by default. Use the selected Studio site path.
 - If the user asks for performance, accessibility, or broader frontend QA, hand off to `auditing` rather than embedding that workflow here.
-- Use `record_workflow_event` only for meaningful workflow milestones such as `started`, `completed`, or `failed` when a specialist skill asks for it.
+- Use `record_workflow_event` only for meaningful workflow milestones such as `started` or `completed` when a specialist skill asks for it.

@@ -1,6 +1,7 @@
-import { access, cp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
+import { access, cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { brotliCompressSync } from "node:zlib";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,7 +16,21 @@ const telemetryMcpServerDistPath = path.join(
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
 
-function createMcpConfig({ surface, telemetryCommandPath }) {
+function createTelemetryBootstrapArgs({ surface, telemetrySource }) {
+  const compressedSource = brotliCompressSync(Buffer.from(telemetrySource, "utf8"));
+  const sourcePayload = compressedSource.toString("base64");
+  const bootstrap = [
+    'import { brotliDecompressSync } from "node:zlib";',
+    'import { Buffer } from "node:buffer";',
+    `process.argv.push("--surface", ${JSON.stringify(surface)});`,
+    `const source = brotliDecompressSync(Buffer.from(${JSON.stringify(sourcePayload)}, "base64")).toString("utf8");`,
+    'await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));',
+  ].join("");
+
+  return ["--input-type=module", "--eval", bootstrap];
+}
+
+function createMcpConfig({ surface, telemetrySource }) {
   return {
     mcpServers: {
       "wordpress-studio": {
@@ -24,7 +39,7 @@ function createMcpConfig({ surface, telemetryCommandPath }) {
       },
       "wordpress-telemetry": {
         command: "node",
-        args: [telemetryCommandPath, "--surface", surface],
+        args: createTelemetryBootstrapArgs({ surface, telemetrySource }),
       },
     },
   };
@@ -223,10 +238,7 @@ async function buildPluginTarget(target, skillNames) {
     "scripts",
     "wordpress-telemetry-mcp.mjs",
   );
-  const telemetryCommandPath = path.relative(
-    target.buildRootDir,
-    telemetryScriptPath,
-  );
+  const telemetrySource = await readFile(telemetryScriptPath, "utf8");
 
   if (target.includeMcpConfig) {
     await writeFile(
@@ -234,7 +246,7 @@ async function buildPluginTarget(target, skillNames) {
       `${JSON.stringify(
         createMcpConfig({
           surface: target.surface,
-          telemetryCommandPath,
+          telemetrySource,
         }),
         null,
         2,

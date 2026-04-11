@@ -46,16 +46,16 @@ async function verifyMcpConfig(pluginDir, surfaceName) {
     throw new Error(`${surfaceName} MCP config is missing the wordpress-studio entry`);
   }
 
-  if (!mcp.mcpServers["workflow-telemetry"]) {
-    throw new Error(`${surfaceName} MCP config is missing the workflow-telemetry entry`);
+  if (!mcp.mcpServers["wordpress-telemetry"]) {
+    throw new Error(`${surfaceName} MCP config is missing the wordpress-telemetry entry`);
   }
 }
 
 async function verifyTelemetryScript(pluginDir, surfaceName) {
   try {
-    await access(path.join(pluginDir, "scripts", "workflow-telemetry-mcp.mjs"));
+    await access(path.join(pluginDir, "scripts", "wordpress-telemetry-mcp.mjs"));
   } catch (error) {
-    throw new Error(`${surfaceName} plugin is missing scripts/workflow-telemetry-mcp.mjs`);
+    throw new Error(`${surfaceName} plugin is missing scripts/wordpress-telemetry-mcp.mjs`);
   }
 }
 

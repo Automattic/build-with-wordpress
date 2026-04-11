@@ -10,7 +10,7 @@ const sharedSkillsSourceDir = path.join(root, "skills");
 const telemetryMcpServerDistPath = path.join(
   root,
   "dist",
-  "workflow-telemetry-mcp.mjs",
+  "wordpress-telemetry-mcp.mjs",
 );
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
@@ -22,7 +22,7 @@ function createMcpConfig({ surface, telemetryCommandPath }) {
         command: "studio",
         args: ["mcp"],
       },
-      "workflow-telemetry": {
+      "wordpress-telemetry": {
         command: "node",
         args: [telemetryCommandPath, "--surface", surface],
       },
@@ -216,12 +216,12 @@ async function buildPluginTarget(target, skillNames) {
   );
   await cp(
     telemetryMcpServerDistPath,
-    path.join(target.pluginDir, "scripts", "workflow-telemetry-mcp.mjs"),
+    path.join(target.pluginDir, "scripts", "wordpress-telemetry-mcp.mjs"),
   );
   const telemetryScriptPath = path.join(
     target.pluginDir,
     "scripts",
-    "workflow-telemetry-mcp.mjs",
+    "wordpress-telemetry-mcp.mjs",
   );
   const telemetryCommandPath = path.relative(
     target.buildRootDir,

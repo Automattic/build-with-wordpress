@@ -6,10 +6,10 @@
         "mcp"
       ]
     },
-    "workflow-telemetry": {
+    "wordpress-telemetry": {
       "command": "node",
       "args": [
-        "plugins/wordpress-studio/scripts/workflow-telemetry-mcp.mjs",
+        "plugins/wordpress-studio/scripts/wordpress-telemetry-mcp.mjs",
         "--surface",
         "codex"
       ]

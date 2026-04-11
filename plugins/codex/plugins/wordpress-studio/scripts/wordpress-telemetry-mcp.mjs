@@ -23219,9 +23219,9 @@ var StdioServerTransport = class {
   }
 };
 
-// scripts/workflow-telemetry-mcp.mjs
+// scripts/wordpress-telemetry-mcp.mjs
 var GROUP = "agent-build-plugin";
-var SERVER_NAME = "workflow-telemetry";
+var SERVER_NAME = "wordpress-telemetry";
 var SERVER_VERSION = "0.1.0";
 var SURFACE = parseSurfaceFromArgs(process.argv.slice(2));
 var server = new McpServer({

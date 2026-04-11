@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import * as z from "zod/v4";
 
 const GROUP = "agent-build-plugin";
-const SERVER_NAME = "workflow-telemetry";
+const SERVER_NAME = "wordpress-telemetry";
 const SERVER_VERSION = "0.1.0";
 const SURFACE = parseSurfaceFromArgs(process.argv.slice(2));
 

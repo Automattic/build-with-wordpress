@@ -15,6 +15,8 @@ const telemetryMcpServerDistPath = path.join(
 );
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
+const cursorPluginName = "wordpress.com";
+const cursorPluginDisplayName = "WordPress.com";
 
 function createTelemetryBootstrapArgs({ surface, telemetrySource }) {
   const compressedSource = brotliCompressSync(Buffer.from(telemetrySource, "utf8"));
@@ -120,10 +122,10 @@ const claudePluginManifest = {
 };
 
 const cursorPluginManifest = {
-  name: pluginName,
+  name: cursorPluginName,
   version: "0.3.0",
   description:
-    "Craft production-grade WordPress sites and applications. Everything from themes and plugins to commerce and deployment.",
+    "Craft production-grade WordPress.com sites and applications. Everything from themes and plugins to commerce and deployment.",
   author: {
     name: "Automattic",
   },
@@ -132,6 +134,7 @@ const cursorPluginManifest = {
   license: "GPL-2.0-or-later",
   keywords: [
     "wordpress",
+    "wordpress.com",
     "studio",
     "wp-cli",
     "auditing",
@@ -150,14 +153,14 @@ const cursorPluginManifest = {
   mcpServers: "./mcp.json",
 };
 
-function buildReadme({ surfaceName, intro, skillNames }) {
+function buildReadme({ surfaceName, intro, skillNames, displayName = pluginDisplayName }) {
   const skillList = skillNames
     .map((skillName) => `- \`${skillName}\``)
     .join("\n");
 
-  return `# ${pluginDisplayName} Plugin
+  return `# ${displayName} Plugin
 
-This ${surfaceName} plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo as ${pluginDisplayName}.
+This ${surfaceName} plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo as ${displayName}.
 
 ${intro}
 
@@ -171,13 +174,13 @@ ${skillList}
 
 function buildCursorRule() {
   return `---
-description: Route WordPress site, theme, block, plugin, and audit work through WordPress Studio skills and MCP.
+description: Route WordPress.com site, theme, block, plugin, and audit work through WordPress Studio skills and MCP.
 alwaysApply: true
 ---
 
-# WordPress Studio
+# WordPress.com
 
-Use the shared WordPress Studio skills in this plugin for WordPress site building and audit work.
+Use the shared WordPress Studio skills in this plugin for WordPress.com site building and audit work.
 
 - Start with \`wordpress-creator\` unless the user clearly asks for a specific implementation path.
 - Use Studio MCP for local site management, screenshots, block validation, frontend audits, and \`wp_cli\` access.
@@ -256,6 +259,7 @@ const pluginTargets = [
     includeMcpConfig: true,
     mcpConfigFileName: "mcp.json",
     includeCursorRule: true,
+    displayName: cursorPluginDisplayName,
     surface: "cursor",
   },
 ];
@@ -343,11 +347,12 @@ async function buildPluginTarget(target, skillNames) {
   );
   await writeFile(
     path.join(target.pluginDir, "README.md"),
-    buildReadme({
-      surfaceName: target.logName,
-      intro: target.readmeIntro,
-      skillNames,
-    }),
+      buildReadme({
+        surfaceName: target.logName,
+        intro: target.readmeIntro,
+        skillNames,
+        displayName: target.displayName,
+      }),
     "utf8",
   );
 

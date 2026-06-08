@@ -8,6 +8,7 @@ const root = path.resolve(__dirname, "..");
 const sharedSkillsDir = path.join(root, "skills");
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
+const cursorPluginName = "wordpress.com";
 const codexRootDir = path.join(root, "plugins", "codex");
 const codexPluginDir = path.join(codexRootDir, "plugins", pluginName);
 const codexMarketplacePath = path.join(
@@ -143,7 +144,7 @@ async function verifyCursorPlugin(skillNames) {
   );
   const manifest = JSON.parse(manifestRaw);
 
-  if (manifest.name !== pluginName) {
+  if (manifest.name !== cursorPluginName) {
     throw new Error("Unexpected Cursor plugin name");
   }
 

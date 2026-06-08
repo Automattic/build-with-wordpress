@@ -1,7 +1,7 @@
 {
-  "name": "wordpress-studio",
+  "name": "wordpress.com",
   "version": "0.3.0",
-  "description": "Craft production-grade WordPress sites and applications. Everything from themes and plugins to commerce and deployment.",
+  "description": "Craft production-grade WordPress.com sites and applications. Everything from themes and plugins to commerce and deployment.",
   "author": {
     "name": "Automattic"
   },
@@ -10,6 +10,7 @@
   "license": "GPL-2.0-or-later",
   "keywords": [
     "wordpress",
+    "wordpress.com",
     "studio",
     "wp-cli",
     "auditing",

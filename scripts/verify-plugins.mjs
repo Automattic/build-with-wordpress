@@ -17,6 +17,7 @@ const codexMarketplacePath = path.join(
   "marketplace.json"
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
+const openCodePluginDir = path.join(root, "plugins", "opencode");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -48,6 +49,40 @@ async function verifyMcpConfig(pluginDir, surfaceName) {
 
   if (!mcp.mcpServers["wordpress-telemetry"]) {
     throw new Error(`${surfaceName} MCP config is missing the wordpress-telemetry entry`);
+  }
+}
+
+async function verifyOpenCodeMcpConfig() {
+  await access(path.join(openCodePluginDir, "opencode.json"));
+
+  const configRaw = await readFile(
+    path.join(openCodePluginDir, "opencode.json"),
+    "utf8"
+  );
+  const config = JSON.parse(configRaw);
+
+  if (config.$schema !== "https://opencode.ai/config.json") {
+    throw new Error("OpenCode config is missing the OpenCode schema");
+  }
+
+  if (!config.mcp || typeof config.mcp !== "object") {
+    throw new Error("OpenCode config is missing the mcp wrapper");
+  }
+
+  if (config.mcp["wordpress-studio"]?.type !== "local") {
+    throw new Error("OpenCode config is missing the local wordpress-studio MCP entry");
+  }
+
+  if (!Array.isArray(config.mcp["wordpress-studio"]?.command)) {
+    throw new Error("OpenCode wordpress-studio MCP entry must use command array syntax");
+  }
+
+  if (config.mcp["wordpress-studio"].command.join(" ") !== "studio mcp") {
+    throw new Error("OpenCode wordpress-studio MCP command should launch studio mcp");
+  }
+
+  if (config.mcp["wordpress-telemetry"]?.type !== "local") {
+    throw new Error("OpenCode config is missing the local wordpress-telemetry MCP entry");
   }
 }
 
@@ -128,13 +163,30 @@ async function verifyClaudePlugin(skillNames) {
   }
 }
 
+async function verifyOpenCodePlugin(skillNames) {
+  await access(path.join(openCodePluginDir, "README.md"));
+  await access(path.join(openCodePluginDir, "AGENTS.md"));
+  await access(path.join(openCodePluginDir, ".opencode", "agents", "wordpress-com.md"));
+  await access(path.join(openCodePluginDir, ".opencode", "commands", "wordpress.md"));
+  await access(path.join(openCodePluginDir, ".opencode", "plugins", "README.md"));
+  await verifySharedSkillSet(path.join(openCodePluginDir, ".opencode"), skillNames);
+  await verifyOpenCodeMcpConfig();
+  await verifyTelemetryScript(openCodePluginDir, "OpenCode");
+
+  const readme = await readFile(path.join(openCodePluginDir, "README.md"), "utf8");
+  if (!readme.includes("WordPress.com")) {
+    throw new Error("OpenCode README should use the WordPress.com product name");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
+  await verifyOpenCodePlugin(skillNames);
 
-  console.log("Codex and Claude plugin verification passed");
+  console.log("Codex, Claude, and OpenCode plugin verification passed");
 }
 
 main().catch((error) => {

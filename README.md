@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills for both Codex and Claude Code as separate plugin outputs:
+This repo currently packages shared skills for Codex, Claude Code, and OpenCode as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -14,6 +14,7 @@ This repo currently packages shared skills for both Codex and Claude Code as sep
 - can optionally generate three design preview directions before building a site theme
 - bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
 - keeps skills shared so other surfaces can reuse them later
+- includes an OpenCode output with `opencode.json`, `AGENTS.md`, `.opencode/skills/`, `.opencode/agents/`, `.opencode/commands/`, and MCP setup
 
 ## Testing
 
@@ -60,6 +61,20 @@ claude --plugin-dir ./plugins/claude-code
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
+### Test in OpenCode
+
+1. Open a new OpenCode session using `./plugins/opencode` as the project root.
+2. Confirm the generated config exists at `plugins/opencode/opencode.json`.
+3. Confirm the shared skills exist at `plugins/opencode/.opencode/skills/`.
+4. Confirm the WordPress.com instructions exist at `plugins/opencode/AGENTS.md`.
+5. Confirm the MCP servers are visible with `opencode mcp list`.
+6. Try representative WordPress.com tasks such as:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+
 ## Current scope
 
 - Shared skills for:
@@ -75,6 +90,7 @@ claude --plugin-dir ./plugins/claude-code
 - A bundled standalone telemetry MCP server built from repo-local Node dependencies
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
+- OpenCode output in `plugins/opencode/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -87,11 +103,13 @@ The build packages the shared skills into:
 
 - `plugins/codex/plugins/wordpress-studio/skills/`
 - `plugins/claude-code/skills/`
+- `plugins/opencode/.opencode/skills/`
 
 It also generates plugin-specific MCP configs for each surface:
 
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
+- OpenCode: `plugins/opencode/opencode.json`
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -140,3 +158,22 @@ That folder currently contains:
 - `README.md`
 
 The generated Claude Code MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
+
+The OpenCode output is generated to:
+
+```text
+plugins/opencode/
+```
+
+That folder currently contains:
+
+- `opencode.json`
+- `AGENTS.md`
+- `.opencode/agents/wordpress-com.md`
+- `.opencode/commands/wordpress.md`
+- `.opencode/plugins/README.md`
+- `.opencode/skills/`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `README.md`
+
+The generated OpenCode config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server using OpenCode's `mcp` config shape.

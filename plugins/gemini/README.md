@@ -1,6 +1,6 @@
-# WordPress Studio Plugin
+# WordPress.com Plugin
 
-This Gemini plugin packages shared WordPress skills from the `build-with-wordpress` source repo as WordPress Studio.
+This Gemini plugin packages shared WordPress skills from the `build-with-wordpress` source repo as WordPress.com.
 
 It is a Gemini CLI and Gemini Code Assist package built from the same shared skills as the Codex and Claude Code plugins.
 

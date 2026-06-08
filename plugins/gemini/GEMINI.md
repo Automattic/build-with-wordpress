@@ -1,6 +1,6 @@
-# Build with WordPress
+# WordPress.com
 
-You are working with the Build with WordPress Gemini package.
+You are working with the WordPress.com Gemini package.
 
 Use the WordPress Studio MCP server as the primary interface for local WordPress site work:
 

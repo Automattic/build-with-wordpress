@@ -15,6 +15,7 @@ const telemetryMcpServerDistPath = path.join(
 );
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
+const geminiDisplayName = "WordPress.com";
 
 function createTelemetryBootstrapArgs({ surface, telemetrySource }) {
   const compressedSource = brotliCompressSync(Buffer.from(telemetrySource, "utf8"));
@@ -50,9 +51,9 @@ function buildGeminiInstructions({ skillNames }) {
     .map((skillName) => `- Load \`skills/${skillName}/SKILL.md\` when the task matches that workflow.`)
     .join("\n");
 
-  return `# Build with WordPress
+  return `# ${geminiDisplayName}
 
-You are working with the Build with WordPress Gemini package.
+You are working with the ${geminiDisplayName} Gemini package.
 
 Use the WordPress Studio MCP server as the primary interface for local WordPress site work:
 
@@ -143,14 +144,20 @@ const claudePluginManifest = {
   },
 };
 
-function buildReadme({ surfaceName, intro, skillNames, iterationLabel = surfaceName }) {
+function buildReadme({
+  surfaceName,
+  intro,
+  skillNames,
+  iterationLabel = surfaceName,
+  displayName = pluginDisplayName,
+}) {
   const skillList = skillNames
     .map((skillName) => `- \`${skillName}\``)
     .join("\n");
 
-  return `# ${pluginDisplayName} Plugin
+  return `# ${displayName} Plugin
 
-This ${surfaceName} plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo as ${pluginDisplayName}.
+This ${surfaceName} plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo as ${displayName}.
 
 ${intro}
 
@@ -214,6 +221,7 @@ const pluginTargets = [
   },
   {
     logName: "Gemini",
+    displayName: geminiDisplayName,
     buildRootDir: path.join(pluginsDir, "gemini"),
     pluginDir: path.join(pluginsDir, "gemini"),
     legacyCleanupPaths: [],
@@ -321,6 +329,7 @@ async function buildPluginTarget(target, skillNames) {
       intro: target.readmeIntro,
       skillNames,
       iterationLabel: target.iterationLabel,
+      displayName: target.displayName,
     }),
     "utf8",
   );

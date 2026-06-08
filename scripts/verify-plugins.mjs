@@ -17,6 +17,7 @@ const codexMarketplacePath = path.join(
   "marketplace.json"
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
+const cursorPluginDir = path.join(root, "plugins", "cursor");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -32,10 +33,10 @@ async function verifySharedSkillSet(pluginDir, skillNames) {
   }
 }
 
-async function verifyMcpConfig(pluginDir, surfaceName) {
-  await access(path.join(pluginDir, ".mcp.json"));
+async function verifyMcpConfig(pluginDir, surfaceName, configFileName = ".mcp.json") {
+  await access(path.join(pluginDir, configFileName));
 
-  const mcpRaw = await readFile(path.join(pluginDir, ".mcp.json"), "utf8");
+  const mcpRaw = await readFile(path.join(pluginDir, configFileName), "utf8");
   const mcp = JSON.parse(mcpRaw);
 
   if (!mcp.mcpServers || typeof mcp.mcpServers !== "object") {
@@ -128,13 +129,58 @@ async function verifyClaudePlugin(skillNames) {
   }
 }
 
+async function verifyCursorPlugin(skillNames) {
+  await access(path.join(cursorPluginDir, ".cursor-plugin", "plugin.json"));
+  await access(path.join(cursorPluginDir, "README.md"));
+  await access(path.join(cursorPluginDir, "rules", "wordpress-studio.mdc"));
+  await verifySharedSkillSet(cursorPluginDir, skillNames);
+  await verifyMcpConfig(cursorPluginDir, "Cursor plugin", "mcp.json");
+  await verifyTelemetryScript(cursorPluginDir, "Cursor");
+
+  const manifestRaw = await readFile(
+    path.join(cursorPluginDir, ".cursor-plugin", "plugin.json"),
+    "utf8"
+  );
+  const manifest = JSON.parse(manifestRaw);
+
+  if (manifest.name !== pluginName) {
+    throw new Error("Unexpected Cursor plugin name");
+  }
+
+  if (manifest.rules !== "./rules/") {
+    throw new Error("Cursor plugin manifest is missing the rules path");
+  }
+
+  if (manifest.skills !== "./skills/") {
+    throw new Error("Cursor plugin manifest is missing the skills path");
+  }
+
+  if (manifest.mcpServers !== "./mcp.json") {
+    throw new Error("Cursor plugin manifest is missing the MCP config path");
+  }
+
+  const ruleRaw = await readFile(
+    path.join(cursorPluginDir, "rules", "wordpress-studio.mdc"),
+    "utf8"
+  );
+
+  if (!ruleRaw.startsWith("---\n")) {
+    throw new Error("Cursor rule is missing frontmatter");
+  }
+
+  if (!ruleRaw.includes("alwaysApply: true")) {
+    throw new Error("Cursor rule is missing alwaysApply frontmatter");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
+  await verifyCursorPlugin(skillNames);
 
-  console.log("Codex and Claude plugin verification passed");
+  console.log("Codex, Claude, and Cursor plugin verification passed");
 }
 
 main().catch((error) => {

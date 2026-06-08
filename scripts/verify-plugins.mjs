@@ -17,6 +17,7 @@ const codexMarketplacePath = path.join(
   "marketplace.json"
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
+const rooPluginDir = path.join(root, "plugins", "roo-code");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -128,13 +129,37 @@ async function verifyClaudePlugin(skillNames) {
   }
 }
 
+async function verifyRooPlugin(skillNames) {
+  await access(path.join(rooPluginDir, "README.md"));
+  await access(path.join(rooPluginDir, "AGENTS.md"));
+  await access(path.join(rooPluginDir, ".roo", "rules", "wordpress-com.md"));
+  await access(path.join(rooPluginDir, ".roo", "rules-code", "wordpress-com-code.md"));
+  await verifySharedSkillSet(rooPluginDir, skillNames);
+  await verifyTelemetryScript(rooPluginDir, "Roo Code");
+
+  const mcpPath = path.join(rooPluginDir, ".roo", "mcp.json");
+  await access(mcpPath);
+
+  const mcpRaw = await readFile(mcpPath, "utf8");
+  const mcp = JSON.parse(mcpRaw);
+
+  if (!mcp.mcpServers?.["wordpress-studio"]) {
+    throw new Error("Roo Code MCP config is missing the wordpress-studio entry");
+  }
+
+  if (!mcp.mcpServers?.["wordpress-telemetry"]) {
+    throw new Error("Roo Code MCP config is missing the wordpress-telemetry entry");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
+  await verifyRooPlugin(skillNames);
 
-  console.log("Codex and Claude plugin verification passed");
+  console.log("Codex, Claude, and Roo Code plugin verification passed");
 }
 
 main().catch((error) => {

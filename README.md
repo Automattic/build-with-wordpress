@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills for both Codex and Claude Code as separate plugin outputs:
+This repo currently packages shared skills for Codex, Claude Code, and Roo Code as separate plugin outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -14,6 +14,7 @@ This repo currently packages shared skills for both Codex and Claude Code as sep
 - can optionally generate three design preview directions before building a site theme
 - bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
 - keeps skills shared so other surfaces can reuse them later
+- adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
 
 ## Testing
 
@@ -60,6 +61,20 @@ claude --plugin-dir ./plugins/claude-code
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
+### Test in Roo Code
+
+1. Install the Roo Code VS Code extension.
+2. Open `./plugins/roo-code` as the VS Code workspace root, or copy that folder's contents into a target workspace root.
+3. Confirm the generated workspace rules exist at `plugins/roo-code/.roo/rules/wordpress-com.md` and `plugins/roo-code/.roo/rules-code/wordpress-com-code.md`.
+4. Confirm the generated project MCP config exists at `plugins/roo-code/.roo/mcp.json`.
+5. In Roo Code, enable MCP servers and confirm `wordpress-studio` and `wordpress-telemetry` are available.
+6. Try the same representative tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+
 ## Current scope
 
 - Shared skills for:
@@ -75,6 +90,7 @@ claude --plugin-dir ./plugins/claude-code
 - A bundled standalone telemetry MCP server built from repo-local Node dependencies
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
+- Roo Code workspace output in `plugins/roo-code/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -87,11 +103,13 @@ The build packages the shared skills into:
 
 - `plugins/codex/plugins/wordpress-studio/skills/`
 - `plugins/claude-code/skills/`
+- `plugins/roo-code/skills/`
 
 It also generates plugin-specific MCP configs for each surface:
 
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
+- Roo Code: `plugins/roo-code/.roo/mcp.json`
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -140,3 +158,21 @@ That folder currently contains:
 - `README.md`
 
 The generated Claude Code MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
+
+The Roo Code workspace output is generated to:
+
+```text
+plugins/roo-code/
+```
+
+That folder currently contains:
+
+- `.roo/mcp.json`
+- `.roo/rules/wordpress-com.md`
+- `.roo/rules-code/wordpress-com-code.md`
+- `AGENTS.md`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `skills/`
+- `README.md`
+
+The generated Roo Code project MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. The `.roo/rules/` files are Roo-specific; the WordPress.com MCP and skill behavior is shared with the other outputs.

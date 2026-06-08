@@ -45,6 +45,57 @@ function createMcpConfig({ surface, telemetrySource }) {
   };
 }
 
+function buildRooWorkspaceRules() {
+  return `# WordPress.com workspace rules
+
+Use this workspace as a WordPress.com-aware Roo Code environment.
+
+## Shared substrate
+
+- Use the existing WordPress Studio MCP server for local WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
+- Use the bundled \`wordpress-telemetry\` MCP server for workflow telemetry emitted by this package.
+- Treat these MCP servers as the shared WordPress.com agent substrate used by the other package outputs; Roo Code only supplies the VS Code workspace rule and MCP configuration surface.
+
+## Roo-specific behavior
+
+- Load these instructions from \`.roo/rules/\`, Roo Code's preferred workspace rules directory.
+- Use Roo's MCP support to connect to \`.roo/mcp.json\` instead of creating a new backend service.
+- Ask the user to enable MCP servers in Roo Code if \`wordpress-studio\` or \`wordpress-telemetry\` tools are unavailable.
+
+## WordPress.com work
+
+- Refer to the product as WordPress.com in user-facing text.
+- Route WordPress implementation requests through the shared skills in \`skills/\`.
+- Prefer Studio MCP tools before shelling out to the \`studio\` CLI.
+- Use \`wp_cli\` through the WordPress Studio MCP server as the general-purpose WordPress escape hatch.
+- Choose the smallest fitting WordPress abstraction: site, theme, block, plugin, or audit.
+`;
+}
+
+function buildRooCodeModeRules() {
+  return `# WordPress.com code mode rules
+
+- Keep changes minimal and consistent with existing WordPress project conventions.
+- Use Studio MCP for site inspection, screenshots, block validation, performance checks, and WP-CLI commands when available.
+- Build custom Gutenberg blocks only when existing core blocks or installed custom blocks cannot solve the request.
+- Build plugins for reusable functionality, admin/settings UI, REST endpoints, scheduled tasks, integrations, or backend behavior that should survive theme changes.
+- Keep presentation-only work in themes or blocks.
+- Verify changes with the repo's documented commands and relevant Studio MCP checks before summarizing work.
+`;
+}
+
+function buildRooAgentsRules() {
+  return `# WordPress.com Roo Code Agent Rules
+
+This output packages the shared Build with WordPress skills for Roo Code.
+
+- Roo-specific files live in \`.roo/\`: workspace rules in \`.roo/rules/\` and MCP configuration in \`.roo/mcp.json\`.
+- Shared WordPress.com behavior lives in \`skills/\` and the existing WordPress Studio MCP flow.
+- Do not create a new WordPress backend service for Roo Code. Connect Roo to the existing \`studio mcp\` server and bundled \`wordpress-telemetry\` server.
+- Use the exact product name WordPress.com in user-facing text.
+`;
+}
+
 const codexMarketplaceManifest = {
   name: pluginName,
   interface: {
@@ -138,6 +189,47 @@ ${skillList}
 `;
 }
 
+function buildRooReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+
+  return `# WordPress.com for Roo Code
+
+This output packages the shared Build with WordPress skills for the Roo Code VS Code extension.
+
+Roo-specific files in this folder are intentionally small:
+
+- \`.roo/rules/wordpress-com.md\` gives Roo workspace-wide WordPress.com guidance using Roo's preferred directory-based rules surface.
+- \`.roo/rules-code/wordpress-com-code.md\` adds Code mode guidance for implementation tasks.
+- \`.roo/mcp.json\` connects Roo to the existing WordPress Studio MCP server and bundled \`wordpress-telemetry\` server.
+- \`AGENTS.md\` mirrors the same high-level routing for Roo installations that load agent rules.
+
+The shared WordPress.com substrate is not Roo-specific: the skills in \`skills/\`, the \`studio mcp\` server, and the bundled telemetry MCP server are the same flow used by the other agent outputs. Roo Code supplies the VS Code workspace rules and MCP configuration layer only.
+
+## Setup
+
+1. Install the Roo Code VS Code extension.
+2. Open this folder, or copy its contents into the root of the workspace where Roo should assist with WordPress.com work.
+3. Make sure WordPress Studio is installed and the \`studio\` CLI is available on your PATH.
+4. In Roo Code, enable MCP servers.
+5. Roo automatically detects project-level MCP config from \`.roo/mcp.json\`. If needed, open Roo Code's MCP settings and use \`Edit Project MCP\` to inspect or recreate the same config.
+
+## MCP servers
+
+\`.roo/mcp.json\` launches:
+
+- \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
+- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+
+This does not invent a Roo-only backend. Roo connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
+
+## Included skills
+
+${skillList}
+`;
+}
+
 const pluginTargets = [
   {
     logName: "Codex",
@@ -188,6 +280,51 @@ const pluginTargets = [
     includeMcpConfig: true,
     surface: "claude-code",
   },
+  {
+    logName: "Roo Code",
+    buildRootDir: path.join(pluginsDir, "roo-code"),
+    pluginDir: path.join(pluginsDir, "roo-code"),
+    legacyCleanupPaths: [],
+    readmeIntro: "",
+    includeMcpConfig: false,
+    surface: "roo-code",
+    async writeExtraFiles({ pluginDir, skillNames, telemetrySource }) {
+      await mkdir(path.join(pluginDir, ".roo", "rules"), { recursive: true });
+      await mkdir(path.join(pluginDir, ".roo", "rules-code"), { recursive: true });
+      await writeFile(
+        path.join(pluginDir, ".roo", "rules", "wordpress-com.md"),
+        buildRooWorkspaceRules(),
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, ".roo", "rules-code", "wordpress-com-code.md"),
+        buildRooCodeModeRules(),
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, ".roo", "mcp.json"),
+        `${JSON.stringify(
+          createMcpConfig({
+            surface: "roo-code",
+            telemetrySource,
+          }),
+          null,
+          2,
+        )}\n`,
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, "AGENTS.md"),
+        buildRooAgentsRules(),
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, "README.md"),
+        buildRooReadme({ skillNames }),
+        "utf8",
+      );
+    },
+  },
 ];
 
 async function copySkillSet(sourceDir, targetDir) {
@@ -220,9 +357,11 @@ async function buildPluginTarget(target, skillNames) {
     await rm(cleanupPath, { recursive: true, force: true });
   }
 
-  await mkdir(path.join(target.pluginDir, target.manifestDir), {
-    recursive: true,
-  });
+  if (target.manifestDir) {
+    await mkdir(path.join(target.pluginDir, target.manifestDir), {
+      recursive: true,
+    });
+  }
   await mkdir(path.join(target.pluginDir, "scripts"), { recursive: true });
   await mkdir(path.join(target.pluginDir, "skills"), { recursive: true });
   await copySkillSet(
@@ -255,20 +394,26 @@ async function buildPluginTarget(target, skillNames) {
     );
   }
 
-  await writeFile(
-    path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
-    `${JSON.stringify(target.manifestContents, null, 2)}\n`,
-    "utf8",
-  );
-  await writeFile(
-    path.join(target.pluginDir, "README.md"),
-    buildReadme({
-      surfaceName: target.logName,
-      intro: target.readmeIntro,
-      skillNames,
-    }),
-    "utf8",
-  );
+  if (target.manifestDir && target.manifestFileName && target.manifestContents) {
+    await writeFile(
+      path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
+      `${JSON.stringify(target.manifestContents, null, 2)}\n`,
+      "utf8",
+    );
+  }
+  if (target.writeExtraFiles) {
+    await target.writeExtraFiles({ pluginDir: target.pluginDir, skillNames, telemetrySource });
+  } else {
+    await writeFile(
+      path.join(target.pluginDir, "README.md"),
+      buildReadme({
+        surfaceName: target.logName,
+        intro: target.readmeIntro,
+        skillNames,
+      }),
+      "utf8",
+    );
+  }
 
   if (target.marketplacePath && target.marketplaceContents) {
     await mkdir(path.dirname(target.marketplacePath), { recursive: true });

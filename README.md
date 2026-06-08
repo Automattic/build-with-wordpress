@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills for both Codex and Claude Code as separate plugin outputs:
+This repo currently packages shared skills for Codex, Claude Code, and GitHub Copilot as separate plugin outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -60,6 +60,20 @@ claude --plugin-dir ./plugins/claude-code
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
+### Test in GitHub Copilot
+
+1. Copy or open `./plugins/copilot` as the project root in VS Code.
+2. Confirm the generated repository instructions exist at `plugins/copilot/.github/copilot-instructions.md`.
+3. Confirm the scoped WordPress instructions exist at `plugins/copilot/.github/instructions/wordpress-studio.instructions.md`.
+4. Confirm the generated VS Code MCP config exists at `plugins/copilot/.vscode/mcp.json`.
+5. Start Copilot Chat in agent mode and try representative WordPress tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
+
 ## Current scope
 
 - Shared skills for:
@@ -75,6 +89,7 @@ claude --plugin-dir ./plugins/claude-code
 - A bundled standalone telemetry MCP server built from repo-local Node dependencies
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
+- GitHub Copilot packaging output in `plugins/copilot/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -87,11 +102,13 @@ The build packages the shared skills into:
 
 - `plugins/codex/plugins/wordpress-studio/skills/`
 - `plugins/claude-code/skills/`
+- `plugins/copilot/skills/`
 
 It also generates plugin-specific MCP configs for each surface:
 
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
+- GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -140,3 +157,20 @@ That folder currently contains:
 - `README.md`
 
 The generated Claude Code MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
+
+The GitHub Copilot plugin is generated to:
+
+```text
+plugins/copilot/
+```
+
+That folder currently contains:
+
+- `.github/copilot-instructions.md`
+- `.github/instructions/wordpress-studio.instructions.md`
+- `.vscode/mcp.json`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `skills/`
+- `README.md`
+
+The generated Copilot MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through VS Code's MCP configuration.

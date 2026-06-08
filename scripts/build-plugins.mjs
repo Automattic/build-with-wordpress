@@ -45,6 +45,23 @@ function createMcpConfig({ surface, telemetrySource }) {
   };
 }
 
+function createVsCodeMcpConfig({ surface, telemetrySource }) {
+  return {
+    servers: {
+      "wordpress-studio": {
+        type: "stdio",
+        command: "studio",
+        args: ["mcp"],
+      },
+      "wordpress-telemetry": {
+        type: "stdio",
+        command: "node",
+        args: createTelemetryBootstrapArgs({ surface, telemetrySource }),
+      },
+    },
+  };
+}
+
 const codexMarketplaceManifest = {
   name: pluginName,
   interface: {
@@ -130,11 +147,55 @@ This ${surfaceName} plugin packages shared WordPress skills from the \`build-wit
 
 ${intro}
 
-It currently ships the same shared skills as the Codex plugin so both surfaces stay aligned while we iterate on any Claude-specific additions later.
+It currently ships the same shared skills as the other plugin outputs so supported surfaces stay aligned while we iterate on any surface-specific additions later.
 
 ## Included skills
 
 ${skillList}
+`;
+}
+
+function buildCopilotInstructions({ skillNames }) {
+  const skillList = skillNames.map((skillName) => `- ${skillName}`).join("\n");
+
+  return `# Build with WordPress for GitHub Copilot
+
+Use these instructions when helping build, debug, review, or explain WordPress projects.
+
+## Operating model
+
+- Prefer WordPress Studio MCP tools for local site management, screenshots, block validation, and WordPress operations when they are available.
+- Use \`wp_cli\` through the Studio MCP server as the general-purpose WordPress escape hatch.
+- Route implementation requests through the matching WordPress path: site/theme work, custom blocks, custom plugins, design previews, or auditing.
+- Keep generated code production-oriented: accessible, performant, responsive, secure, and aligned with WordPress coding conventions.
+- Preserve existing project conventions before introducing new patterns.
+- For Gutenberg work, prefer native block APIs and validate block markup in a running Studio site when possible.
+- For theme work, prefer block themes and WordPress-supported configuration in \`theme.json\`.
+- For plugin work, keep behavior in plugins instead of themes unless the behavior is presentation-only.
+
+## Shared WordPress skills
+
+This Copilot output packages the same shared skill source as the Codex and Claude Code outputs. The skills live in \`skills/\` and provide deeper task-specific guidance:
+
+${skillList}
+
+When a task maps to one of those skills, use the relevant \`skills/<name>/SKILL.md\` file as the detailed playbook.
+`;
+}
+
+function buildCopilotScopedInstructions() {
+  return `---
+applyTo: "**/*.{php,js,jsx,ts,tsx,json,css,scss,html,md}"
+---
+
+# WordPress Studio MCP
+
+When working in a WordPress project, prefer the configured WordPress Studio MCP servers for site-aware operations:
+
+- \`wordpress-studio\` for Studio sites, screenshots, block validation, and WP-CLI access.
+- \`wordpress-telemetry\` for workflow telemetry emitted by the Build with WordPress skill flows.
+
+Use MCP evidence for behavior claims when a site can be run locally. If MCP is unavailable, explain the limitation and use repository evidence instead.
 `;
 }
 
@@ -188,6 +249,43 @@ const pluginTargets = [
     includeMcpConfig: true,
     surface: "claude-code",
   },
+  {
+    logName: "GitHub Copilot",
+    buildRootDir: path.join(pluginsDir, "copilot"),
+    pluginDir: path.join(pluginsDir, "copilot"),
+    legacyCleanupPaths: [],
+    readmeIntro: `It is a first-pass GitHub Copilot package built from the same shared skills as the Codex and Claude Code plugins.
+
+- repository instructions give Copilot WordPress-specific defaults
+- scoped instructions point Copilot at the Studio MCP servers when available
+- the VS Code MCP config launches both Studio MCP and the bundled telemetry MCP server
+- the shared skills are included as reference playbooks for deeper task-specific guidance`,
+    includeMcpConfig: true,
+    mcpConfigPath: path.join(".vscode", "mcp.json"),
+    mcpConfigFactory: createVsCodeMcpConfig,
+    surface: "copilot",
+    extraFiles: async ({ pluginDir, skillNames }) => {
+      await mkdir(path.join(pluginDir, ".github", "instructions"), {
+        recursive: true,
+      });
+      await mkdir(path.join(pluginDir, ".vscode"), { recursive: true });
+      await writeFile(
+        path.join(pluginDir, ".github", "copilot-instructions.md"),
+        buildCopilotInstructions({ skillNames }),
+        "utf8",
+      );
+      await writeFile(
+        path.join(
+          pluginDir,
+          ".github",
+          "instructions",
+          "wordpress-studio.instructions.md",
+        ),
+        buildCopilotScopedInstructions(),
+        "utf8",
+      );
+    },
+  },
 ];
 
 async function copySkillSet(sourceDir, targetDir) {
@@ -220,9 +318,11 @@ async function buildPluginTarget(target, skillNames) {
     await rm(cleanupPath, { recursive: true, force: true });
   }
 
-  await mkdir(path.join(target.pluginDir, target.manifestDir), {
-    recursive: true,
-  });
+  if (target.manifestDir) {
+    await mkdir(path.join(target.pluginDir, target.manifestDir), {
+      recursive: true,
+    });
+  }
   await mkdir(path.join(target.pluginDir, "scripts"), { recursive: true });
   await mkdir(path.join(target.pluginDir, "skills"), { recursive: true });
   await copySkillSet(
@@ -241,10 +341,15 @@ async function buildPluginTarget(target, skillNames) {
   const telemetrySource = await readFile(telemetryScriptPath, "utf8");
 
   if (target.includeMcpConfig) {
+    const mcpConfigPath = target.mcpConfigPath ?? ".mcp.json";
+    const mcpConfigFactory = target.mcpConfigFactory ?? createMcpConfig;
+    await mkdir(path.dirname(path.join(target.pluginDir, mcpConfigPath)), {
+      recursive: true,
+    });
     await writeFile(
-      path.join(target.pluginDir, ".mcp.json"),
+      path.join(target.pluginDir, mcpConfigPath),
       `${JSON.stringify(
-        createMcpConfig({
+        mcpConfigFactory({
           surface: target.surface,
           telemetrySource,
         }),
@@ -255,11 +360,13 @@ async function buildPluginTarget(target, skillNames) {
     );
   }
 
-  await writeFile(
-    path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
-    `${JSON.stringify(target.manifestContents, null, 2)}\n`,
-    "utf8",
-  );
+  if (target.manifestDir && target.manifestFileName && target.manifestContents) {
+    await writeFile(
+      path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
+      `${JSON.stringify(target.manifestContents, null, 2)}\n`,
+      "utf8",
+    );
+  }
   await writeFile(
     path.join(target.pluginDir, "README.md"),
     buildReadme({
@@ -277,6 +384,10 @@ async function buildPluginTarget(target, skillNames) {
       `${JSON.stringify(target.marketplaceContents, null, 2)}\n`,
       "utf8",
     );
+  }
+
+  if (target.extraFiles) {
+    await target.extraFiles({ pluginDir: target.pluginDir, skillNames });
   }
 
   console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);

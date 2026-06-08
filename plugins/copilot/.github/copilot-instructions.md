@@ -1,10 +1,10 @@
-# Build with WordPress for GitHub Copilot
+# WordPress.com for GitHub Copilot
 
 Use these instructions when helping build, debug, review, or explain WordPress projects.
 
 ## Operating model
 
-- Prefer WordPress Studio MCP tools for local site management, screenshots, block validation, and WordPress operations when they are available.
+- Prefer WordPress.com MCP tools for site management, screenshots, block validation, and WordPress operations when they are available.
 - Use `wp_cli` through the Studio MCP server as the general-purpose WordPress escape hatch.
 - Route implementation requests through the matching WordPress path: site/theme work, custom blocks, custom plugins, design previews, or auditing.
 - Keep generated code production-oriented: accessible, performant, responsive, secure, and aligned with WordPress coding conventions.
@@ -15,7 +15,7 @@ Use these instructions when helping build, debug, review, or explain WordPress p
 
 ## Shared WordPress skills
 
-This Copilot output packages the same shared skill source as the Codex and Claude Code outputs. The skills live in `skills/` and provide deeper task-specific guidance:
+This WordPress.com Copilot output packages the same shared skill source as the Codex and Claude Code outputs. The skills live in `skills/` and provide deeper task-specific guidance:
 
 - auditing
 - block-creator

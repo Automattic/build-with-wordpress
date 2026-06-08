@@ -14,7 +14,7 @@ const telemetryMcpServerDistPath = path.join(
   "wordpress-telemetry-mcp.mjs",
 );
 const pluginName = "wordpress-studio";
-const pluginDisplayName = "WordPress Studio";
+const pluginDisplayName = "WordPress.com";
 
 function createTelemetryBootstrapArgs({ surface, telemetrySource }) {
   const compressedSource = brotliCompressSync(Buffer.from(telemetrySource, "utf8"));
@@ -158,13 +158,13 @@ ${skillList}
 function buildCopilotInstructions({ skillNames }) {
   const skillList = skillNames.map((skillName) => `- ${skillName}`).join("\n");
 
-  return `# Build with WordPress for GitHub Copilot
+  return `# WordPress.com for GitHub Copilot
 
 Use these instructions when helping build, debug, review, or explain WordPress projects.
 
 ## Operating model
 
-- Prefer WordPress Studio MCP tools for local site management, screenshots, block validation, and WordPress operations when they are available.
+- Prefer WordPress.com MCP tools for site management, screenshots, block validation, and WordPress operations when they are available.
 - Use \`wp_cli\` through the Studio MCP server as the general-purpose WordPress escape hatch.
 - Route implementation requests through the matching WordPress path: site/theme work, custom blocks, custom plugins, design previews, or auditing.
 - Keep generated code production-oriented: accessible, performant, responsive, secure, and aligned with WordPress coding conventions.
@@ -175,7 +175,7 @@ Use these instructions when helping build, debug, review, or explain WordPress p
 
 ## Shared WordPress skills
 
-This Copilot output packages the same shared skill source as the Codex and Claude Code outputs. The skills live in \`skills/\` and provide deeper task-specific guidance:
+This WordPress.com Copilot output packages the same shared skill source as the Codex and Claude Code outputs. The skills live in \`skills/\` and provide deeper task-specific guidance:
 
 ${skillList}
 
@@ -188,12 +188,12 @@ function buildCopilotScopedInstructions() {
 applyTo: "**/*.{php,js,jsx,ts,tsx,json,css,scss,html,md}"
 ---
 
-# WordPress Studio MCP
+# WordPress.com MCP
 
-When working in a WordPress project, prefer the configured WordPress Studio MCP servers for site-aware operations:
+When working in a WordPress project, prefer the configured WordPress.com MCP servers for site-aware operations:
 
 - \`wordpress-studio\` for Studio sites, screenshots, block validation, and WP-CLI access.
-- \`wordpress-telemetry\` for workflow telemetry emitted by the Build with WordPress skill flows.
+- \`wordpress-telemetry\` for workflow telemetry emitted by the WordPress.com skill flows.
 
 Use MCP evidence for behavior claims when a site can be run locally. If MCP is unavailable, explain the limitation and use repository evidence instead.
 `;

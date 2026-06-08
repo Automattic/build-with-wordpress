@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const sharedSkillsDir = path.join(root, "skills");
 const pluginName = "wordpress-studio";
-const pluginDisplayName = "WordPress Studio";
+const pluginDisplayName = "WordPress.com";
 const codexRootDir = path.join(root, "plugins", "codex");
 const codexPluginDir = path.join(codexRootDir, "plugins", pluginName);
 const codexMarketplacePath = path.join(
@@ -155,7 +155,7 @@ async function verifyCopilotPlugin(skillNames) {
     "utf8",
   );
 
-  if (!instructionsRaw.includes("Build with WordPress for GitHub Copilot")) {
+  if (!instructionsRaw.includes("WordPress.com for GitHub Copilot")) {
     throw new Error("Copilot instructions are missing the expected heading");
   }
 }

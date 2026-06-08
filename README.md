@@ -66,7 +66,7 @@ claude --plugin-dir ./plugins/claude-code
 2. Confirm the generated repository instructions exist at `plugins/copilot/.github/copilot-instructions.md`.
 3. Confirm the scoped WordPress instructions exist at `plugins/copilot/.github/instructions/wordpress-studio.instructions.md`.
 4. Confirm the generated VS Code MCP config exists at `plugins/copilot/.vscode/mcp.json`.
-5. Start Copilot Chat in agent mode and try representative WordPress tasks:
+5. Start Copilot Chat in agent mode and try representative WordPress.com tasks:
    - creating a new site
    - building or editing a theme
    - creating a custom block

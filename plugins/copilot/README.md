@@ -1,6 +1,6 @@
-# WordPress Studio Plugin
+# WordPress.com Plugin
 
-This GitHub Copilot plugin packages shared WordPress skills from the `build-with-wordpress` source repo as WordPress Studio.
+This GitHub Copilot plugin packages shared WordPress skills from the `build-with-wordpress` source repo as WordPress.com.
 
 It is a first-pass GitHub Copilot package built from the same shared skills as the Codex and Claude Code plugins.
 

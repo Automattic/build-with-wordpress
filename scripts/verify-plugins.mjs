@@ -17,6 +17,7 @@ const codexMarketplacePath = path.join(
   "marketplace.json"
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
+const continueOutputDir = path.join(root, "plugins", "continue");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -128,13 +129,62 @@ async function verifyClaudePlugin(skillNames) {
   }
 }
 
+async function verifyContinueOutput() {
+  const requiredFiles = [
+    "README.md",
+    "config.yaml",
+    path.join(".continue", "rules", "wordpress-com.md"),
+    path.join(".continue", "prompts", "create-wordpress-com-site.md"),
+    path.join(".continue", "prompts", "audit-wordpress-com-project.md"),
+    path.join(".continue", "mcpServers", "wordpress-com.yaml"),
+  ];
+
+  for (const filePath of requiredFiles) {
+    await access(path.join(continueOutputDir, filePath));
+  }
+
+  const readme = await readFile(
+    path.join(continueOutputDir, "README.md"),
+    "utf8"
+  );
+  if (!readme.includes("WordPress.com for Continue")) {
+    throw new Error("Continue README is missing the expected title");
+  }
+  if (!readme.includes("Continue-specific pieces")) {
+    throw new Error("Continue README must explain Continue-specific pieces");
+  }
+  if (!readme.includes("Shared WordPress.com substrate")) {
+    throw new Error("Continue README must explain the shared MCP substrate");
+  }
+
+  const mcpServerBlock = await readFile(
+    path.join(continueOutputDir, ".continue", "mcpServers", "wordpress-com.yaml"),
+    "utf8"
+  );
+  if (!mcpServerBlock.includes("mcpServers:")) {
+    throw new Error("Continue MCP block is missing mcpServers");
+  }
+  if (!mcpServerBlock.includes("command: studio")) {
+    throw new Error("Continue MCP block must use the existing studio MCP entrypoint");
+  }
+
+  const rule = await readFile(
+    path.join(continueOutputDir, ".continue", "rules", "wordpress-com.md"),
+    "utf8"
+  );
+  if (!rule.includes("name: WordPress.com")) {
+    throw new Error("Continue rule is missing WordPress.com frontmatter");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
+  await verifyContinueOutput();
 
-  console.log("Codex and Claude plugin verification passed");
+  console.log("Codex, Claude, and Continue verification passed");
 }
 
 main().catch((error) => {

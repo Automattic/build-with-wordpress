@@ -17,6 +17,7 @@ const codexMarketplacePath = path.join(
   "marketplace.json"
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
+const geminiPluginDir = path.join(root, "plugins", "gemini");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -32,10 +33,10 @@ async function verifySharedSkillSet(pluginDir, skillNames) {
   }
 }
 
-async function verifyMcpConfig(pluginDir, surfaceName) {
-  await access(path.join(pluginDir, ".mcp.json"));
+async function verifyMcpConfig(pluginDir, surfaceName, relativePath = ".mcp.json") {
+  await access(path.join(pluginDir, relativePath));
 
-  const mcpRaw = await readFile(path.join(pluginDir, ".mcp.json"), "utf8");
+  const mcpRaw = await readFile(path.join(pluginDir, relativePath), "utf8");
   const mcp = JSON.parse(mcpRaw);
 
   if (!mcp.mcpServers || typeof mcp.mcpServers !== "object") {
@@ -128,13 +129,32 @@ async function verifyClaudePlugin(skillNames) {
   }
 }
 
+async function verifyGeminiPlugin(skillNames) {
+  await access(path.join(geminiPluginDir, "GEMINI.md"));
+  await access(path.join(geminiPluginDir, "README.md"));
+  await verifySharedSkillSet(geminiPluginDir, skillNames);
+  await verifyMcpConfig(geminiPluginDir, "Gemini plugin", path.join(".gemini", "settings.json"));
+  await verifyTelemetryScript(geminiPluginDir, "Gemini");
+
+  const instructions = await readFile(path.join(geminiPluginDir, "GEMINI.md"), "utf8");
+
+  if (!instructions.includes("WordPress Studio MCP server")) {
+    throw new Error("Gemini instructions are missing Studio MCP guidance");
+  }
+
+  if (!instructions.includes("skills/wordpress-creator/SKILL.md")) {
+    throw new Error("Gemini instructions are missing wordpress-creator routing guidance");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
+  await verifyGeminiPlugin(skillNames);
 
-  console.log("Codex and Claude plugin verification passed");
+  console.log("Codex, Claude, and Gemini plugin verification passed");
 }
 
 main().catch((error) => {

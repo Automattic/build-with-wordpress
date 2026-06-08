@@ -45,6 +45,30 @@ function createMcpConfig({ surface, telemetrySource }) {
   };
 }
 
+function buildGeminiInstructions({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- Load \`skills/${skillName}/SKILL.md\` when the task matches that workflow.`)
+    .join("\n");
+
+  return `# Build with WordPress
+
+You are working with the Build with WordPress Gemini package.
+
+Use the WordPress Studio MCP server as the primary interface for local WordPress site work:
+
+- manage Studio sites with MCP tools before falling back to shell commands
+- use Studio screenshots and block validation for visual and block correctness checks
+- use WP-CLI through the Studio MCP server for arbitrary WordPress operations
+- use the bundled wordpress-telemetry MCP server to report workflow events when available
+
+The shared WordPress skills are packaged in this directory. Load the smallest relevant skill before planning or editing:
+
+${skillList}
+
+When a request involves WordPress implementation choices, start with \`skills/wordpress-creator/SKILL.md\` so the work routes to the right site, theme, block, plugin, or audit path.
+`;
+}
+
 const codexMarketplaceManifest = {
   name: pluginName,
   interface: {
@@ -119,7 +143,7 @@ const claudePluginManifest = {
   },
 };
 
-function buildReadme({ surfaceName, intro, skillNames }) {
+function buildReadme({ surfaceName, intro, skillNames, iterationLabel = surfaceName }) {
   const skillList = skillNames
     .map((skillName) => `- \`${skillName}\``)
     .join("\n");
@@ -130,7 +154,7 @@ This ${surfaceName} plugin packages shared WordPress skills from the \`build-wit
 
 ${intro}
 
-It currently ships the same shared skills as the Codex plugin so both surfaces stay aligned while we iterate on any Claude-specific additions later.
+It currently ships the same shared skills as the Codex plugin so these surfaces stay aligned while we iterate on any ${iterationLabel}-specific additions later.
 
 ## Included skills
 
@@ -188,6 +212,28 @@ const pluginTargets = [
     includeMcpConfig: true,
     surface: "claude-code",
   },
+  {
+    logName: "Gemini",
+    buildRootDir: path.join(pluginsDir, "gemini"),
+    pluginDir: path.join(pluginsDir, "gemini"),
+    legacyCleanupPaths: [],
+    readmeIntro: `It is a Gemini CLI and Gemini Code Assist package built from the same shared skills as the Codex and Claude Code plugins.
+
+- \`GEMINI.md\` provides project-level WordPress guidance for Gemini
+- \`.gemini/settings.json\` configures the Studio and telemetry MCP servers for Gemini CLI
+- WordPress request routing stays shared across surfaces
+- Studio-backed site, theme, block, and plugin workflows stay shared
+- frontend auditing stays shared across surfaces`,
+    includeMcpConfig: true,
+    mcpConfigPath: path.join(".gemini", "settings.json"),
+    surface: "gemini",
+    extraFiles: ({ skillNames }) => [
+      {
+        relativePath: "GEMINI.md",
+        contents: buildGeminiInstructions({ skillNames }),
+      },
+    ],
+  },
 ];
 
 async function copySkillSet(sourceDir, targetDir) {
@@ -220,9 +266,11 @@ async function buildPluginTarget(target, skillNames) {
     await rm(cleanupPath, { recursive: true, force: true });
   }
 
-  await mkdir(path.join(target.pluginDir, target.manifestDir), {
-    recursive: true,
-  });
+  if (target.manifestDir) {
+    await mkdir(path.join(target.pluginDir, target.manifestDir), {
+      recursive: true,
+    });
+  }
   await mkdir(path.join(target.pluginDir, "scripts"), { recursive: true });
   await mkdir(path.join(target.pluginDir, "skills"), { recursive: true });
   await copySkillSet(
@@ -241,8 +289,12 @@ async function buildPluginTarget(target, skillNames) {
   const telemetrySource = await readFile(telemetryScriptPath, "utf8");
 
   if (target.includeMcpConfig) {
+    const mcpConfigPath = target.mcpConfigPath ?? ".mcp.json";
+    await mkdir(path.dirname(path.join(target.pluginDir, mcpConfigPath)), {
+      recursive: true,
+    });
     await writeFile(
-      path.join(target.pluginDir, ".mcp.json"),
+      path.join(target.pluginDir, mcpConfigPath),
       `${JSON.stringify(
         createMcpConfig({
           surface: target.surface,
@@ -255,17 +307,20 @@ async function buildPluginTarget(target, skillNames) {
     );
   }
 
-  await writeFile(
-    path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
-    `${JSON.stringify(target.manifestContents, null, 2)}\n`,
-    "utf8",
-  );
+  if (target.manifestDir && target.manifestFileName && target.manifestContents) {
+    await writeFile(
+      path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
+      `${JSON.stringify(target.manifestContents, null, 2)}\n`,
+      "utf8",
+    );
+  }
   await writeFile(
     path.join(target.pluginDir, "README.md"),
     buildReadme({
       surfaceName: target.logName,
       intro: target.readmeIntro,
       skillNames,
+      iterationLabel: target.iterationLabel,
     }),
     "utf8",
   );
@@ -277,6 +332,12 @@ async function buildPluginTarget(target, skillNames) {
       `${JSON.stringify(target.marketplaceContents, null, 2)}\n`,
       "utf8",
     );
+  }
+
+  for (const extraFile of target.extraFiles?.({ skillNames }) ?? []) {
+    const extraPath = path.join(target.pluginDir, extraFile.relativePath);
+    await mkdir(path.dirname(extraPath), { recursive: true });
+    await writeFile(extraPath, extraFile.contents, "utf8");
   }
 
   console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);

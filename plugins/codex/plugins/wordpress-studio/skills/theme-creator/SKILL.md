@@ -21,7 +21,6 @@ Use `studio` for the review loop after making changes. Use `auditing` when the u
 ## Principles
 
 - Build block themes, not classic themes.
-- Use `scaffold_theme` when starting a new custom theme, then fill in design-specific templates, parts, and styles.
 - Use modern WordPress patterns: `theme.json`, template parts, templates, core blocks.
 - Prefer CSS and block composition over raw HTML blocks.
 - Keep the theme editable in the Site Editor.

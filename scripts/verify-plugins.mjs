@@ -8,6 +8,8 @@ const root = path.resolve(__dirname, "..");
 const sharedSkillsDir = path.join(root, "skills");
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress.com";
+const cursorPluginName = pluginName;
+const cursorPluginDisplayName = "WordPress Studio";
 const codexRootDir = path.join(root, "plugins", "codex");
 const codexPluginDir = path.join(codexRootDir, "plugins", pluginName);
 const codexMarketplacePath = path.join(
@@ -17,6 +19,7 @@ const codexMarketplacePath = path.join(
   "marketplace.json"
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
+const cursorPluginDir = path.join(root, "plugins", "cursor");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
 
 async function getSharedSkillNames() {
@@ -130,6 +133,54 @@ async function verifyClaudePlugin(skillNames) {
   }
 }
 
+async function verifyCursorPlugin(skillNames) {
+  await access(path.join(cursorPluginDir, ".cursor-plugin", "plugin.json"));
+  await access(path.join(cursorPluginDir, "README.md"));
+  await access(path.join(cursorPluginDir, "rules", "wordpress-studio.mdc"));
+  await verifySharedSkillSet(cursorPluginDir, skillNames);
+  await verifyMcpConfig(cursorPluginDir, "Cursor plugin", "mcp.json");
+  await verifyTelemetryScript(cursorPluginDir, "Cursor");
+
+  const manifestRaw = await readFile(
+    path.join(cursorPluginDir, ".cursor-plugin", "plugin.json"),
+    "utf8"
+  );
+  const manifest = JSON.parse(manifestRaw);
+
+  if (manifest.name !== cursorPluginName) {
+    throw new Error("Unexpected Cursor plugin name");
+  }
+
+  if (manifest.displayName !== cursorPluginDisplayName) {
+    throw new Error("Cursor plugin manifest has the wrong display name");
+  }
+
+  if (manifest.rules !== "./rules/") {
+    throw new Error("Cursor plugin manifest is missing the rules path");
+  }
+
+  if (manifest.skills !== "./skills/") {
+    throw new Error("Cursor plugin manifest is missing the skills path");
+  }
+
+  if (manifest.mcpServers !== "./mcp.json") {
+    throw new Error("Cursor plugin manifest is missing the MCP config path");
+  }
+
+  const ruleRaw = await readFile(
+    path.join(cursorPluginDir, "rules", "wordpress-studio.mdc"),
+    "utf8"
+  );
+
+  if (!ruleRaw.startsWith("---\n")) {
+    throw new Error("Cursor rule is missing frontmatter");
+  }
+
+  if (!ruleRaw.includes("alwaysApply: true")) {
+    throw new Error("Cursor rule is missing alwaysApply frontmatter");
+  }
+}
+
 async function verifyCopilotPlugin(skillNames) {
   await access(path.join(copilotPluginDir, ".github", "copilot-instructions.md"));
   await access(
@@ -165,9 +216,10 @@ async function main() {
 
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
+  await verifyCursorPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
 
-  console.log("Codex, Claude, and Copilot plugin verification passed");
+  console.log("Codex, Claude, Cursor, and Copilot plugin verification passed");
 }
 
 main().catch((error) => {

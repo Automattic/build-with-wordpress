@@ -9,7 +9,7 @@ It is a first-pass GitHub Copilot package built from the same shared skills as t
 - the VS Code MCP config launches both Studio MCP and the bundled telemetry MCP server
 - the shared skills are included as reference playbooks for deeper task-specific guidance
 
-It currently ships the same shared skills as the other plugin outputs so supported surfaces stay aligned while we iterate on any surface-specific additions later.
+It ships the shared skills from this repo so all supported surfaces stay aligned while we iterate on surface-specific packaging details.
 
 ## Included skills
 

@@ -9,11 +9,7 @@ It is a first-pass Claude Code package built from the same shared skills as the 
 - frontend auditing stays shared across surfaces
 - the plugin output is intentionally minimal while we add Claude-specific packaging details later
 
-<<<<<<< HEAD
 It currently ships the same shared skills as the Codex plugin so these surfaces stay aligned while we iterate on any Claude Code-specific additions later.
-=======
-It ships the shared skills from this repo so all supported surfaces stay aligned while we iterate on surface-specific packaging details.
->>>>>>> origin/trunk
 
 ## Included skills
 

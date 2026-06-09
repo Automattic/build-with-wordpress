@@ -1,6 +1,6 @@
-# WordPress.com Plugin
+# WordPress Studio Plugin
 
-This Cursor plugin packages shared WordPress skills from the `build-with-wordpress` source repo as WordPress.com.
+This Cursor plugin packages shared WordPress skills from the `build-with-wordpress` source repo as WordPress Studio.
 
 It is a Cursor plugin built from the same shared skills as the Codex and Claude Code plugins.
 

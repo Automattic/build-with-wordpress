@@ -15,8 +15,8 @@ const telemetryMcpServerDistPath = path.join(
 );
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
-const cursorPluginName = "wordpress.com";
-const cursorPluginDisplayName = "WordPress.com";
+const cursorPluginName = pluginName;
+const cursorPluginDisplayName = pluginDisplayName;
 
 function createTelemetryBootstrapArgs({ surface, telemetrySource }) {
   const compressedSource = brotliCompressSync(Buffer.from(telemetrySource, "utf8"));
@@ -125,7 +125,7 @@ const cursorPluginManifest = {
   name: cursorPluginName,
   version: "0.3.0",
   description:
-    "Craft production-grade WordPress.com sites and applications. Everything from themes and plugins to commerce and deployment.",
+    "Craft production-grade WordPress sites and applications. Everything from themes and plugins to commerce and deployment.",
   author: {
     name: "Automattic",
   },
@@ -134,7 +134,6 @@ const cursorPluginManifest = {
   license: "GPL-2.0-or-later",
   keywords: [
     "wordpress",
-    "wordpress.com",
     "studio",
     "wp-cli",
     "auditing",
@@ -174,13 +173,13 @@ ${skillList}
 
 function buildCursorRule() {
   return `---
-description: Route WordPress.com site, theme, block, plugin, and audit work through WordPress Studio skills and MCP.
+description: Route WordPress site, theme, block, plugin, and audit work through WordPress Studio skills and MCP.
 alwaysApply: true
 ---
 
-# WordPress.com
+# WordPress Studio
 
-Use the shared WordPress Studio skills in this plugin for WordPress.com site building and audit work.
+Use the shared WordPress Studio skills in this plugin for WordPress site building and audit work.
 
 - Start with \`wordpress-creator\` unless the user clearly asks for a specific implementation path.
 - Use Studio MCP for local site management, screenshots, block validation, frontend audits, and \`wp_cli\` access.

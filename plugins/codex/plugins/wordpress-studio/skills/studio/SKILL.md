@@ -37,8 +37,8 @@ Use MCP for:
 - `wp_cli`
 - audits
 - workflow telemetry
-- validation
-- screenshots
+- `validate_html_blocks` and `validate_and_fix_blocks`
+- `take_screenshot` and `inspect_design`
 
 Use the CLI for:
 
@@ -58,19 +58,20 @@ Use direct file edits for theme and plugin files when writing code.
    - prefer the plugin-local `.mcp.json` entry for normal use
    - use a lightweight MCP tool call such as `site_list` or `site_info` when you need to confirm connectivity
 3. Resolve the working site with `site_list` or `site_info`.
-4. Once a site is selected or created, treat that `<site-path>` as the root for generated artifacts rather than the Codex launch directory.
+4. Once a site is selected or created, treat that `<site-path>` as the root for generated artifacts rather than the agent launch directory.
 5. Ensure the site is running before using `wp_cli`, block validation, or audit tools.
 6. Use `wp_cli` for arbitrary WordPress operations instead of dropping to the shell.
 7. If MCP is unavailable or not the right tool for the task, fall back to the smallest `studio` CLI command that gets the job done.
 8. Quote and escape user-provided shell arguments when using the CLI fallback.
-9. After every file write, file edit, or `wp_cli` content update that contains serialized WordPress block markup, run `validate_blocks` immediately.
-10. If `validate_blocks` reports invalid blocks, treat that as a required fix step:
+9. After every file write, file edit, or `wp_cli` content update that contains serialized WordPress block markup, run `validate_html_blocks` first when the content may contain `core/html` blocks, then run `validate_and_fix_blocks`.
+10. If `validate_html_blocks` or `validate_and_fix_blocks` reports invalid blocks, treat that as a required fix step:
    - use the reported `Expected` versus `Actual` markup to identify the serialization mismatch
    - repair the block markup instead of leaving invalid content in place
-   - re-run `validate_blocks`
+   - re-run `validate_html_blocks` or `validate_and_fix_blocks`, as appropriate
    - repeat until the report shows all blocks valid
-11. After visible site changes, use screenshots to review the result on desktop and mobile when layout or styling matters.
-12. Iterate until the output matches the brief or user request.
+11. After visible site changes, use `take_screenshot` to review the result on desktop and mobile when layout or styling matters.
+12. When screenshots reveal a layout or styling issue, use `inspect_design` before editing CSS so the fix targets the element carrying the rendered style.
+13. Iterate until the output matches the brief or user request.
 
 ## Guardrails
 
@@ -78,8 +79,8 @@ Use direct file edits for theme and plugin files when writing code.
 - Prefer MCP tools over shell commands when both can accomplish the task.
 - Validate theme and plugin slugs before using them in paths or commands.
 - Do not invent site paths; derive them from Studio tools or the Studio home.
-- Serialized block content must not be left unvalidated. `validate_blocks` is mandatory after block-content writes or updates.
+- Serialized block content must not be left unvalidated. `validate_and_fix_blocks` is mandatory after block-content writes or updates.
 - Keep review loops proportional to the task; do not force screenshots or validation when they add no value.
-- Do not place generated artifacts in the Codex launch directory by default. Use the selected Studio site path.
+- Do not place generated artifacts in the agent launch directory by default. Use the selected Studio site path.
 - If the user asks for performance, accessibility, or broader frontend QA, hand off to `auditing` rather than embedding that workflow here.
 - Use `record_workflow_event` only for meaningful workflow milestones such as `started` or `completed` when a specialist skill asks for it.

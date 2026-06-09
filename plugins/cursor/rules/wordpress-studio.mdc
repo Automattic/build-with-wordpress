@@ -1,0 +1,13 @@
+---
+description: Route WordPress site, theme, block, plugin, and audit work through WordPress Studio skills and MCP.
+alwaysApply: true
+---
+
+# WordPress Studio
+
+Use the shared WordPress Studio skills in this plugin for WordPress site building and audit work.
+
+- Start with `wordpress-creator` unless the user clearly asks for a specific implementation path.
+- Use Studio MCP for local site management, screenshots, block validation, frontend audits, and `wp_cli` access.
+- Choose the smallest fitting WordPress abstraction: site, theme, block, plugin, or audit.
+- Keep WordPress workflow guidance in the shared skills rather than duplicating it in Cursor-specific rules.

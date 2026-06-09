@@ -2,7 +2,11 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
+<<<<<<< HEAD
 This repo currently packages shared skills for Codex, Claude Code, and Roo Code as separate plugin outputs:
+=======
+This repo currently packages shared skills for Codex, Claude Code, and Cursor as separate plugin outputs:
+>>>>>>> origin/trunk
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -61,6 +65,7 @@ claude --plugin-dir ./plugins/claude-code
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
+<<<<<<< HEAD
 ### Test in Roo Code
 
 1. Install the Roo Code VS Code extension.
@@ -68,12 +73,25 @@ claude --plugin-dir ./plugins/claude-code
 3. Confirm the generated workspace rules exist at `plugins/roo-code/.roo/rules/wordpress-com.md` and `plugins/roo-code/.roo/rules-code/wordpress-com-code.md`.
 4. Confirm the generated project MCP config exists at `plugins/roo-code/.roo/mcp.json`.
 5. In Roo Code, enable MCP servers and confirm `wordpress-studio` and `wordpress-telemetry` are available.
+=======
+### Test in Cursor
+
+1. Open Cursor and install the plugin from the generated `./plugins/cursor` directory.
+2. Confirm the generated Cursor manifest exists at `plugins/cursor/.cursor-plugin/plugin.json`.
+3. Confirm the generated MCP config exists at `plugins/cursor/mcp.json`.
+4. Confirm the generated rule exists at `plugins/cursor/rules/wordpress-studio.mdc`.
+5. Confirm the bundled telemetry server exists at `plugins/cursor/scripts/wordpress-telemetry-mcp.mjs`.
+>>>>>>> origin/trunk
 6. Try the same representative tasks:
    - creating a new site
    - building or editing a theme
    - creating a custom block
    - creating a custom plugin
    - running an audit request
+<<<<<<< HEAD
+=======
+7. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
+>>>>>>> origin/trunk
 
 ## Current scope
 
@@ -90,7 +108,11 @@ claude --plugin-dir ./plugins/claude-code
 - A bundled standalone telemetry MCP server built from repo-local Node dependencies
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
+<<<<<<< HEAD
 - Roo Code workspace output in `plugins/roo-code/`
+=======
+- Cursor packaging output in `plugins/cursor/`
+>>>>>>> origin/trunk
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -103,13 +125,21 @@ The build packages the shared skills into:
 
 - `plugins/codex/plugins/wordpress-studio/skills/`
 - `plugins/claude-code/skills/`
+<<<<<<< HEAD
 - `plugins/roo-code/skills/`
+=======
+- `plugins/cursor/skills/`
+>>>>>>> origin/trunk
 
 It also generates plugin-specific MCP configs for each surface:
 
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
+<<<<<<< HEAD
 - Roo Code: `plugins/roo-code/.roo/mcp.json`
+=======
+- Cursor: `plugins/cursor/mcp.json`
+>>>>>>> origin/trunk
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -159,20 +189,37 @@ That folder currently contains:
 
 The generated Claude Code MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
 
+<<<<<<< HEAD
 The Roo Code workspace output is generated to:
 
 ```text
 plugins/roo-code/
+=======
+The Cursor plugin is generated to:
+
+```text
+plugins/cursor/
+>>>>>>> origin/trunk
 ```
 
 That folder currently contains:
 
+<<<<<<< HEAD
 - `.roo/mcp.json`
 - `.roo/rules/wordpress-com.md`
 - `.roo/rules-code/wordpress-com-code.md`
 - `AGENTS.md`
+=======
+- `.cursor-plugin/plugin.json`
+- `mcp.json`
+- `rules/wordpress-studio.mdc`
+>>>>>>> origin/trunk
 - `scripts/wordpress-telemetry-mcp.mjs`
 - `skills/`
 - `README.md`
 
+<<<<<<< HEAD
 The generated Roo Code project MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. The `.roo/rules/` files are Roo-specific; the WordPress.com MCP and skill behavior is shared with the other outputs.
+=======
+The generated Cursor MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
+>>>>>>> origin/trunk

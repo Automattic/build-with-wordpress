@@ -8,6 +8,7 @@ const root = path.resolve(__dirname, "..");
 const sharedSkillsDir = path.join(root, "skills");
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
+const cursorPluginName = pluginName;
 const codexRootDir = path.join(root, "plugins", "codex");
 const codexPluginDir = path.join(codexRootDir, "plugins", pluginName);
 const codexMarketplacePath = path.join(
@@ -17,6 +18,7 @@ const codexMarketplacePath = path.join(
   "marketplace.json"
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
+const cursorPluginDir = path.join(root, "plugins", "cursor");
 const geminiPluginDir = path.join(root, "plugins", "gemini");
 
 async function getSharedSkillNames() {
@@ -33,10 +35,10 @@ async function verifySharedSkillSet(pluginDir, skillNames) {
   }
 }
 
-async function verifyMcpConfig(pluginDir, surfaceName, relativePath = ".mcp.json") {
-  await access(path.join(pluginDir, relativePath));
+async function verifyMcpConfig(pluginDir, surfaceName, configFileName = ".mcp.json") {
+  await access(path.join(pluginDir, configFileName));
 
-  const mcpRaw = await readFile(path.join(pluginDir, relativePath), "utf8");
+  const mcpRaw = await readFile(path.join(pluginDir, configFileName), "utf8");
   const mcp = JSON.parse(mcpRaw);
 
   if (!mcp.mcpServers || typeof mcp.mcpServers !== "object") {
@@ -129,11 +131,63 @@ async function verifyClaudePlugin(skillNames) {
   }
 }
 
+async function verifyCursorPlugin(skillNames) {
+  await access(path.join(cursorPluginDir, ".cursor-plugin", "plugin.json"));
+  await access(path.join(cursorPluginDir, "README.md"));
+  await access(path.join(cursorPluginDir, "rules", "wordpress-studio.mdc"));
+  await verifySharedSkillSet(cursorPluginDir, skillNames);
+  await verifyMcpConfig(cursorPluginDir, "Cursor plugin", "mcp.json");
+  await verifyTelemetryScript(cursorPluginDir, "Cursor");
+
+  const manifestRaw = await readFile(
+    path.join(cursorPluginDir, ".cursor-plugin", "plugin.json"),
+    "utf8"
+  );
+  const manifest = JSON.parse(manifestRaw);
+
+  if (manifest.name !== cursorPluginName) {
+    throw new Error("Unexpected Cursor plugin name");
+  }
+
+  if (manifest.displayName !== pluginDisplayName) {
+    throw new Error("Cursor plugin manifest has the wrong display name");
+  }
+
+  if (manifest.rules !== "./rules/") {
+    throw new Error("Cursor plugin manifest is missing the rules path");
+  }
+
+  if (manifest.skills !== "./skills/") {
+    throw new Error("Cursor plugin manifest is missing the skills path");
+  }
+
+  if (manifest.mcpServers !== "./mcp.json") {
+    throw new Error("Cursor plugin manifest is missing the MCP config path");
+  }
+
+  const ruleRaw = await readFile(
+    path.join(cursorPluginDir, "rules", "wordpress-studio.mdc"),
+    "utf8"
+  );
+
+  if (!ruleRaw.startsWith("---\n")) {
+    throw new Error("Cursor rule is missing frontmatter");
+  }
+
+  if (!ruleRaw.includes("alwaysApply: true")) {
+    throw new Error("Cursor rule is missing alwaysApply frontmatter");
+  }
+}
+
 async function verifyGeminiPlugin(skillNames) {
   await access(path.join(geminiPluginDir, "GEMINI.md"));
   await access(path.join(geminiPluginDir, "README.md"));
   await verifySharedSkillSet(geminiPluginDir, skillNames);
-  await verifyMcpConfig(geminiPluginDir, "Gemini plugin", path.join(".gemini", "settings.json"));
+  await verifyMcpConfig(
+    geminiPluginDir,
+    "Gemini plugin",
+    path.join(".gemini", "settings.json"),
+  );
   await verifyTelemetryScript(geminiPluginDir, "Gemini");
 
   const instructions = await readFile(path.join(geminiPluginDir, "GEMINI.md"), "utf8");
@@ -152,9 +206,10 @@ async function main() {
 
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
+  await verifyCursorPlugin(skillNames);
   await verifyGeminiPlugin(skillNames);
 
-  console.log("Codex, Claude, and Gemini plugin verification passed");
+  console.log("Codex, Claude, Cursor, and Gemini plugin verification passed");
 }
 
 main().catch((error) => {

@@ -54,7 +54,7 @@ Once you begin the actual audit workflow, call `record_workflow_event` with `wor
 
 ### 3. Performance Audit
 
-Use `audit_performance` for the requested path.
+Use `need_for_speed` for the requested path.
 
 Interpret at least:
 
@@ -95,7 +95,7 @@ Translate findings into WordPress-specific actions where possible, such as:
 
 ### 4. Accessibility Review
 
-Use screenshots plus theme or plugin code inspection as needed.
+Use `take_screenshot` plus theme or plugin code inspection as needed.
 
 Focus on issues this repo can realistically help with:
 
@@ -106,13 +106,13 @@ Focus on issues this repo can realistically help with:
 - readability issues caused by font size, line height, or dense layouts
 - color choices that make important information hard to distinguish
 
-When the issue is visual, prefer screenshot-backed observations.
+When the issue is visual, prefer `take_screenshot`-backed observations. Use `inspect_design` when the rendered DOM or computed styles would identify the root cause faster than code inspection alone.
 
 When the issue appears structural, inspect the relevant theme or plugin files before recommending a fix.
 
 ### 5. Visual QA
 
-When the user wants a broader quality pass, use screenshots to check:
+When the user wants a broader quality pass, use `take_screenshot` to check:
 
 - spacing and alignment
 - responsive layout issues
@@ -143,6 +143,6 @@ When the audit workflow is complete, call `record_workflow_event` with `workflow
 
 ## Important notes
 
-- `audit_performance` results are synthetic measurements from a local Studio environment. Use them primarily for diagnosis and before-versus-after comparison, not as production truth.
+- `need_for_speed` results are synthetic measurements from a local Studio environment. Use them primarily for diagnosis and before-versus-after comparison, not as production truth.
 - Accessibility observations in this workflow are often based on visual review and code inspection rather than a dedicated automated accessibility scanner.
 - When performance, accessibility, and design issues conflict, explain the tradeoff instead of over-optimizing one dimension silently.

@@ -123,6 +123,7 @@ const claudePluginManifest = {
 
 const cursorPluginManifest = {
   name: cursorPluginName,
+  displayName: cursorPluginDisplayName,
   version: "0.3.0",
   description:
     "Craft production-grade WordPress sites and applications. Everything from themes and plugins to commerce and deployment.",
@@ -250,6 +251,7 @@ const pluginTargets = [
     manifestContents: cursorPluginManifest,
     readmeIntro: `It is a Cursor plugin built from the same shared skills as the Codex and Claude Code plugins.
 
+- The generated \`plugins/cursor/\` folder uses Cursor's single-plugin layout
 - Cursor discovers plugin skills from \`skills/\`
 - Cursor discovers persistent guidance from \`rules/\`
 - Cursor discovers MCP servers from root \`mcp.json\`

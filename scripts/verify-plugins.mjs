@@ -148,6 +148,10 @@ async function verifyCursorPlugin(skillNames) {
     throw new Error("Unexpected Cursor plugin name");
   }
 
+  if (manifest.displayName !== pluginDisplayName) {
+    throw new Error("Cursor plugin manifest has the wrong display name");
+  }
+
   if (manifest.rules !== "./rules/") {
     throw new Error("Cursor plugin manifest is missing the rules path");
   }

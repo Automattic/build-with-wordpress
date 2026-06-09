@@ -1,5 +1,6 @@
 {
   "name": "wordpress-studio",
+  "displayName": "WordPress Studio",
   "version": "0.3.0",
   "description": "Craft production-grade WordPress sites and applications. Everything from themes and plugins to commerce and deployment.",
   "author": {

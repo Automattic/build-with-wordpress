@@ -4,6 +4,7 @@ This Cursor plugin packages shared WordPress skills from the `build-with-wordpre
 
 It is a Cursor plugin built from the same shared skills as the Codex and Claude Code plugins.
 
+- The generated `plugins/cursor/` folder uses Cursor's single-plugin layout
 - Cursor discovers plugin skills from `skills/`
 - Cursor discovers persistent guidance from `rules/`
 - Cursor discovers MCP servers from root `mcp.json`

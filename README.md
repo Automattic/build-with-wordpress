@@ -2,7 +2,11 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
+<<<<<<< HEAD
 This repo currently packages shared skills for Codex, Claude Code, and OpenCode as separate outputs:
+=======
+This repo currently packages shared skills for Codex, Claude Code, and Cursor as separate plugin outputs:
+>>>>>>> origin/trunk
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -61,6 +65,7 @@ claude --plugin-dir ./plugins/claude-code
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
+<<<<<<< HEAD
 ### Test in OpenCode
 
 1. Open a new OpenCode session using `./plugins/opencode` as the project root.
@@ -69,11 +74,25 @@ claude --plugin-dir ./plugins/claude-code
 4. Confirm the WordPress.com instructions exist at `plugins/opencode/AGENTS.md`.
 5. Confirm the MCP servers are visible with `opencode mcp list`.
 6. Try representative WordPress.com tasks such as:
+=======
+### Test in Cursor
+
+1. Open Cursor and install the plugin from the generated `./plugins/cursor` directory.
+2. Confirm the generated Cursor manifest exists at `plugins/cursor/.cursor-plugin/plugin.json`.
+3. Confirm the generated MCP config exists at `plugins/cursor/mcp.json`.
+4. Confirm the generated rule exists at `plugins/cursor/rules/wordpress-studio.mdc`.
+5. Confirm the bundled telemetry server exists at `plugins/cursor/scripts/wordpress-telemetry-mcp.mjs`.
+6. Try the same representative tasks:
+>>>>>>> origin/trunk
    - creating a new site
    - building or editing a theme
    - creating a custom block
    - creating a custom plugin
    - running an audit request
+<<<<<<< HEAD
+=======
+7. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
+>>>>>>> origin/trunk
 
 ## Current scope
 
@@ -90,7 +109,11 @@ claude --plugin-dir ./plugins/claude-code
 - A bundled standalone telemetry MCP server built from repo-local Node dependencies
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
+<<<<<<< HEAD
 - OpenCode output in `plugins/opencode/`
+=======
+- Cursor packaging output in `plugins/cursor/`
+>>>>>>> origin/trunk
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -103,13 +126,21 @@ The build packages the shared skills into:
 
 - `plugins/codex/plugins/wordpress-studio/skills/`
 - `plugins/claude-code/skills/`
+<<<<<<< HEAD
 - `plugins/opencode/.opencode/skills/`
+=======
+- `plugins/cursor/skills/`
+>>>>>>> origin/trunk
 
 It also generates plugin-specific MCP configs for each surface:
 
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
+<<<<<<< HEAD
 - OpenCode: `plugins/opencode/opencode.json`
+=======
+- Cursor: `plugins/cursor/mcp.json`
+>>>>>>> origin/trunk
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -159,14 +190,22 @@ That folder currently contains:
 
 The generated Claude Code MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
 
+<<<<<<< HEAD
 The OpenCode output is generated to:
 
 ```text
 plugins/opencode/
+=======
+The Cursor plugin is generated to:
+
+```text
+plugins/cursor/
+>>>>>>> origin/trunk
 ```
 
 That folder currently contains:
 
+<<<<<<< HEAD
 - `opencode.json`
 - `AGENTS.md`
 - `.opencode/agents/wordpress-com.md`
@@ -177,3 +216,13 @@ That folder currently contains:
 - `README.md`
 
 The generated OpenCode config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server using OpenCode's `mcp` config shape.
+=======
+- `.cursor-plugin/plugin.json`
+- `mcp.json`
+- `rules/wordpress-studio.mdc`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `skills/`
+- `README.md`
+
+The generated Cursor MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
+>>>>>>> origin/trunk

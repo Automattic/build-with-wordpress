@@ -12,7 +12,7 @@ It is intentionally Studio-MCP-first:
 - custom WordPress plugins can be scaffolded inside a selected Studio site and reviewed there
 - custom Gutenberg blocks can be scaffolded inside a selected Studio site and reviewed there
 
-It currently ships the same shared skills as the Codex plugin so both surfaces stay aligned while we iterate on any Claude-specific additions later.
+It ships the shared skills from this repo so all supported surfaces stay aligned while we iterate on surface-specific packaging details.
 
 ## Included skills
 

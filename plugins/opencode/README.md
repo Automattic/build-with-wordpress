@@ -48,7 +48,7 @@ The generated config also starts the bundled `wordpress-telemetry` MCP server so
 
 ## What is shared
 
-- The WordPress.com site-building workflows are the same shared skills used by Codex and Claude Code.
+- The WordPress.com site-building workflows are the same shared skills used by Codex, Claude Code, and Cursor.
 - The Studio MCP server remains the shared substrate for local site management, screenshots, block validation, `wp_cli`, and WordPress.com / Jetpack-connected workflows.
 - The telemetry MCP server is the same bundled server generated for the other outputs, with the surface set to `opencode`.
 

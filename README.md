@@ -2,7 +2,11 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
+<<<<<<< HEAD
 This repo currently packages shared skills for Codex, Claude Code, and GitHub Copilot as separate plugin outputs:
+=======
+This repo currently packages shared skills for Codex, Claude Code, and Cursor as separate plugin outputs:
+>>>>>>> origin/trunk
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -60,6 +64,7 @@ claude --plugin-dir ./plugins/claude-code
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
+<<<<<<< HEAD
 ### Test in GitHub Copilot
 
 1. Copy or open `./plugins/copilot` as the project root in VS Code.
@@ -67,12 +72,26 @@ claude --plugin-dir ./plugins/claude-code
 3. Confirm the scoped WordPress instructions exist at `plugins/copilot/.github/instructions/wordpress-studio.instructions.md`.
 4. Confirm the generated VS Code MCP config exists at `plugins/copilot/.vscode/mcp.json`.
 5. Start Copilot Chat in agent mode and try representative WordPress.com tasks:
+=======
+### Test in Cursor
+
+1. Open Cursor and install the plugin from the generated `./plugins/cursor` directory.
+2. Confirm the generated Cursor manifest exists at `plugins/cursor/.cursor-plugin/plugin.json`.
+3. Confirm the generated MCP config exists at `plugins/cursor/mcp.json`.
+4. Confirm the generated rule exists at `plugins/cursor/rules/wordpress-studio.mdc`.
+5. Confirm the bundled telemetry server exists at `plugins/cursor/scripts/wordpress-telemetry-mcp.mjs`.
+6. Try the same representative tasks:
+>>>>>>> origin/trunk
    - creating a new site
    - building or editing a theme
    - creating a custom block
    - creating a custom plugin
    - running an audit request
+<<<<<<< HEAD
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
+=======
+7. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
+>>>>>>> origin/trunk
 
 ## Current scope
 
@@ -89,7 +108,11 @@ claude --plugin-dir ./plugins/claude-code
 - A bundled standalone telemetry MCP server built from repo-local Node dependencies
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
+<<<<<<< HEAD
 - GitHub Copilot packaging output in `plugins/copilot/`
+=======
+- Cursor packaging output in `plugins/cursor/`
+>>>>>>> origin/trunk
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -102,13 +125,21 @@ The build packages the shared skills into:
 
 - `plugins/codex/plugins/wordpress-studio/skills/`
 - `plugins/claude-code/skills/`
+<<<<<<< HEAD
 - `plugins/copilot/skills/`
+=======
+- `plugins/cursor/skills/`
+>>>>>>> origin/trunk
 
 It also generates plugin-specific MCP configs for each surface:
 
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
+<<<<<<< HEAD
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
+=======
+- Cursor: `plugins/cursor/mcp.json`
+>>>>>>> origin/trunk
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -158,19 +189,36 @@ That folder currently contains:
 
 The generated Claude Code MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
 
+<<<<<<< HEAD
 The GitHub Copilot plugin is generated to:
 
 ```text
 plugins/copilot/
+=======
+The Cursor plugin is generated to:
+
+```text
+plugins/cursor/
+>>>>>>> origin/trunk
 ```
 
 That folder currently contains:
 
+<<<<<<< HEAD
 - `.github/copilot-instructions.md`
 - `.github/instructions/wordpress-studio.instructions.md`
 - `.vscode/mcp.json`
+=======
+- `.cursor-plugin/plugin.json`
+- `mcp.json`
+- `rules/wordpress-studio.mdc`
+>>>>>>> origin/trunk
 - `scripts/wordpress-telemetry-mcp.mjs`
 - `skills/`
 - `README.md`
 
+<<<<<<< HEAD
 The generated Copilot MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through VS Code's MCP configuration.
+=======
+The generated Cursor MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
+>>>>>>> origin/trunk

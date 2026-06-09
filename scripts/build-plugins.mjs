@@ -14,13 +14,7 @@ const telemetryMcpServerDistPath = path.join(
   "wordpress-telemetry-mcp.mjs",
 );
 const pluginName = "wordpress-studio";
-<<<<<<< HEAD
 const pluginDisplayName = "WordPress.com";
-=======
-const pluginDisplayName = "WordPress Studio";
-const cursorPluginName = pluginName;
-const cursorPluginDisplayName = pluginDisplayName;
->>>>>>> origin/trunk
 
 function createTelemetryBootstrapArgs({ surface, telemetrySource }) {
   const compressedSource = brotliCompressSync(Buffer.from(telemetrySource, "utf8"));
@@ -142,54 +136,18 @@ const claudePluginManifest = {
   },
 };
 
-const cursorPluginManifest = {
-  name: cursorPluginName,
-  displayName: cursorPluginDisplayName,
-  version: "0.3.0",
-  description:
-    "Craft production-grade WordPress sites and applications. Everything from themes and plugins to commerce and deployment.",
-  author: {
-    name: "Automattic",
-  },
-  homepage: "https://developer.wordpress.com/",
-  repository: "https://github.com/Automattic/build-with-wordpress",
-  license: "GPL-2.0-or-later",
-  keywords: [
-    "wordpress",
-    "studio",
-    "wp-cli",
-    "auditing",
-    "wordpress-creator",
-    "design-previews-creator",
-    "block-theme",
-    "site-creator",
-    "theme-creator",
-    "block-creator",
-    "plugin-creator",
-    "gutenberg",
-    "cursor",
-  ],
-  rules: "./rules/",
-  skills: "./skills/",
-  mcpServers: "./mcp.json",
-};
-
-function buildReadme({ surfaceName, intro, skillNames, displayName = pluginDisplayName }) {
+function buildReadme({ surfaceName, intro, skillNames }) {
   const skillList = skillNames
     .map((skillName) => `- \`${skillName}\``)
     .join("\n");
 
-  return `# ${displayName} Plugin
+  return `# ${pluginDisplayName} Plugin
 
-This ${surfaceName} plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo as ${displayName}.
+This ${surfaceName} plugin packages shared WordPress skills from the \`build-with-wordpress\` source repo as ${pluginDisplayName}.
 
 ${intro}
 
-<<<<<<< HEAD
 It currently ships the same shared skills as the other plugin outputs so supported surfaces stay aligned while we iterate on any surface-specific additions later.
-=======
-It ships the shared skills from this repo so all supported surfaces stay aligned while we iterate on surface-specific packaging details.
->>>>>>> origin/trunk
 
 ## Included skills
 
@@ -197,7 +155,6 @@ ${skillList}
 `;
 }
 
-<<<<<<< HEAD
 function buildCopilotInstructions({ skillNames }) {
   const skillList = skillNames.map((skillName) => `- ${skillName}`).join("\n");
 
@@ -239,22 +196,6 @@ When working in a WordPress project, prefer the configured WordPress.com MCP ser
 - \`wordpress-telemetry\` for workflow telemetry emitted by the WordPress.com skill flows.
 
 Use MCP evidence for behavior claims when a site can be run locally. If MCP is unavailable, explain the limitation and use repository evidence instead.
-=======
-function buildCursorRule() {
-  return `---
-description: Route WordPress site, theme, block, plugin, and audit work through WordPress Studio skills and MCP.
-alwaysApply: true
----
-
-# WordPress Studio
-
-Use the shared WordPress Studio skills in this plugin for WordPress site building and audit work.
-
-- Start with \`wordpress-creator\` unless the user clearly asks for a specific implementation path.
-- Use Studio MCP for local site management, screenshots, block validation, frontend audits, and \`wp_cli\` access.
-- Choose the smallest fitting WordPress abstraction: site, theme, block, plugin, or audit.
-- Keep WordPress workflow guidance in the shared skills rather than duplicating it in Cursor-specific rules.
->>>>>>> origin/trunk
 `;
 }
 
@@ -289,7 +230,6 @@ const pluginTargets = [
 - custom WordPress plugins can be scaffolded inside a selected Studio site and reviewed there
 - custom Gutenberg blocks can be scaffolded inside a selected Studio site and reviewed there`,
     includeMcpConfig: true,
-    mcpConfigFileName: ".mcp.json",
     surface: "codex",
   },
   {
@@ -307,11 +247,9 @@ const pluginTargets = [
 - frontend auditing stays shared across surfaces
 - the plugin output is intentionally minimal while we add Claude-specific packaging details later`,
     includeMcpConfig: true,
-    mcpConfigFileName: ".mcp.json",
     surface: "claude-code",
   },
   {
-<<<<<<< HEAD
     logName: "GitHub Copilot",
     buildRootDir: path.join(pluginsDir, "copilot"),
     pluginDir: path.join(pluginsDir, "copilot"),
@@ -347,28 +285,6 @@ const pluginTargets = [
         "utf8",
       );
     },
-=======
-    logName: "Cursor",
-    buildRootDir: path.join(pluginsDir, "cursor"),
-    pluginDir: path.join(pluginsDir, "cursor"),
-    legacyCleanupPaths: [],
-    manifestDir: ".cursor-plugin",
-    manifestFileName: "plugin.json",
-    manifestContents: cursorPluginManifest,
-    readmeIntro: `It is a Cursor plugin built from the same shared skills as the Codex and Claude Code plugins.
-
-- The generated \`plugins/cursor/\` folder uses Cursor's single-plugin layout
-- Cursor discovers plugin skills from \`skills/\`
-- Cursor discovers persistent guidance from \`rules/\`
-- Cursor discovers MCP servers from root \`mcp.json\`
-- WordPress request routing stays shared across surfaces
-- Studio-backed site, theme, block, plugin, and audit workflows stay shared`,
-    includeMcpConfig: true,
-    mcpConfigFileName: "mcp.json",
-    includeCursorRule: true,
-    displayName: cursorPluginDisplayName,
-    surface: "cursor",
->>>>>>> origin/trunk
   },
 ];
 
@@ -409,9 +325,6 @@ async function buildPluginTarget(target, skillNames) {
   }
   await mkdir(path.join(target.pluginDir, "scripts"), { recursive: true });
   await mkdir(path.join(target.pluginDir, "skills"), { recursive: true });
-  if (target.includeCursorRule) {
-    await mkdir(path.join(target.pluginDir, "rules"), { recursive: true });
-  }
   await copySkillSet(
     sharedSkillsSourceDir,
     path.join(target.pluginDir, "skills"),
@@ -434,11 +347,7 @@ async function buildPluginTarget(target, skillNames) {
       recursive: true,
     });
     await writeFile(
-<<<<<<< HEAD
       path.join(target.pluginDir, mcpConfigPath),
-=======
-      path.join(target.pluginDir, target.mcpConfigFileName),
->>>>>>> origin/trunk
       `${JSON.stringify(
         mcpConfigFactory({
           surface: target.surface,
@@ -451,7 +360,6 @@ async function buildPluginTarget(target, skillNames) {
     );
   }
 
-<<<<<<< HEAD
   if (target.manifestDir && target.manifestFileName && target.manifestContents) {
     await writeFile(
       path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
@@ -459,29 +367,13 @@ async function buildPluginTarget(target, skillNames) {
       "utf8",
     );
   }
-=======
-  if (target.includeCursorRule) {
-    await writeFile(
-      path.join(target.pluginDir, "rules", "wordpress-studio.mdc"),
-      buildCursorRule(),
-      "utf8",
-    );
-  }
-
-  await writeFile(
-    path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
-    `${JSON.stringify(target.manifestContents, null, 2)}\n`,
-    "utf8",
-  );
->>>>>>> origin/trunk
   await writeFile(
     path.join(target.pluginDir, "README.md"),
-      buildReadme({
-        surfaceName: target.logName,
-        intro: target.readmeIntro,
-        skillNames,
-        displayName: target.displayName,
-      }),
+    buildReadme({
+      surfaceName: target.logName,
+      intro: target.readmeIntro,
+      skillNames,
+    }),
     "utf8",
   );
 

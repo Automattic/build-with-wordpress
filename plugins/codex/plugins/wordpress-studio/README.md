@@ -12,11 +12,7 @@ It is intentionally Studio-MCP-first:
 - custom WordPress plugins can be scaffolded inside a selected Studio site and reviewed there
 - custom Gutenberg blocks can be scaffolded inside a selected Studio site and reviewed there
 
-<<<<<<< HEAD
 It currently ships the same shared skills as the other plugin outputs so supported surfaces stay aligned while we iterate on any surface-specific additions later.
-=======
-It ships the shared skills from this repo so all supported surfaces stay aligned while we iterate on surface-specific packaging details.
->>>>>>> origin/trunk
 
 ## Included skills
 

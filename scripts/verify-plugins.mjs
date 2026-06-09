@@ -7,12 +7,7 @@ const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const sharedSkillsDir = path.join(root, "skills");
 const pluginName = "wordpress-studio";
-<<<<<<< HEAD
 const pluginDisplayName = "WordPress.com";
-=======
-const pluginDisplayName = "WordPress Studio";
-const cursorPluginName = pluginName;
->>>>>>> origin/trunk
 const codexRootDir = path.join(root, "plugins", "codex");
 const codexPluginDir = path.join(codexRootDir, "plugins", pluginName);
 const codexMarketplacePath = path.join(
@@ -22,11 +17,7 @@ const codexMarketplacePath = path.join(
   "marketplace.json"
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
-<<<<<<< HEAD
 const copilotPluginDir = path.join(root, "plugins", "copilot");
-=======
-const cursorPluginDir = path.join(root, "plugins", "cursor");
->>>>>>> origin/trunk
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -42,17 +33,10 @@ async function verifySharedSkillSet(pluginDir, skillNames) {
   }
 }
 
-<<<<<<< HEAD
 async function verifyMcpConfig(pluginDir, surfaceName, configPath = ".mcp.json") {
   await access(path.join(pluginDir, configPath));
 
   const mcpRaw = await readFile(path.join(pluginDir, configPath), "utf8");
-=======
-async function verifyMcpConfig(pluginDir, surfaceName, configFileName = ".mcp.json") {
-  await access(path.join(pluginDir, configFileName));
-
-  const mcpRaw = await readFile(path.join(pluginDir, configFileName), "utf8");
->>>>>>> origin/trunk
   const mcp = JSON.parse(mcpRaw);
   const servers = mcp.mcpServers ?? mcp.servers;
 
@@ -146,7 +130,6 @@ async function verifyClaudePlugin(skillNames) {
   }
 }
 
-<<<<<<< HEAD
 async function verifyCopilotPlugin(skillNames) {
   await access(path.join(copilotPluginDir, ".github", "copilot-instructions.md"));
   await access(
@@ -174,53 +157,6 @@ async function verifyCopilotPlugin(skillNames) {
 
   if (!instructionsRaw.includes("WordPress.com for GitHub Copilot")) {
     throw new Error("Copilot instructions are missing the expected heading");
-=======
-async function verifyCursorPlugin(skillNames) {
-  await access(path.join(cursorPluginDir, ".cursor-plugin", "plugin.json"));
-  await access(path.join(cursorPluginDir, "README.md"));
-  await access(path.join(cursorPluginDir, "rules", "wordpress-studio.mdc"));
-  await verifySharedSkillSet(cursorPluginDir, skillNames);
-  await verifyMcpConfig(cursorPluginDir, "Cursor plugin", "mcp.json");
-  await verifyTelemetryScript(cursorPluginDir, "Cursor");
-
-  const manifestRaw = await readFile(
-    path.join(cursorPluginDir, ".cursor-plugin", "plugin.json"),
-    "utf8"
-  );
-  const manifest = JSON.parse(manifestRaw);
-
-  if (manifest.name !== cursorPluginName) {
-    throw new Error("Unexpected Cursor plugin name");
-  }
-
-  if (manifest.displayName !== pluginDisplayName) {
-    throw new Error("Cursor plugin manifest has the wrong display name");
-  }
-
-  if (manifest.rules !== "./rules/") {
-    throw new Error("Cursor plugin manifest is missing the rules path");
-  }
-
-  if (manifest.skills !== "./skills/") {
-    throw new Error("Cursor plugin manifest is missing the skills path");
-  }
-
-  if (manifest.mcpServers !== "./mcp.json") {
-    throw new Error("Cursor plugin manifest is missing the MCP config path");
-  }
-
-  const ruleRaw = await readFile(
-    path.join(cursorPluginDir, "rules", "wordpress-studio.mdc"),
-    "utf8"
-  );
-
-  if (!ruleRaw.startsWith("---\n")) {
-    throw new Error("Cursor rule is missing frontmatter");
-  }
-
-  if (!ruleRaw.includes("alwaysApply: true")) {
-    throw new Error("Cursor rule is missing alwaysApply frontmatter");
->>>>>>> origin/trunk
   }
 }
 
@@ -229,15 +165,9 @@ async function main() {
 
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
-<<<<<<< HEAD
   await verifyCopilotPlugin(skillNames);
 
   console.log("Codex, Claude, and Copilot plugin verification passed");
-=======
-  await verifyCursorPlugin(skillNames);
-
-  console.log("Codex, Claude, and Cursor plugin verification passed");
->>>>>>> origin/trunk
 }
 
 main().catch((error) => {

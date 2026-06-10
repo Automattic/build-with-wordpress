@@ -1,0 +1,23 @@
+name: Build With WordPress Skills Agent
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  skills-agent:
+    name: Maintain Live Skills
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@issue/34-skills-context-profile
+    with:
+      audience: skills
+      base_ref: trunk
+      docs_branch: docs-agent/build-with-wordpress-skills
+      writable_paths: skills/**,plugins/**/skills/**,plugins/**/README.md
+      context_profile: studio-wordpress-skills
+    secrets: inherit

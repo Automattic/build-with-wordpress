@@ -123,6 +123,28 @@ pnpm build
 pnpm verify
 ```
 
+## Cursor Publishing
+
+Cursor requires a standalone plugin repository. This repo remains the canonical source for shared WordPress skills and generated plugin packaging, while the publishable Cursor repository lives at:
+
+https://github.com/Automattic/wordpress-cursor-plugin
+
+Do not edit the standalone Cursor repository as the source of truth. Update `skills/` and the Cursor packaging generator here, run the normal build and verification, then export `plugins/cursor/` to the standalone repo:
+
+```bash
+pnpm build
+pnpm verify
+pnpm export:cursor
+```
+
+The export command runs `git subtree split --prefix=plugins/cursor` and pushes the result to `Automattic/wordpress-cursor-plugin` on `sync/from-build-with-wordpress`. Open or update a PR from that branch into the standalone repo's `main` branch, then submit the standalone repo to Cursor.
+
+For a dry run:
+
+```bash
+pnpm export:cursor -- --dry-run
+```
+
 ## Output
 
 The Codex plugin repo is generated to:

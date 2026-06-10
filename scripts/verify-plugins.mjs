@@ -9,6 +9,7 @@ const sharedSkillsDir = path.join(root, "skills");
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
 const cursorPluginName = pluginName;
+const cursorPluginDisplayName = pluginDisplayName;
 const codexRootDir = path.join(root, "plugins", "codex");
 const codexPluginDir = path.join(codexRootDir, "plugins", pluginName);
 const codexMarketplacePath = path.join(
@@ -19,6 +20,7 @@ const codexMarketplacePath = path.join(
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
 const cursorPluginDir = path.join(root, "plugins", "cursor");
+const copilotPluginDir = path.join(root, "plugins", "copilot");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -34,21 +36,22 @@ async function verifySharedSkillSet(pluginDir, skillNames) {
   }
 }
 
-async function verifyMcpConfig(pluginDir, surfaceName, configFileName = ".mcp.json") {
-  await access(path.join(pluginDir, configFileName));
+async function verifyMcpConfig(pluginDir, surfaceName, configPath = ".mcp.json") {
+  await access(path.join(pluginDir, configPath));
 
-  const mcpRaw = await readFile(path.join(pluginDir, configFileName), "utf8");
+  const mcpRaw = await readFile(path.join(pluginDir, configPath), "utf8");
   const mcp = JSON.parse(mcpRaw);
+  const servers = mcp.mcpServers ?? mcp.servers;
 
-  if (!mcp.mcpServers || typeof mcp.mcpServers !== "object") {
-    throw new Error(`${surfaceName} MCP config is missing the mcpServers wrapper`);
+  if (!servers || typeof servers !== "object") {
+    throw new Error(`${surfaceName} MCP config is missing a server wrapper`);
   }
 
-  if (!mcp.mcpServers["wordpress-studio"]) {
+  if (!servers["wordpress-studio"]) {
     throw new Error(`${surfaceName} MCP config is missing the wordpress-studio entry`);
   }
 
-  if (!mcp.mcpServers["wordpress-telemetry"]) {
+  if (!servers["wordpress-telemetry"]) {
     throw new Error(`${surfaceName} MCP config is missing the wordpress-telemetry entry`);
   }
 }
@@ -148,7 +151,7 @@ async function verifyCursorPlugin(skillNames) {
     throw new Error("Unexpected Cursor plugin name");
   }
 
-  if (manifest.displayName !== pluginDisplayName) {
+  if (manifest.displayName !== cursorPluginDisplayName) {
     throw new Error("Cursor plugin manifest has the wrong display name");
   }
 
@@ -178,14 +181,45 @@ async function verifyCursorPlugin(skillNames) {
   }
 }
 
+async function verifyCopilotPlugin(skillNames) {
+  await access(path.join(copilotPluginDir, ".github", "copilot-instructions.md"));
+  await access(
+    path.join(
+      copilotPluginDir,
+      ".github",
+      "instructions",
+      "wordpress-studio.instructions.md",
+    ),
+  );
+  await access(path.join(copilotPluginDir, ".vscode", "mcp.json"));
+  await access(path.join(copilotPluginDir, "README.md"));
+  await verifySharedSkillSet(copilotPluginDir, skillNames);
+  await verifyMcpConfig(
+    copilotPluginDir,
+    "GitHub Copilot plugin",
+    path.join(".vscode", "mcp.json"),
+  );
+  await verifyTelemetryScript(copilotPluginDir, "GitHub Copilot");
+
+  const instructionsRaw = await readFile(
+    path.join(copilotPluginDir, ".github", "copilot-instructions.md"),
+    "utf8",
+  );
+
+  if (!instructionsRaw.includes("WordPress Studio for GitHub Copilot")) {
+    throw new Error("Copilot instructions are missing the expected heading");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
   await verifyCursorPlugin(skillNames);
+  await verifyCopilotPlugin(skillNames);
 
-  console.log("Codex, Claude, and Cursor plugin verification passed");
+  console.log("Codex, Claude, Cursor, and Copilot plugin verification passed");
 }
 
 main().catch((error) => {

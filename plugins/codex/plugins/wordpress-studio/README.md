@@ -1,6 +1,6 @@
-# WordPress.com Plugin
+# WordPress Studio Plugin
 
-This Codex plugin packages shared WordPress skills from the `build-with-wordpress` source repo as WordPress.com.
+This Codex plugin packages shared WordPress skills from the `build-with-wordpress` source repo as WordPress Studio.
 
 It is intentionally Studio-MCP-first:
 

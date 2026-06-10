@@ -26,7 +26,7 @@
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
-    "displayName": "WordPress.com",
+    "displayName": "WordPress Studio",
     "shortDescription": "WordPress site building and auditing with Studio backed routing and review",
     "longDescription": "Use WordPress Studio to choose the right WordPress implementation path, scaffold and iterate on Studio-backed sites, generate block themes, create custom Gutenberg blocks and plugins, run block validation, audit frontend quality, and review changes with screenshots.",
     "developerName": "Automattic",

@@ -1,7 +1,7 @@
 {
   "name": "wordpress-studio",
   "interface": {
-    "displayName": "WordPress.com"
+    "displayName": "WordPress Studio"
   },
   "plugins": [
     {

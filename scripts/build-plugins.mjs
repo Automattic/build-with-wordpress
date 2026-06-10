@@ -148,7 +148,7 @@ const cursorPluginManifest = {
     name: "Automattic",
   },
   homepage: "https://developer.wordpress.com/",
-  repository: "https://github.com/Automattic/build-with-wordpress",
+  repository: "https://github.com/Automattic/wordpress-cursor-plugin",
   license: "GPL-2.0-or-later",
   keywords: [
     "wordpress",

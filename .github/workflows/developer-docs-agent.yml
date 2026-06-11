@@ -21,6 +21,7 @@ jobs:
     uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
     with:
       audience: technical
+      run_kind: ${{ github.event_name == 'workflow_dispatch' && 'bootstrap' || 'maintenance' }}
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-developer-docs
       writable_paths: README.md,docs/**,plugins/**/README.md
@@ -61,9 +62,9 @@ jobs:
           }
         ]
       prompt: |
-        Maintain developer-facing documentation for Build with WordPress after source changes land on the base branch.
+        Maintain developer-facing documentation for Build with WordPress.
 
-        For the first manual bootstrap run, create or improve the initial developer documentation structure if the repository does not already have one. For push-triggered merge checks, make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when documentation is current.
+        Manual dispatch runs the bootstrap flow and should create or improve the initial developer documentation structure if the repository does not already have one. Push-triggered merge checks run the maintenance flow and should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when documentation is current.
 
         Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows. Use the read-only context aliases `studio` and `wordpress-agent-skills` only as source evidence for integration behavior.
     secrets: inherit

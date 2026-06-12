@@ -1,0 +1,59 @@
+name: Build With WordPress Skills Agent
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  skills-agent:
+    name: Maintain Live Skills
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
+    with:
+      audience: skills
+      base_ref: trunk
+      docs_branch: docs-agent/build-with-wordpress-skills
+      writable_paths: skills/**,plugins/**/skills/**,plugins/**/README.md
+      context_repositories: |
+        [
+          {
+            "repo": "Automattic/studio",
+            "ref": "trunk",
+            "alias": "studio",
+            "paths": [
+              "apps/cli/ai/tools/**",
+              "apps/cli/ai/system-prompt.ts",
+              "apps/cli/commands/mcp.ts",
+              "eval/promptfoo.config.yaml"
+            ]
+          },
+          {
+            "repo": "WordPress/agent-skills",
+            "ref": "trunk",
+            "alias": "wordpress-agent-skills",
+            "paths": [
+              "skills/**",
+              "docs/packaging.md",
+              ".github/workflows/ai-skill-maintenance.yml"
+            ]
+          }
+        ]
+      verification_commands: |
+        [
+          "pnpm install --frozen-lockfile",
+          "pnpm build",
+          "pnpm verify"
+        ]
+      drift_checks: |
+        [
+          {
+            "command": "git diff --exit-code",
+            "description": "Generated skill package outputs are committed after build"
+          }
+        ]
+    secrets: inherit

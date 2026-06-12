@@ -7,7 +7,7 @@ It is a Gemini CLI and Gemini Code Assist package built from the same shared ski
 - `GEMINI.md` provides project-level WordPress guidance for Gemini
 - `.gemini/settings.json` configures the Studio and telemetry MCP servers for Gemini CLI
 - WordPress request routing stays shared across surfaces
-- Studio-backed site, theme, block, plugin, and audit workflows stay shared
+    - Studio-backed site, theme, block, plugin, and audit workflows stay shared
 
 It ships the shared skills from this repo so all supported surfaces stay aligned while we iterate on surface-specific packaging details.
 

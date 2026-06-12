@@ -26,6 +26,7 @@ const rooPluginDir = path.join(root, "plugins", "roo-code");
 const geminiPluginDir = path.join(root, "plugins", "gemini");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
 const kiloCodePluginDir = path.join(root, "plugins", "kilo-code");
+const windsurfPluginDir = path.join(root, "plugins", "windsurf");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -416,6 +417,36 @@ async function verifyCopilotPlugin(skillNames) {
   }
 }
 
+async function verifyWindsurfPlugin(skillNames) {
+  await access(path.join(windsurfPluginDir, "README.md"));
+  await access(path.join(windsurfPluginDir, ".devin", "rules", "wordpress-com.md"));
+  await access(path.join(windsurfPluginDir, ".devin", "rules", "wordpress-com-mcp.md"));
+  await verifySharedSkillSet(windsurfPluginDir, skillNames);
+  await verifyMcpConfig(windsurfPluginDir, "Windsurf plugin", "mcp_config.json");
+  await verifyTelemetryScript(windsurfPluginDir, "Windsurf");
+
+  const alwaysOnRule = await readFile(
+    path.join(windsurfPluginDir, ".devin", "rules", "wordpress-com.md"),
+    "utf8",
+  );
+  if (!alwaysOnRule.startsWith("---\ntrigger: always_on\n---")) {
+    throw new Error("Windsurf workspace rule is missing always_on trigger frontmatter");
+  }
+
+  const mcpRule = await readFile(
+    path.join(windsurfPluginDir, ".devin", "rules", "wordpress-com-mcp.md"),
+    "utf8",
+  );
+  if (!mcpRule.includes("trigger: model_decision")) {
+    throw new Error("Windsurf MCP rule is missing model_decision trigger frontmatter");
+  }
+
+  const readme = await readFile(path.join(windsurfPluginDir, "README.md"), "utf8");
+  if (!readme.includes("~/.codeium/windsurf/mcp_config.json")) {
+    throw new Error("Windsurf README is missing the Cascade MCP config path");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
@@ -428,8 +459,9 @@ async function main() {
   await verifyRooPlugin(skillNames);
   await verifyGeminiPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
+  await verifyWindsurfPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Gemini, and Copilot verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Gemini, Copilot, and Windsurf verification passed");
 }
 
 main().catch((error) => {

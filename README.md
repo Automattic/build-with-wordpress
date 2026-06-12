@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, Kilo Code, and Roo Code as separate outputs:
+This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, Kilo Code, Roo Code, and Windsurf/Cascade as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -17,6 +17,7 @@ This repo currently packages shared skills and setup files for Codex, Claude Cod
 - includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
 - adds Kilo Code-native rules, skills, agent, AGENTS.md, plugin directory documentation, and project MCP config
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
+- adds Windsurf/Cascade workspace rules and MCP config without introducing a Windsurf-specific backend service
 
 ## Testing
 
@@ -133,6 +134,17 @@ claude --plugin-dir ./plugins/claude-code
 3. In Continue, copy the `.continue/` examples into a project or merge the `config.yaml` MCP snippet into `~/.continue/config.yaml`.
 4. Use Continue Agent mode for WordPress.com MCP tool access.
 
+### Test in Windsurf/Cascade
+
+1. Install Devin Desktop / Windsurf and complete onboarding.
+2. Build the generated output with `pnpm build`.
+3. Confirm the generated Cascade rules exist at `plugins/windsurf/.devin/rules/`.
+4. Confirm the generated MCP config exists at `plugins/windsurf/mcp_config.json`.
+5. Confirm the bundled telemetry server exists at `plugins/windsurf/scripts/wordpress-telemetry-mcp.mjs`.
+6. Copy the servers from `plugins/windsurf/mcp_config.json` into `~/.codeium/windsurf/mcp_config.json`.
+7. In Cascade MCP settings, confirm `wordpress-studio` and `wordpress-telemetry` are enabled.
+8. Try representative WordPress.com tasks such as site review, theme edits, block validation, or plugin planning.
+
 ## Current scope
 
 - Shared skills for:
@@ -154,6 +166,7 @@ claude --plugin-dir ./plugins/claude-code
 - Gemini packaging output in `plugins/gemini/`
 - Kilo Code packaging output in `plugins/kilo-code/`
 - GitHub Copilot packaging output in `plugins/copilot/`
+- Windsurf/Cascade workspace output in `plugins/windsurf/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -171,6 +184,7 @@ The build packages the shared skills into:
 - `plugins/gemini/skills/`
 - `plugins/copilot/skills/`
 - `plugins/kilo-code/.kilo/skills/`
+- `plugins/windsurf/skills/`
 
 It also generates plugin-specific MCP configs for each surface:
 
@@ -182,6 +196,7 @@ It also generates plugin-specific MCP configs for each surface:
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
 - Kilo Code: `plugins/kilo-code/kilo.jsonc`
+- Windsurf/Cascade: `plugins/windsurf/mcp_config.json`
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 

@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, Qodo, Roo Code, and Windsurf/Cascade as separate outputs:
+This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, Qodo, Roo Code, Windsurf/Cascade, and Aider as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -13,6 +13,7 @@ This repo currently packages shared skills and setup files for Codex, Claude Cod
 - includes an auditing skill for performance, accessibility, and frontend quality review
 - can optionally generate three design preview directions before building a site theme
 - bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
+- includes an Aider config and conventions pack for terminal pair-programming
 - keeps skills shared so other surfaces can reuse them later
 - includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
@@ -144,6 +145,15 @@ claude --plugin-dir ./plugins/claude-code
 7. In Cascade MCP settings, confirm `wordpress-studio` and `wordpress-telemetry` are enabled.
 8. Try representative WordPress.com tasks such as site review, theme edits, block validation, or plugin planning.
 
+### Test in Aider
+
+1. From a git repo you want to edit with Aider, copy or symlink the contents of `./plugins/aider` into the repo root.
+2. Configure Aider with environment variables or a local `.env` file.
+3. Confirm the generated config exists at `plugins/aider/.aider.conf.yml`.
+4. Confirm the conventions file exists at `plugins/aider/CONVENTIONS.md`.
+5. Start Aider from the repo root that contains `.aider.conf.yml`.
+6. Try a representative WordPress.com coding task and confirm Aider loads the conventions as read-only context.
+
 ## Current scope
 
 - Shared skills for:
@@ -166,6 +176,7 @@ claude --plugin-dir ./plugins/claude-code
 - GitHub Copilot packaging output in `plugins/copilot/`
 - Qodo workspace output in `plugins/qodo/`
 - Windsurf/Cascade workspace output in `plugins/windsurf/`
+- Aider config and conventions output in `plugins/aider/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -184,6 +195,7 @@ The build packages the shared skills into:
 - `plugins/copilot/skills/`
 - `plugins/qodo/skills/`
 - `plugins/windsurf/skills/`
+- `plugins/aider/skills/`
 
 It also generates plugin-specific MCP configs or setup guidance for each surface:
 
@@ -196,6 +208,8 @@ It also generates plugin-specific MCP configs or setup guidance for each surface
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
 - Qodo: documented in `plugins/qodo/README.md` because official Qodo docs describe MCP setup through Agentic Tools or enterprise allow-lists, not automatic repo-local `.mcp.json` discovery
 - Windsurf/Cascade: `plugins/windsurf/mcp_config.json`
+
+Aider does not use a normal marketplace plugin or MCP package surface, so the Aider output uses `.aider.conf.yml` to read conventions and shared guidance files.
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -351,3 +365,18 @@ That folder currently contains:
 - `README.md`
 
 The generated Qodo output follows official Qodo docs by using repo-local `AGENTS.md` for project guidance and documenting MCP JSON for Qodo's Agentic Tools UI or enterprise allow-list. Qodo's docs do not describe automatic repo-local `.mcp.json` discovery, so this output intentionally does not generate a Qodo-only `.mcp.json` file.
+
+The Aider output is generated to:
+
+```text
+plugins/aider/
+```
+
+That folder currently contains:
+
+- `.aider.conf.yml`
+- `CONVENTIONS.md`
+- `skills/`
+- `README.md`
+
+The generated Aider config loads `CONVENTIONS.md` and the shared WordPress.com guidance files as read-only context.

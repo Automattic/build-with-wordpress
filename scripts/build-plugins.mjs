@@ -655,6 +655,86 @@ ${skillList}
 `;
 }
 
+function buildAiderReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`skills/${skillName}/SKILL.md\``)
+    .join("\n");
+
+  return `# WordPress.com Aider Configuration
+
+This Aider output packages WordPress.com coding guidance for terminal pair-programming with Aider.
+
+Aider does not use a marketplace plugin manifest or MCP config in normal usage. This output is intentionally a small config and documentation pack:
+
+- \`.aider.conf.yml\` loads the instruction files as read-only context
+- \`CONVENTIONS.md\` provides Aider-specific setup and editing conventions
+- \`skills/\` contains the shared WordPress.com agent guidance also used by other outputs
+
+## Setup
+
+1. Copy or symlink the contents of this directory into the root of the repository you want to edit.
+2. Configure your model and API keys with Aider-supported environment variables or a local \`.env\` file.
+3. Start Aider from the repository root that contains \`.aider.conf.yml\`:
+
+\`\`\`bash
+aider
+\`\`\`
+
+Aider will read the configured guidance files without making them editable in the chat.
+
+## Aider-specific guidance
+
+- Use \`.aider.conf.yml\` and \`CONVENTIONS.md\` for Aider configuration and conventions.
+- Use Aider's normal \`/read\`, \`/add\`, lint, test, and git workflows for active pair-programming.
+- Keep API keys in environment variables or a local \`.env\` file; do not commit secrets.
+
+## Shared WordPress.com guidance
+
+The shared guidance describes WordPress.com implementation routing, Studio-backed local workflows, site creation, theme work, block creation, plugin creation, design previews, and auditing.
+
+These files are loaded as read-only context:
+
+${skillList}
+
+## MCP and agent substrate
+
+WordPress.com agent workflows share Studio MCP and telemetry guidance across Codex and Claude Code outputs. Aider complements that substrate as a terminal pair-programming tool, but this output does not pretend Aider has a native marketplace plugin or MCP package surface.
+`;
+}
+
+function buildAiderConventions({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`skills/${skillName}/SKILL.md\``)
+    .join("\n");
+
+  return `# WordPress.com Aider Conventions
+
+Use these conventions when pair-programming with Aider on WordPress.com projects.
+
+## Aider workflow
+
+- Treat this file and the shared skill files as read-only guidance.
+- Add only the files needed for the current change to the editable chat.
+- Prefer small, reviewable diffs and run the relevant lint, build, or test command before finishing.
+- Keep model names, API keys, and provider credentials in Aider-supported environment variables or a local \`.env\` file.
+- Use Aider's git-aware workflow for code edits; review the diff before committing.
+
+## WordPress.com implementation guidance
+
+- Choose the smallest WordPress abstraction that solves the request cleanly.
+- Use themes for presentation, blocks for reusable editor-insertable content, and plugins for reusable behavior that should survive theme changes.
+- Validate serialized block markup after editing generated block content.
+- Sanitize input, escape output, check capabilities, and use nonces for admin actions.
+- Keep generated code understandable, maintainable, and consistent with the existing project.
+
+## Shared guidance files
+
+The shared WordPress.com agent guidance is loaded from:
+
+${skillList}
+`;
+}
+
 function buildOpenCodeAgentsMd() {
   return `# WordPress.com OpenCode Instructions
 
@@ -851,6 +931,15 @@ When working in a WordPress project, prefer the configured WordPress Studio MCP 
 
 Use MCP evidence for behavior claims when a site can be run locally. If MCP is unavailable, explain the limitation and use repository evidence instead.
 `;
+}
+
+function createAiderConfig({ skillNames }) {
+  const readFiles = [
+    "CONVENTIONS.md",
+    ...skillNames.map((skillName) => `skills/${skillName}/SKILL.md`),
+  ];
+
+  return `# WordPress.com guidance for Aider.\n# See https://aider.chat/docs/config.html and https://aider.chat/docs/usage/conventions.html.\nread:\n${readFiles.map((file) => `  - ${file}`).join("\n")}\n`;
 }
 
 const pluginTargets = [
@@ -1084,6 +1173,18 @@ const pluginTargets = [
       );
     },
   },
+  {
+    logName: "Aider",
+    buildRootDir: path.join(pluginsDir, "aider"),
+    pluginDir: path.join(pluginsDir, "aider"),
+    legacyCleanupPaths: [],
+    includeSkills: true,
+    includeReadme: false,
+    includeAiderFiles: true,
+    includeMcpConfig: false,
+    includeTelemetry: false,
+    surface: "aider",
+  },
 ];
 
 async function copySkillSet(sourceDir, targetDir) {
@@ -1121,22 +1222,28 @@ async function buildPluginTarget(target, skillNames) {
       recursive: true,
     });
   }
-  await mkdir(path.join(target.pluginDir, "scripts"), { recursive: true });
-  await mkdir(path.join(target.pluginDir, "skills"), { recursive: true });
-  await copySkillSet(
-    sharedSkillsSourceDir,
-    path.join(target.pluginDir, "skills"),
-  );
-  await cp(
-    telemetryMcpServerDistPath,
-    path.join(target.pluginDir, "scripts", "wordpress-telemetry-mcp.mjs"),
-  );
-  const telemetryScriptPath = path.join(
-    target.pluginDir,
-    "scripts",
-    "wordpress-telemetry-mcp.mjs",
-  );
-  const telemetrySource = await readFile(telemetryScriptPath, "utf8");
+  if (target.includeSkills !== false) {
+    await mkdir(path.join(target.pluginDir, "skills"), { recursive: true });
+    await copySkillSet(
+      sharedSkillsSourceDir,
+      path.join(target.pluginDir, "skills"),
+    );
+  }
+
+  let telemetrySource = "";
+  if (target.includeTelemetry !== false) {
+    await mkdir(path.join(target.pluginDir, "scripts"), { recursive: true });
+    await cp(
+      telemetryMcpServerDistPath,
+      path.join(target.pluginDir, "scripts", "wordpress-telemetry-mcp.mjs"),
+    );
+    const telemetryScriptPath = path.join(
+      target.pluginDir,
+      "scripts",
+      "wordpress-telemetry-mcp.mjs",
+    );
+    telemetrySource = await readFile(telemetryScriptPath, "utf8");
+  }
 
   if (target.surface === "opencode") {
     await mkdir(path.join(target.pluginDir, ".opencode", "agents"), {
@@ -1223,7 +1330,7 @@ async function buildPluginTarget(target, skillNames) {
 
   if (target.writeExtraFiles) {
     await target.writeExtraFiles({ pluginDir: target.pluginDir, skillNames, telemetrySource });
-  } else {
+  } else if (target.includeReadme !== false) {
     await writeFile(
       path.join(target.pluginDir, "README.md"),
       buildReadme({
@@ -1242,6 +1349,24 @@ async function buildPluginTarget(target, skillNames) {
     for (const rule of target.rules) {
       await writeFile(path.join(rulesDir, rule.fileName), rule.contents, "utf8");
     }
+  }
+
+  if (target.includeAiderFiles) {
+    await writeFile(
+      path.join(target.pluginDir, "README.md"),
+      buildAiderReadme({ skillNames }),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, "CONVENTIONS.md"),
+      buildAiderConventions({ skillNames }),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".aider.conf.yml"),
+      createAiderConfig({ skillNames }),
+      "utf8",
+    );
   }
 
   if (target.marketplacePath && target.marketplaceContents) {

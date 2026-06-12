@@ -351,6 +351,21 @@ const factoryMarketplaceManifest = {
   ],
 };
 
+const piPackageManifest = {
+  name: "wordpress-studio-pi-package",
+  version: "0.3.0",
+  private: true,
+  description: "WordPress Studio skills packaged for the Pi coding agent.",
+  author: {
+    name: "Automattic",
+  },
+  license: "GPL-2.0-or-later",
+  keywords: ["pi-package", "wordpress", "studio", "agent-skills"],
+  pi: {
+    skills: ["./skills"],
+  },
+};
+
 function buildOpenCodeConfig({ telemetrySource }) {
   return {
     "$schema": "https://opencode.ai/config.json",
@@ -406,6 +421,53 @@ This ${surfaceName} plugin packages shared WordPress skills from the \`build-wit
 ${intro}
 
 It ships the shared skills from this repo so all supported surfaces stay aligned while we iterate on surface-specific packaging details.
+
+## Included skills
+
+${skillList}
+`;
+}
+
+function buildPiReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+
+  return `# WordPress Studio for Pi
+
+This Pi package shares the Build with WordPress skills with the official Pi coding-agent surface.
+
+## Official Pi surface
+
+Pi's official coding-agent package is \`@earendil-works/pi-coding-agent\`, documented at https://pi.dev/docs/latest and implemented in https://github.com/earendil-works/pi/tree/main/packages/coding-agent.
+
+The official Pi documentation describes these compatible extension points:
+
+- repo instructions through \`AGENTS.md\` or \`CLAUDE.md\`
+- Agent Skills loaded from \`skills/\` directories or package manifests
+- TypeScript extensions for custom tools, commands, events, providers, and UI
+- prompt templates and themes
+- Pi packages installed from npm, git, or local paths
+
+## Install
+
+From this repository after \`pnpm build\`:
+
+\`\`\`bash
+pi install ./plugins/pi
+\`\`\`
+
+For a project-local install, use:
+
+\`\`\`bash
+pi install -l ./plugins/pi
+\`\`\`
+
+## Compatibility path
+
+This output is intentionally a skills-only Pi package. Pi's official docs state that Pi has no built-in MCP support; MCP support should be built as a TypeScript extension if we want Pi to call the WordPress Studio MCP server directly.
+
+Until that extension exists, use these skills as Pi-readable WordPress workflows and use the Studio CLI fallback paths documented in the shared \`studio\` skill when MCP tools are unavailable.
 
 ## Included skills
 
@@ -1713,6 +1775,24 @@ const pluginTargets = [
     },
   },
   {
+    logName: "Pi",
+    buildRootDir: path.join(pluginsDir, "pi"),
+    pluginDir: path.join(pluginsDir, "pi"),
+    legacyCleanupPaths: [],
+    manifestFileName: "package.json",
+    manifestContents: piPackageManifest,
+    includeMcpConfig: false,
+    includeTelemetry: false,
+    surface: "pi",
+    writeExtraFiles: async ({ pluginDir, skillNames }) => {
+      await writeFile(
+        path.join(pluginDir, "README.md"),
+        buildPiReadme({ skillNames }),
+        "utf8",
+      );
+    },
+  },
+  {
     logName: "Roo Code",
     buildRootDir: path.join(pluginsDir, "roo-code"),
     pluginDir: path.join(pluginsDir, "roo-code"),
@@ -2234,6 +2314,14 @@ async function buildPluginTarget(target, skillNames) {
   if (target.manifestDir && target.manifestFileName && target.manifestContents) {
     await writeFile(
       path.join(target.pluginDir, target.manifestDir, target.manifestFileName),
+      `${JSON.stringify(target.manifestContents, null, 2)}\n`,
+      "utf8",
+    );
+  }
+
+  if (!target.manifestDir && target.manifestFileName && target.manifestContents) {
+    await writeFile(
+      path.join(target.pluginDir, target.manifestFileName),
       `${JSON.stringify(target.manifestContents, null, 2)}\n`,
       "utf8",
     );

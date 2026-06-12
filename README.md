@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Amp, Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Junie, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
+This repo currently packages shared skills and setup files for Amp, Cline, Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Junie, Pi, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -17,6 +17,8 @@ This repo currently packages shared skills and setup files for Amp, Codex, Claud
 - keeps skills shared so other surfaces can reuse them later
 - includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
 - includes Devin CLI project config, rules, and skills under Devin's documented `.devin/` surfaces
+- adds Cline workspace rules, skills, MCP settings, and Cline plugin-surface documentation from official Cline docs
+- adds a Pi skills package using Pi's official package manifest and Agent Skills support
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
 - adds a Qodo `AGENTS.md` workspace package and documents Qodo's manual MCP setup path from official Qodo docs
 - adds Zed project instructions, project-local skills, and project settings for MCP without introducing a Zed-specific backend service
@@ -83,6 +85,24 @@ claude --plugin-dir ./plugins/claude-code
    - creating a custom block
     - creating a custom plugin
     - running an audit request
+
+### Test in Cline
+
+1. Install Cline using the official instructions at https://docs.cline.bot/getting-started/installing-cline.md.
+2. Open `./plugins/cline` as the project root, or copy its generated files into a target workspace root.
+3. Confirm the generated Cline files exist:
+   - `plugins/cline/.clinerules/wordpress-com.md`
+   - `plugins/cline/.cline/skills/`
+   - `plugins/cline/.cline/plugins/README.md`
+   - `plugins/cline/mcp.json`
+4. Merge the server entries from `plugins/cline/mcp.json` into Cline's MCP settings.
+5. Confirm the `wordpress-studio` and `wordpress-telemetry` MCP tools are available in Cline.
+6. Try the same representative tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
 
 ### Test in Amp
 
@@ -245,6 +265,20 @@ droid plugin install wordpress-studio@wordpress-studio --scope project
    - creating a custom plugin
    - running an audit request
 
+### Test in Pi
+
+1. Review the generated Pi output in `./plugins/pi`.
+2. Confirm the generated Pi package manifest exists at `plugins/pi/package.json`.
+3. Confirm the manifest includes the `pi-package` keyword and `pi.skills` path.
+4. Install the local package with Pi:
+
+```bash
+pi install ./plugins/pi
+```
+
+5. For a project-local install, use `pi install -l ./plugins/pi`.
+6. Use the skills as Pi-readable WordPress workflows. Pi's official docs state that Pi has no built-in MCP support, so direct Studio MCP tool access requires a future Pi TypeScript extension.
+
 ## Current scope
 
 - Shared skills for:
@@ -265,6 +299,7 @@ droid plugin install wordpress-studio@wordpress-studio --scope project
 - Factory Droid marketplace output in `plugins/factory/`
 - Devin CLI setup output in `plugins/devin/`
 - Roo Code workspace output in `plugins/roo-code/`
+- Cline workspace output in `plugins/cline/`
 - Gemini packaging output in `plugins/gemini/`
 - Junie packaging output in `plugins/junie/`
 - GitHub Copilot packaging output in `plugins/copilot/`
@@ -273,6 +308,7 @@ droid plugin install wordpress-studio@wordpress-studio --scope project
 - Windsurf/Cascade workspace output in `plugins/windsurf/`
 - Aider config and conventions output in `plugins/aider/`
 - Amp workspace output in `plugins/amp/`
+- Pi package output in `plugins/pi/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -287,6 +323,7 @@ The build packages the shared skills into:
 - `plugins/claude-code/skills/`
 - `plugins/cursor/skills/`
 - `plugins/roo-code/skills/`
+- `plugins/cline/.cline/skills/`
 - `plugins/factory/plugins/wordpress-studio/skills/`
 - `plugins/gemini/skills/`
 - `plugins/junie/.junie/skills/`
@@ -297,6 +334,7 @@ The build packages the shared skills into:
 - `plugins/aider/skills/`
 - `plugins/devin/.devin/skills/`
 - `plugins/amp/.agents/skills/`
+- `plugins/pi/skills/`
 
 It also generates plugin-specific MCP configs or setup guidance for each surface:
 
@@ -307,6 +345,7 @@ It also generates plugin-specific MCP configs or setup guidance for each surface
 - Factory Droid: `plugins/factory/plugins/wordpress-studio/mcp.json`
 - Devin CLI: `plugins/devin/.devin/config.json`
 - Roo Code: `plugins/roo-code/.roo/mcp.json`
+- Cline: `plugins/cline/mcp.json`
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - Junie: `plugins/junie/.junie/mcp/mcp.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
@@ -316,6 +355,8 @@ It also generates plugin-specific MCP configs or setup guidance for each surface
 - Amp: `plugins/amp/.amp/settings.json`
 
 Aider does not use a normal marketplace plugin or MCP package surface, so the Aider output uses `.aider.conf.yml` to read conventions and shared guidance files.
+
+Pi is intentionally not listed here. The official Pi documentation says Pi has no built-in MCP support; the supported compatibility path is a future Pi TypeScript extension that registers equivalent tools or bridges MCP.
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -509,6 +550,20 @@ That folder currently contains:
 
 The generated Zed MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through Zed's `context_servers` settings shape. Zed's official docs support project `AGENTS.md` instructions and project-local `.agents/skills/`, so this output does not generate a Zed extension package.
 
+The Pi package is generated to:
+
+```text
+plugins/pi/
+```
+
+That folder currently contains:
+
+- `package.json`
+- `skills/`
+- `README.md`
+
+The generated Pi package uses Pi's official package format: `package.json` contains the `pi-package` keyword and a `pi.skills` entry pointing at `./skills`. It does not generate MCP configuration or bundle the telemetry MCP server because Pi's official documentation does not expose built-in MCP configuration.
+
 The Roo Code workspace output is generated to:
 
 ```text
@@ -526,6 +581,23 @@ That folder currently contains:
 - `README.md`
 
 The generated Roo Code project MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. The `.roo/rules/` files are Roo-specific; the WordPress.com MCP and skill behavior is shared with the other outputs.
+
+The Cline workspace output is generated to:
+
+```text
+plugins/cline/
+```
+
+That folder currently contains:
+
+- `.clinerules/wordpress-com.md`
+- `.cline/skills/`
+- `.cline/plugins/README.md`
+- `mcp.json`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `README.md`
+
+The generated Cline MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. The Cline output uses Cline-native workspace rules, skills, and MCP configuration instead of claiming extension marketplace packaging because official Cline plugin docs currently scope plugins to the Cline SDK, CLI, and Kanban.
 
 The Qodo workspace output is generated to:
 

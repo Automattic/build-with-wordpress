@@ -1,0 +1,21 @@
+{
+  "name": "wordpress-studio-pi-package",
+  "version": "0.3.0",
+  "private": true,
+  "description": "WordPress Studio skills packaged for the Pi coding agent.",
+  "author": {
+    "name": "Automattic"
+  },
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "pi-package",
+    "wordpress",
+    "studio",
+    "agent-skills"
+  ],
+  "pi": {
+    "skills": [
+      "./skills"
+    ]
+  }
+}

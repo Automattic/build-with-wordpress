@@ -41,6 +41,7 @@ const factoryMarketplacePath = path.join(
 );
 const devinPluginDir = path.join(root, "plugins", "devin");
 const ampPluginDir = path.join(root, "plugins", "amp");
+const piPluginDir = path.join(root, "plugins", "pi");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -790,6 +791,49 @@ async function verifyAmpPlugin(skillNames) {
   }
 }
 
+async function verifyPiPlugin(skillNames) {
+  await access(path.join(piPluginDir, "package.json"));
+  await access(path.join(piPluginDir, "README.md"));
+  await verifySharedSkillSet(piPluginDir, skillNames);
+
+  const manifestRaw = await readFile(path.join(piPluginDir, "package.json"), "utf8");
+  const manifest = JSON.parse(manifestRaw);
+
+  if (!manifest.keywords?.includes("pi-package")) {
+    throw new Error("Pi package manifest is missing the pi-package keyword");
+  }
+
+  if (manifest.pi?.skills?.[0] !== "./skills") {
+    throw new Error("Pi package manifest is missing the pi.skills path");
+  }
+
+  try {
+    await access(path.join(piPluginDir, ".mcp.json"));
+    throw new Error("Pi output should not generate an MCP config");
+  } catch (error) {
+    if (error.message === "Pi output should not generate an MCP config") {
+      throw error;
+    }
+  }
+
+  try {
+    await access(path.join(piPluginDir, "scripts", "wordpress-telemetry-mcp.mjs"));
+    throw new Error("Pi output should not bundle the telemetry MCP server");
+  } catch (error) {
+    if (error.message === "Pi output should not bundle the telemetry MCP server") {
+      throw error;
+    }
+  }
+
+  const readme = await readFile(path.join(piPluginDir, "README.md"), "utf8");
+  if (!readme.includes("@earendil-works/pi-coding-agent")) {
+    throw new Error("Pi README is missing the official Pi coding-agent package name");
+  }
+  if (!readme.includes("no built-in MCP support")) {
+    throw new Error("Pi README must document the MCP compatibility boundary");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
@@ -811,8 +855,9 @@ async function main() {
   await verifyFactoryPlugin(skillNames);
   await verifyDevinPlugin(skillNames);
   await verifyAmpPlugin(skillNames);
+  await verifyPiPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Cline, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, and Amp verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Cline, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, Amp, and Pi verification passed");
 }
 
 main().catch((error) => {

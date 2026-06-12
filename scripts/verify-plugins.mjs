@@ -28,6 +28,13 @@ const copilotPluginDir = path.join(root, "plugins", "copilot");
 const kiloCodePluginDir = path.join(root, "plugins", "kilo-code");
 const windsurfPluginDir = path.join(root, "plugins", "windsurf");
 const aiderPluginDir = path.join(root, "plugins", "aider");
+const factoryOutputDir = path.join(root, "plugins", "factory");
+const factoryPluginDir = path.join(factoryOutputDir, "plugins", pluginName);
+const factoryMarketplacePath = path.join(
+  factoryOutputDir,
+  ".factory-plugin",
+  "marketplace.json",
+);
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -472,6 +479,73 @@ async function verifyAiderPlugin(skillNames) {
   }
 }
 
+async function verifyFactoryPlugin(skillNames) {
+  await access(path.join(factoryPluginDir, ".factory-plugin", "plugin.json"));
+  await access(factoryMarketplacePath);
+  await access(path.join(factoryPluginDir, "README.md"));
+  await access(path.join(factoryPluginDir, "commands", "wordpress.md"));
+  await access(path.join(factoryPluginDir, "droids", "wordpress-builder.md"));
+  await access(path.join(factoryPluginDir, "hooks", "hooks.json"));
+  await access(path.join(factoryPluginDir, "hooks", "session-context.sh"));
+  await verifySharedSkillSet(factoryPluginDir, skillNames);
+  await verifyMcpConfig(factoryPluginDir, "Factory Droid plugin", "mcp.json");
+  await verifyTelemetryScript(factoryPluginDir, "Factory Droid");
+
+  const manifestRaw = await readFile(
+    path.join(factoryPluginDir, ".factory-plugin", "plugin.json"),
+    "utf8",
+  );
+  const manifest = JSON.parse(manifestRaw);
+
+  if (manifest.name !== pluginName) {
+    throw new Error("Unexpected Factory Droid plugin name");
+  }
+
+  if (!manifest.description || !manifest.version) {
+    throw new Error("Factory Droid plugin manifest is missing required metadata");
+  }
+
+  const marketplaceRaw = await readFile(factoryMarketplacePath, "utf8");
+  const marketplace = JSON.parse(marketplaceRaw);
+  const pluginEntry = marketplace.plugins?.find((entry) => entry.name === pluginName);
+
+  if (marketplace.name !== pluginName) {
+    throw new Error("Factory Droid marketplace has the wrong name");
+  }
+
+  if (pluginEntry?.source !== `./plugins/${pluginName}`) {
+    throw new Error("Factory Droid marketplace has the wrong plugin source path");
+  }
+
+  const command = await readFile(
+    path.join(factoryPluginDir, "commands", "wordpress.md"),
+    "utf8",
+  );
+  if (!command.includes("$ARGUMENTS")) {
+    throw new Error("Factory Droid command must forward user arguments");
+  }
+
+  const droid = await readFile(
+    path.join(factoryPluginDir, "droids", "wordpress-builder.md"),
+    "utf8",
+  );
+  if (!droid.includes("name: wordpress-builder")) {
+    throw new Error("Factory Droid custom droid is missing the expected name");
+  }
+  if (!droid.includes('mcpServers: ["wordpress-studio", "wordpress-telemetry"]')) {
+    throw new Error("Factory Droid custom droid should scope the WordPress MCP servers");
+  }
+
+  const hooksRaw = await readFile(
+    path.join(factoryPluginDir, "hooks", "hooks.json"),
+    "utf8",
+  );
+  const hooks = JSON.parse(hooksRaw);
+  if (!hooks.hooks?.SessionStart?.[0]?.hooks?.[0]?.command?.includes("${DROID_PLUGIN_ROOT}")) {
+    throw new Error("Factory Droid hook must use DROID_PLUGIN_ROOT for plugin-local scripts");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
@@ -486,8 +560,9 @@ async function main() {
   await verifyCopilotPlugin(skillNames);
   await verifyWindsurfPlugin(skillNames);
   await verifyAiderPlugin(skillNames);
+  await verifyFactoryPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Gemini, Copilot, Windsurf, and Aider verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Gemini, Copilot, Windsurf, Aider, and Factory Droid verification passed");
 }
 
 main().catch((error) => {

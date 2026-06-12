@@ -18,6 +18,8 @@ const pluginDisplayName = "WordPress Studio";
 const cursorPluginName = pluginName;
 const cursorPluginDisplayName = pluginDisplayName;
 const continueOutputDir = path.join(pluginsDir, "continue");
+const factoryOutputDir = path.join(pluginsDir, "factory");
+const factoryPluginDir = path.join(factoryOutputDir, "plugins", pluginName);
 const geminiDisplayName = "WordPress.com";
 const qodoPluginDir = path.join(pluginsDir, "qodo");
 
@@ -268,6 +270,35 @@ description: Use when configuring or troubleshooting Cascade MCP access for Word
 `,
   },
 ];
+
+const factoryPluginManifest = {
+  name: pluginName,
+  version: "0.3.0",
+  description:
+    "Craft production-grade WordPress sites and applications with Droid, WordPress Studio MCP, shared skills, commands, hooks, and custom droids.",
+  author: {
+    name: "Automattic",
+  },
+  homepage: "https://developer.wordpress.com/",
+  repository: "https://github.com/Automattic/build-with-wordpress",
+  license: "GPL-2.0-or-later",
+};
+
+const factoryMarketplaceManifest = {
+  name: pluginName,
+  description: "WordPress Studio plugins for Factory Droid.",
+  owner: {
+    name: "Automattic",
+  },
+  plugins: [
+    {
+      name: pluginName,
+      description: factoryPluginManifest.description,
+      source: `./plugins/${pluginName}`,
+      category: "Coding",
+    },
+  ],
+};
 
 function buildOpenCodeConfig({ telemetrySource }) {
   return {
@@ -942,6 +973,127 @@ function createAiderConfig({ skillNames }) {
   return `# WordPress.com guidance for Aider.\n# See https://aider.chat/docs/config.html and https://aider.chat/docs/usage/conventions.html.\nread:\n${readFiles.map((file) => `  - ${file}`).join("\n")}\n`;
 }
 
+function buildFactoryCommand() {
+  return `---
+description: Route a WordPress.com task through the shared WordPress Creator skill.
+argument-hint: <wordpress task>
+---
+
+# Build with WordPress.com
+
+Handle this WordPress.com request using the shared WordPress Creator workflow:
+
+$ARGUMENTS
+
+Load the \`wordpress-creator\` skill first, choose the smallest suitable WordPress abstraction, and use the \`wordpress-studio\` MCP server for site operations and verification when available.
+`;
+}
+
+function buildFactoryDroid() {
+  return `---
+name: wordpress-builder
+description: Builds, customizes, audits, and troubleshoots WordPress.com sites using WordPress Studio MCP and the shared Build with WordPress skills.
+model: inherit
+tools: ["Read", "LS", "Grep", "Glob", "Create", "Edit", "ApplyPatch", "Execute"]
+mcpServers: ["wordpress-studio", "wordpress-telemetry"]
+---
+
+You are a WordPress.com specialist Droid.
+
+Use WordPress.com as the user-facing product name. For build, theme, block, plugin, site-creation, or audit requests, load \`skills/wordpress-creator/SKILL.md\` first and follow its routing to the smallest suitable implementation path.
+
+Prefer the \`wordpress-studio\` MCP server for site discovery, local site control, screenshots, block validation, \`wp_cli\`, and WordPress.com or Jetpack-connected workflows. Use the \`wordpress-telemetry\` MCP server for workflow telemetry when available.
+
+Verify changes with relevant Studio MCP tools, project tests, block validation, screenshots, or WP-CLI evidence before reporting completion.
+`;
+}
+
+function buildFactoryHooksJson() {
+  return {
+    description: "Adds WordPress Studio plugin context at Droid session start.",
+    hooks: {
+      SessionStart: [
+        {
+          hooks: [
+            {
+              type: "command",
+              command: "sh ${DROID_PLUGIN_ROOT}/hooks/session-context.sh",
+              timeout: 10,
+            },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+function buildFactorySessionContextHook() {
+  return `#!/usr/bin/env sh
+set -eu
+
+printf '%s\n' 'WordPress Studio Droid plugin is active. Load skills/wordpress-creator/SKILL.md for WordPress.com build, theme, block, plugin, site creation, or audit tasks. Prefer the wordpress-studio MCP server for site operations and verification when available.'
+`;
+}
+
+function buildFactoryReadme({ skillNames }) {
+  const skillList = skillNames.map((skillName) => `- \`${skillName}\``).join("\n");
+
+  return `# WordPress Studio for Factory Droid
+
+This Factory output packages the shared Build with WordPress skills as a native Droid plugin.
+
+## Factory-native pieces
+
+- \`.factory-plugin/plugin.json\` is the Factory plugin manifest.
+- \`skills/\` contains the shared WordPress skills. Droid can invoke these automatically, and users can invoke them as slash commands.
+- \`commands/wordpress.md\` adds a user-invoked \`/wordpress\` workflow shortcut.
+- \`droids/wordpress-builder.md\` adds a custom Droid subagent for focused WordPress.com work.
+- \`mcp.json\` configures the shared \`wordpress-studio\` MCP server and bundled \`wordpress-telemetry\` MCP server.
+- \`hooks/hooks.json\` adds lightweight session-start context using \`\${DROID_PLUGIN_ROOT}\`.
+
+## Marketplace layout
+
+The parent \`plugins/factory/\` directory is a local Factory marketplace:
+
+- \`.factory-plugin/marketplace.json\` lists the \`wordpress-studio\` plugin.
+- \`plugins/wordpress-studio/\` contains this plugin.
+
+## Local install
+
+From this repository root after running \`pnpm build\`:
+
+\`\`\`bash
+droid plugin marketplace add ./plugins/factory
+droid plugin install wordpress-studio@wordpress-studio --scope project
+\`\`\`
+
+Factory's plugin documentation also supports adding marketplaces from GitHub repositories. If this output is published from a dedicated marketplace repository, add that repository URL with \`droid plugin marketplace add <url>\` and install \`wordpress-studio@wordpress-studio\`.
+
+## MCP servers
+
+\`mcp.json\` launches:
+
+- \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
+- \`wordpress-telemetry\`: runs the bundled telemetry MCP server generated by this package.
+
+No secrets are stored in the project MCP config.
+
+## Included skills
+
+${skillList}
+
+## Factory documentation used
+
+- Plugins: https://docs.factory.ai/cli/configuration/plugins
+- Building plugins: https://docs.factory.ai/guides/building/building-plugins
+- Skills: https://docs.factory.ai/cli/configuration/skills
+- Custom slash commands: https://docs.factory.ai/cli/configuration/custom-slash-commands
+- Custom Droids: https://docs.factory.ai/cli/configuration/custom-droids
+- MCP: https://docs.factory.ai/cli/configuration/mcp
+- Hooks reference: https://docs.factory.ai/reference/hooks-reference
+`;
+}
+
 const pluginTargets = [
   {
     logName: "Codex",
@@ -1184,6 +1336,51 @@ const pluginTargets = [
     includeMcpConfig: false,
     includeTelemetry: false,
     surface: "aider",
+  },
+  {
+    logName: "Factory Droid",
+    displayName: pluginDisplayName,
+    buildRootDir: factoryOutputDir,
+    pluginDir: factoryPluginDir,
+    legacyCleanupPaths: [],
+    manifestDir: ".factory-plugin",
+    manifestFileName: "plugin.json",
+    manifestContents: factoryPluginManifest,
+    marketplacePath: path.join(factoryOutputDir, ".factory-plugin", "marketplace.json"),
+    marketplaceContents: factoryMarketplaceManifest,
+    includeMcpConfig: true,
+    mcpConfigPath: "mcp.json",
+    surface: "factory-droid",
+    extraFiles: async ({ pluginDir, skillNames }) => {
+      await mkdir(path.join(pluginDir, "commands"), { recursive: true });
+      await mkdir(path.join(pluginDir, "droids"), { recursive: true });
+      await mkdir(path.join(pluginDir, "hooks"), { recursive: true });
+      await writeFile(
+        path.join(pluginDir, "commands", "wordpress.md"),
+        buildFactoryCommand(),
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, "droids", "wordpress-builder.md"),
+        buildFactoryDroid(),
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, "hooks", "hooks.json"),
+        `${JSON.stringify(buildFactoryHooksJson(), null, 2)}\n`,
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, "hooks", "session-context.sh"),
+        buildFactorySessionContextHook(),
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, "README.md"),
+        buildFactoryReadme({ skillNames }),
+        "utf8",
+      );
+    },
   },
 ];
 

@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, Factory Droid, GitHub Copilot, Gemini, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
+This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -16,6 +16,7 @@ This repo currently packages shared skills and setup files for Codex, Claude Cod
 - includes an Aider config and conventions pack for terminal pair-programming
 - keeps skills shared so other surfaces can reuse them later
 - includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
+- includes Devin CLI project config, rules, and skills under Devin's documented `.devin/` surfaces
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
 - adds Zed project instructions, project-local skills, and project settings for MCP without introducing a Zed-specific backend service
 - adds Windsurf/Cascade workspace rules and MCP config without introducing a Windsurf-specific backend service
@@ -176,6 +177,24 @@ droid plugin install wordpress-studio@wordpress-studio --scope project
 
 4. In Droid, confirm the `wordpress-studio` and `wordpress-telemetry` MCP servers are available, then try representative WordPress.com tasks.
 
+### Test in Devin CLI
+
+1. Review the generated Devin output in `./plugins/devin`.
+2. Confirm the generated setup files exist:
+   - `plugins/devin/README.md`
+   - `plugins/devin/AGENTS.md`
+   - `plugins/devin/.devin/config.json`
+   - `plugins/devin/.devin/skills/`
+   - `plugins/devin/scripts/wordpress-telemetry-mcp.mjs`
+3. Open `./plugins/devin` as the Devin CLI project root, or copy `AGENTS.md` and `.devin/` into a target project root.
+4. Confirm Devin CLI can see the configured `wordpress-studio` and `wordpress-telemetry` MCP servers.
+5. Try the same representative tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+
 ## Current scope
 
 - Shared skills for:
@@ -194,6 +213,7 @@ droid plugin install wordpress-studio@wordpress-studio --scope project
 - Cursor packaging output in `plugins/cursor/`
 - Continue setup output in `plugins/continue/`
 - Factory Droid marketplace output in `plugins/factory/`
+- Devin CLI setup output in `plugins/devin/`
 - Roo Code workspace output in `plugins/roo-code/`
 - Gemini packaging output in `plugins/gemini/`
 - GitHub Copilot packaging output in `plugins/copilot/`
@@ -220,6 +240,7 @@ The build packages the shared skills into:
 - `plugins/zed/.agents/skills/`
 - `plugins/windsurf/skills/`
 - `plugins/aider/skills/`
+- `plugins/devin/.devin/skills/`
 
 It also generates plugin-specific MCP configs for each surface:
 
@@ -228,6 +249,7 @@ It also generates plugin-specific MCP configs for each surface:
 - Cursor: `plugins/cursor/mcp.json`
 - Continue: `plugins/continue/.continue/mcpServers/wordpress-com.yaml`
 - Factory Droid: `plugins/factory/plugins/wordpress-studio/mcp.json`
+- Devin CLI: `plugins/devin/.devin/config.json`
 - Roo Code: `plugins/roo-code/.roo/mcp.json`
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
@@ -368,6 +390,31 @@ The generated Factory Droid MCP config launches both `studio mcp` and the bundle
 - https://docs.factory.ai/cli/configuration/custom-droids
 - https://docs.factory.ai/cli/configuration/mcp
 - https://docs.factory.ai/reference/hooks-reference
+
+The Devin CLI setup output is generated to:
+
+```text
+plugins/devin/
+```
+
+That folder currently contains:
+
+- `AGENTS.md`
+- `.devin/config.json`
+- `.devin/skills/`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `README.md`
+
+The generated Devin config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through Devin's documented project config surface. Devin's official docs support project rules in `AGENTS.md`, project skills in `.devin/skills/<name>/SKILL.md`, and project MCP servers in `.devin/config.json`.
+
+Official Devin references:
+
+- Extensibility overview: https://docs.devin.ai/cli/extensibility/index.md
+- Rules and AGENTS.md: https://docs.devin.ai/cli/extensibility/rules.md
+- Skills overview: https://docs.devin.ai/cli/extensibility/skills/overview.md
+- Skill format: https://docs.devin.ai/cli/extensibility/skills/creating-skills.md
+- MCP configuration: https://docs.devin.ai/cli/extensibility/mcp/configuration.md
+- Configuration files: https://docs.devin.ai/cli/extensibility/configuration.md
 
 The generated Copilot MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through VS Code's MCP configuration.
 

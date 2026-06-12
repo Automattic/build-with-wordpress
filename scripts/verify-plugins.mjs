@@ -20,6 +20,7 @@ const codexMarketplacePath = path.join(
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
 const cursorPluginDir = path.join(root, "plugins", "cursor");
+const geminiPluginDir = path.join(root, "plugins", "gemini");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
 
 async function getSharedSkillNames() {
@@ -181,6 +182,28 @@ async function verifyCursorPlugin(skillNames) {
   }
 }
 
+async function verifyGeminiPlugin(skillNames) {
+  await access(path.join(geminiPluginDir, "GEMINI.md"));
+  await access(path.join(geminiPluginDir, "README.md"));
+  await verifySharedSkillSet(geminiPluginDir, skillNames);
+  await verifyMcpConfig(
+    geminiPluginDir,
+    "Gemini plugin",
+    path.join(".gemini", "settings.json"),
+  );
+  await verifyTelemetryScript(geminiPluginDir, "Gemini");
+
+  const instructions = await readFile(path.join(geminiPluginDir, "GEMINI.md"), "utf8");
+
+  if (!instructions.includes("WordPress Studio MCP server")) {
+    throw new Error("Gemini instructions are missing Studio MCP guidance");
+  }
+
+  if (!instructions.includes("skills/wordpress-creator/SKILL.md")) {
+    throw new Error("Gemini instructions are missing wordpress-creator routing guidance");
+  }
+}
+
 async function verifyCopilotPlugin(skillNames) {
   await access(path.join(copilotPluginDir, ".github", "copilot-instructions.md"));
   await access(
@@ -217,9 +240,10 @@ async function main() {
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
   await verifyCursorPlugin(skillNames);
+  await verifyGeminiPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, and Copilot plugin verification passed");
+  console.log("Codex, Claude, Cursor, Gemini, and Copilot plugin verification passed");
 }
 
 main().catch((error) => {

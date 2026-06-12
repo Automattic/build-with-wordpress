@@ -17,6 +17,7 @@ const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
 const cursorPluginName = pluginName;
 const cursorPluginDisplayName = pluginDisplayName;
+const geminiDisplayName = "WordPress.com";
 
 function createTelemetryBootstrapArgs({ surface, telemetrySource }) {
   const compressedSource = brotliCompressSync(Buffer.from(telemetrySource, "utf8"));
@@ -45,6 +46,30 @@ function createMcpConfig({ surface, telemetrySource }) {
       },
     },
   };
+}
+
+function buildGeminiInstructions({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- Load \`skills/${skillName}/SKILL.md\` when the task matches that workflow.`)
+    .join("\n");
+
+  return `# ${geminiDisplayName}
+
+You are working with the ${geminiDisplayName} Gemini package.
+
+Use the WordPress Studio MCP server as the primary interface for local WordPress site work:
+
+- manage Studio sites with MCP tools before falling back to shell commands
+- use Studio screenshots and block validation for visual and block correctness checks
+- use WP-CLI through the Studio MCP server for arbitrary WordPress operations
+- use the bundled wordpress-telemetry MCP server to report workflow events when available
+
+The shared WordPress skills are packaged in this directory. Load the smallest relevant skill before planning or editing:
+
+${skillList}
+
+When a request involves WordPress implementation choices, start with \`skills/wordpress-creator/SKILL.md\` so the work routes to the right site, theme, block, plugin, or audit path.
+`;
 }
 
 function createVsCodeMcpConfig({ surface, telemetrySource }) {
@@ -362,6 +387,29 @@ const pluginTargets = [
           "wordpress-studio.instructions.md",
         ),
         buildCopilotScopedInstructions(),
+        "utf8",
+      );
+    },
+  },
+  {
+    logName: "Gemini",
+    displayName: geminiDisplayName,
+    buildRootDir: path.join(pluginsDir, "gemini"),
+    pluginDir: path.join(pluginsDir, "gemini"),
+    legacyCleanupPaths: [],
+    readmeIntro: `It is a Gemini CLI and Gemini Code Assist package built from the same shared skills as the Codex, Claude Code, and Cursor plugins.
+
+- \`GEMINI.md\` provides project-level WordPress guidance for Gemini
+- \`.gemini/settings.json\` configures the Studio and telemetry MCP servers for Gemini CLI
+- WordPress request routing stays shared across surfaces
+    - Studio-backed site, theme, block, plugin, and audit workflows stay shared`,
+    includeMcpConfig: true,
+    mcpConfigPath: path.join(".gemini", "settings.json"),
+    surface: "gemini",
+    extraFiles: async ({ pluginDir, skillNames }) => {
+      await writeFile(
+        path.join(pluginDir, "GEMINI.md"),
+        buildGeminiInstructions({ skillNames }),
         "utf8",
       );
     },

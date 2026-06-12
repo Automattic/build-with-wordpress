@@ -28,6 +28,7 @@ const copilotPluginDir = path.join(root, "plugins", "copilot");
 const qodoPluginDir = path.join(root, "plugins", "qodo");
 const zedPluginDir = path.join(root, "plugins", "zed");
 const windsurfPluginDir = path.join(root, "plugins", "windsurf");
+const clinePluginDir = path.join(root, "plugins", "cline");
 const aiderPluginDir = path.join(root, "plugins", "aider");
 const factoryOutputDir = path.join(root, "plugins", "factory");
 const factoryPluginDir = path.join(factoryOutputDir, "plugins", pluginName);
@@ -316,6 +317,46 @@ async function verifyRooPlugin(skillNames) {
 
   if (!mcp.mcpServers?.["wordpress-telemetry"]) {
     throw new Error("Roo Code MCP config is missing the wordpress-telemetry entry");
+  }
+}
+
+async function verifyClinePlugin(skillNames) {
+  await access(path.join(clinePluginDir, "README.md"));
+  await access(path.join(clinePluginDir, ".clinerules", "wordpress-com.md"));
+  await access(path.join(clinePluginDir, ".cline", "plugins", "README.md"));
+  await verifySharedSkillSet(path.join(clinePluginDir, ".cline"), skillNames);
+  await verifyMcpConfig(clinePluginDir, "Cline plugin", "mcp.json");
+  await verifyTelemetryScript(clinePluginDir, "Cline");
+
+  const readme = await readFile(path.join(clinePluginDir, "README.md"), "utf8");
+  if (!readme.includes("WordPress.com for Cline")) {
+    throw new Error("Cline README is missing the expected title");
+  }
+  if (!readme.includes("https://docs.cline.bot/customization/cline-rules.md")) {
+    throw new Error("Cline README must link official rules documentation");
+  }
+  if (!readme.includes("https://docs.cline.bot/customization/skills.md")) {
+    throw new Error("Cline README must link official skills documentation");
+  }
+  if (!readme.includes("https://docs.cline.bot/mcp/mcp-overview.md")) {
+    throw new Error("Cline README must link official MCP documentation");
+  }
+  if (!readme.includes("https://docs.cline.bot/mcp/mcp-marketplace.md")) {
+    throw new Error("Cline README must link official MCP Marketplace documentation");
+  }
+  if (!readme.includes("https://docs.cline.bot/customization/plugins.md")) {
+    throw new Error("Cline README must link official plugin documentation");
+  }
+
+  const rules = await readFile(
+    path.join(clinePluginDir, ".clinerules", "wordpress-com.md"),
+    "utf8",
+  );
+  if (!rules.includes("WordPress.com Cline Rules")) {
+    throw new Error("Cline rules are missing the expected heading");
+  }
+  if (!rules.includes(".cline/skills/<name>/SKILL.md")) {
+    throw new Error("Cline rules must point at Cline skills");
   }
 }
 
@@ -676,6 +717,7 @@ async function main() {
   await verifyContinueOutput();
   await verifyOpenCodePlugin(skillNames);
   await verifyRooPlugin(skillNames);
+  await verifyClinePlugin(skillNames);
   await verifyGeminiPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
   await verifyQodoPlugin(skillNames);
@@ -686,7 +728,7 @@ async function main() {
   await verifyDevinPlugin(skillNames);
   await verifyAmpPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, and Amp verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Cline, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, and Amp verification passed");
 }
 
 main().catch((error) => {

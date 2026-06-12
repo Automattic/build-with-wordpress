@@ -21,6 +21,7 @@ const continueOutputDir = path.join(pluginsDir, "continue");
 const factoryOutputDir = path.join(pluginsDir, "factory");
 const factoryPluginDir = path.join(factoryOutputDir, "plugins", pluginName);
 const geminiDisplayName = "WordPress.com";
+const qodoPluginDir = path.join(pluginsDir, "qodo");
 
 function createZedMcpConfig({ surface, telemetrySource }) {
   return {
@@ -843,6 +844,97 @@ This WordPress.com output does not currently ship an OpenCode-only plugin hook. 
 `;
 }
 
+function buildQodoAgentsMd({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- For ${skillName} work, consult \`skills/${skillName}/SKILL.md\`.`)
+    .join("\n");
+
+  return `# WordPress Studio for Qodo
+
+Use these instructions when Qodo IDE Plugin assists with WordPress site building, auditing, theme work, custom blocks, or plugins.
+
+## Operating model
+
+- Prefer WordPress Studio MCP tools for site management, screenshots, block validation, frontend audits, and WordPress operations when they are available in Qodo.
+- Use \`wp_cli\` through the Studio MCP server as the general-purpose WordPress escape hatch.
+- Route implementation requests through the smallest suitable WordPress abstraction: site settings, content, theme, block, plugin, or audit.
+- Preserve existing project conventions and inspect the current WordPress structure before editing.
+- Keep generated code accessible, performant, responsive, secure, and aligned with WordPress APIs and Gutenberg conventions.
+- Verify changes with relevant Studio MCP tools, project tests, screenshots, block validation, or WP-CLI before summarizing completion.
+
+## Shared WordPress skills
+
+This Qodo output packages the same shared skill source as the other Build with WordPress outputs. The skills live in \`skills/\` and provide deeper task-specific guidance:
+
+${skillList}
+
+When a task maps to one of those skills, use the relevant \`skills/<name>/SKILL.md\` file as the detailed playbook. Start with \`skills/wordpress-creator/SKILL.md\` for broad WordPress implementation requests.
+`;
+}
+
+function buildQodoReadme({ skillNames, telemetrySource }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+  const mcpConfig = JSON.stringify(
+    createMcpConfig({
+      surface: "qodo",
+      telemetrySource,
+    }),
+    null,
+    2,
+  );
+
+  return `# WordPress Studio for Qodo
+
+This output packages the shared Build with WordPress skills for Qodo IDE Plugin.
+
+Qodo-specific files in this folder are intentionally small:
+
+- \`AGENTS.md\` provides repo-local WordPress guidance using Qodo's documented AGENTS.md support.
+- \`skills/\` contains the shared WordPress skill playbooks used by the other outputs.
+- \`scripts/wordpress-telemetry-mcp.mjs\` is bundled for users who manually add the telemetry MCP to Qodo.
+
+## Setup
+
+1. Install Qodo IDE Plugin for VS Code, JetBrains, or Visual Studio.
+2. Open this folder, or copy \`AGENTS.md\`, \`skills/\`, and \`scripts/\` into the root of the workspace where Qodo should assist with WordPress work.
+3. Make sure WordPress Studio is installed and the \`studio\` CLI is available on your PATH.
+4. If your Qodo plan supports Agentic Tools, add the MCP configuration below in Qodo's Tools Management page or through your enterprise MCP allow-list.
+5. Use Qodo's local review workflows or agents for representative WordPress tasks such as creating a site, editing a theme, creating a custom block, creating a custom plugin, or running an audit.
+
+## MCP setup
+
+Qodo's official documentation describes MCP setup as an in-product Agentic Tools configuration or enterprise allow-list. It does not document a repo-local \`.mcp.json\` file that Qodo automatically loads, so this output documents the JSON to paste into Qodo instead of generating a Qodo-only MCP config file:
+
+\`\`\`json
+${mcpConfig}
+\`\`\`
+
+The \`wordpress-studio\` entry uses the existing \`studio mcp\` server for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access. The \`wordpress-telemetry\` entry uses the bundled telemetry server so workflow events stay aligned with the other agent surfaces.
+
+## What is Qodo-specific
+
+- Qodo automatically reads the closest repo-local \`AGENTS.md\` as project context for its IDE agent.
+- Qodo workflows can be exported/imported as \`.toml\` files under Qodo's user-managed agent directory, but the official docs do not define a repository packaging convention for those files.
+- Qodo Agentic Tools support local and remote MCPs through the Qodo UI or enterprise allow-list, not through a generated marketplace package in this repository.
+
+## Official Qodo references
+
+- IDE plugin overview and code-generation deprecation notice: https://docs.qodo.ai/qodo-ide
+- IDE setup and marketplace links: https://docs.qodo.ai/qodo-ide/getting-started/setup-and-installation
+- AGENTS.md support: https://docs.qodo.ai/qodo-ide/agent/agents.md-support
+- Workflows and agent TOML files: https://docs.qodo.ai/qodo-ide/agent/workflows
+- Agentic Tools MCP setup: https://docs.qodo.ai/qodo-ide/tools-mcps/agentic-tools-mcps
+- Code review configuration file: https://docs.qodo.ai/install-and-configure/configuration-overview/configuration-file
+- Qodo Skills: https://docs.qodo.ai/agent-skills
+
+## Included skills
+
+${skillList}
+`;
+}
+
 function buildZedAgentsMd() {
   return `# WordPress.com Zed Instructions
 
@@ -1384,6 +1476,27 @@ const pluginTargets = [
     manifestDir: ".opencode",
     includeMcpConfig: false,
     surface: "opencode",
+  },
+  {
+    logName: "Qodo",
+    buildRootDir: qodoPluginDir,
+    pluginDir: qodoPluginDir,
+    legacyCleanupPaths: [],
+    readmeIntro: "",
+    includeMcpConfig: false,
+    surface: "qodo",
+    async writeExtraFiles({ pluginDir, skillNames, telemetrySource }) {
+      await writeFile(
+        path.join(pluginDir, "AGENTS.md"),
+        buildQodoAgentsMd({ skillNames }),
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, "README.md"),
+        buildQodoReadme({ skillNames, telemetrySource }),
+        "utf8",
+      );
+    },
   },
   {
     logName: "Aider",

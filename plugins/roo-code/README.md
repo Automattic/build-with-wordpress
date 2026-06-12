@@ -9,7 +9,7 @@ Roo-specific files in this folder are intentionally small:
 - `.roo/mcp.json` connects Roo to the existing WordPress Studio MCP server and bundled `wordpress-telemetry` server.
 - `AGENTS.md` mirrors the same high-level routing for Roo installations that load agent rules.
 
-The shared WordPress.com substrate is not Roo-specific: the skills in `skills/`, the `studio mcp` server, and the bundled telemetry MCP server are the same flow used by the other agent outputs. Roo Code supplies the VS Code workspace rules and MCP configuration layer only.
+The shared WordPress.com substrate is not Roo-specific: the skills in `skills/`, the `studio mcp` server, and the embedded telemetry MCP bootstrap are the same flow used by the other agent outputs. Roo Code supplies the VS Code workspace rules and MCP configuration layer only.
 
 ## Setup
 
@@ -24,7 +24,7 @@ The shared WordPress.com substrate is not Roo-specific: the skills in `skills/`,
 `.roo/mcp.json` launches:
 
 - `wordpress-studio`: runs `studio mcp` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
-- `wordpress-telemetry`: runs the bundled telemetry server artifact from this package.
+- `wordpress-telemetry`: runs an embedded bootstrap generated from the shared telemetry server artifact.
 
 This does not invent a Roo-only backend. Roo connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
 

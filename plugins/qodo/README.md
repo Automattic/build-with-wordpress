@@ -6,12 +6,12 @@ Qodo-specific files in this folder are intentionally small:
 
 - `AGENTS.md` provides repo-local WordPress guidance using Qodo's documented AGENTS.md support.
 - `skills/` contains the shared WordPress skill playbooks used by the other outputs.
-- `scripts/wordpress-telemetry-mcp.mjs` is bundled for users who manually add the telemetry MCP to Qodo.
+- The MCP setup below embeds the telemetry bootstrap generated from the shared `dist/wordpress-telemetry-mcp.mjs` artifact.
 
 ## Setup
 
 1. Install Qodo IDE Plugin for VS Code, JetBrains, or Visual Studio.
-2. Open this folder, or copy `AGENTS.md`, `skills/`, and `scripts/` into the root of the workspace where Qodo should assist with WordPress work.
+2. Open this folder, or copy `AGENTS.md` and `skills/` into the root of the workspace where Qodo should assist with WordPress work.
 3. Make sure WordPress Studio is installed and the `studio` CLI is available on your PATH.
 4. If your Qodo plan supports Agentic Tools, add the MCP configuration below in Qodo's Tools Management page or through your enterprise MCP allow-list.
 5. Use Qodo's local review workflows or agents for representative WordPress tasks such as creating a site, editing a theme, creating a custom block, creating a custom plugin, or running an audit.

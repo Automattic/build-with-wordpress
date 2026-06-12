@@ -1123,6 +1123,14 @@ async function buildPluginTarget(target, skillNames) {
     );
   }
 
+  if (target.rules) {
+    const rulesDir = path.join(target.pluginDir, ".devin", "rules");
+    await mkdir(rulesDir, { recursive: true });
+    for (const rule of target.rules) {
+      await writeFile(path.join(rulesDir, rule.fileName), rule.contents, "utf8");
+    }
+  }
+
   if (target.marketplacePath && target.marketplaceContents) {
     await mkdir(path.dirname(target.marketplacePath), { recursive: true });
     await writeFile(

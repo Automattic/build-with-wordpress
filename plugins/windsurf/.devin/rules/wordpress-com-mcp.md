@@ -9,4 +9,4 @@ description: Use when configuring or troubleshooting Cascade MCP access for Word
 - Do not create a new backend service for WordPress.com access.
 - Keep the `wordpress-studio` server enabled for site operations, screenshots, block validation, audits, and WP-CLI access.
 - Keep the `wordpress-telemetry` server enabled when workflow telemetry is needed.
-- If Cascade cannot see WordPress.com tools, check Windsurf MCP settings and the user's `~/.codeium/windsurf/mcp_config.json` file.
+- If Cascade cannot see WordPress.com tools, check Cascade MCP settings and the user's `~/.codeium/windsurf/mcp_config.json` file.

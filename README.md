@@ -34,6 +34,7 @@ Generated outputs are available for:
 - Factory Droid
 - Gemini
 - GitHub Copilot
+- Hermes
 - Junie
 - Kilo Code
 - OpenCode
@@ -80,6 +81,7 @@ Each build packages the shared `skills/` directory and the bundled telemetry MCP
 | Factory Droid | `plugins/factory/` | Factory marketplace, plugin, command, Droid, hooks, MCP config, skills |
 | Gemini | `plugins/gemini/` | `GEMINI.md`, `.gemini/settings.json`, `skills/` |
 | GitHub Copilot | `plugins/copilot/` | `.github/copilot-instructions.md`, scoped instructions, `.vscode/mcp.json` |
+| Hermes | `plugins/hermes/` | `plugin.yaml`, `__init__.py`, `.hermes/config.yaml`, `skills/` |
 | Junie | `plugins/junie/` | `.junie/AGENTS.md`, `.junie/skills/`, `.junie/mcp/mcp.json` |
 | Kilo Code | `plugins/kilo-code/` | `kilo.jsonc`, `AGENTS.md`, `.kilo/agents/`, `.kilo/rules/`, `.kilo/skills/` |
 | OpenCode | `plugins/opencode/` | `AGENTS.md`, `.opencode/`, commands, agents, skills, MCP config |

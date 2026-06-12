@@ -37,6 +37,7 @@ Generated outputs are available for:
 - Hermes
 - Junie
 - Kilo Code
+- OpenClaw
 - OpenCode
 - Pi
 - Qodo
@@ -84,6 +85,7 @@ Each build packages the shared `skills/` directory and the bundled telemetry MCP
 | Hermes | `plugins/hermes/` | `plugin.yaml`, `__init__.py`, `.hermes/config.yaml`, `skills/` |
 | Junie | `plugins/junie/` | `.junie/AGENTS.md`, `.junie/skills/`, `.junie/mcp/mcp.json` |
 | Kilo Code | `plugins/kilo-code/` | `kilo.jsonc`, `AGENTS.md`, `.kilo/agents/`, `.kilo/rules/`, `.kilo/skills/` |
+| OpenClaw | `plugins/openclaw/` | `package.json` with OpenClaw package metadata, `AGENTS.md`, `mcp.json`, `skills/` |
 | OpenCode | `plugins/opencode/` | `AGENTS.md`, `.opencode/`, commands, agents, skills, MCP config |
 | Pi | `plugins/pi/` | `package.json` with `pi-package` metadata and `skills/` |
 | Qodo | `plugins/qodo/` | `AGENTS.md`, `skills/`, MCP setup documented for Qodo Agentic Tools |

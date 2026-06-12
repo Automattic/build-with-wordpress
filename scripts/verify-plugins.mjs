@@ -44,6 +44,7 @@ const devinPluginDir = path.join(root, "plugins", "devin");
 const ampPluginDir = path.join(root, "plugins", "amp");
 const piPluginDir = path.join(root, "plugins", "pi");
 const hermesPluginDir = path.join(root, "plugins", "hermes");
+const openClawPluginDir = path.join(root, "plugins", "openclaw");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -932,6 +933,57 @@ async function verifyHermesPlugin(skillNames) {
   }
 }
 
+async function verifyOpenClawPlugin(skillNames) {
+  await access(path.join(openClawPluginDir, "package.json"));
+  await access(path.join(openClawPluginDir, "AGENTS.md"));
+  await access(path.join(openClawPluginDir, "README.md"));
+  await verifySharedSkillSet(openClawPluginDir, skillNames);
+  await verifyMcpConfig(openClawPluginDir, "OpenClaw plugin", "mcp.json");
+  await verifyTelemetryScript(openClawPluginDir, "OpenClaw");
+
+  const manifestRaw = await readFile(path.join(openClawPluginDir, "package.json"), "utf8");
+  const manifest = JSON.parse(manifestRaw);
+
+  if (manifest.name !== pluginName) {
+    throw new Error("Unexpected OpenClaw package name");
+  }
+
+  if (manifest.openclaw?.skills !== "./skills") {
+    throw new Error("OpenClaw package manifest is missing the skills path");
+  }
+
+  if (manifest.openclaw?.mcpServers !== "./mcp.json") {
+    throw new Error("OpenClaw package manifest is missing the MCP config path");
+  }
+
+  if (!manifest.openclaw?.compat?.pluginApi) {
+    throw new Error("OpenClaw package manifest is missing openclaw.compat.pluginApi");
+  }
+
+  if (!manifest.openclaw?.build?.openclawVersion) {
+    throw new Error("OpenClaw package manifest is missing openclaw.build.openclawVersion");
+  }
+
+  const readme = await readFile(path.join(openClawPluginDir, "README.md"), "utf8");
+  const requiredDocLinks = [
+    "https://openclaw.ai",
+    "https://github.com/openclaw/openclaw",
+    "https://clawhub.ai",
+    "https://github.com/openclaw/clawhub",
+  ];
+
+  for (const docLink of requiredDocLinks) {
+    if (!readme.includes(docLink)) {
+      throw new Error(`OpenClaw README is missing official documentation link: ${docLink}`);
+    }
+  }
+
+  const agentsMd = await readFile(path.join(openClawPluginDir, "AGENTS.md"), "utf8");
+  if (!agentsMd.includes("skills/wordpress-creator/SKILL.md")) {
+    throw new Error("OpenClaw AGENTS.md is missing skill loading guidance");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
@@ -956,8 +1008,9 @@ async function main() {
   await verifyAmpPlugin(skillNames);
   await verifyPiPlugin(skillNames);
   await verifyHermesPlugin(skillNames);
+  await verifyOpenClawPlugin(skillNames);
 
-  console.log("Amp, Cline, Codex, Claude, Conductor, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, Pi, and Hermes verification passed");
+  console.log("Amp, Cline, Codex, Claude, Conductor, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, Pi, Hermes, and OpenClaw verification passed");
 }
 
 main().catch((error) => {

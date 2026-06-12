@@ -248,6 +248,41 @@ const claudePluginManifest = {
   },
 };
 
+const windsurfRules = [
+  {
+    fileName: "wordpress-com.md",
+    contents: `---
+trigger: always_on
+---
+
+# WordPress.com
+
+- Treat this workspace as a WordPress.com-aware build environment.
+- Use the configured WordPress.com MCP tools before falling back to shell or manual WordPress operations.
+- Prefer the smallest fitting WordPress abstraction: existing blocks first, then theme work, custom blocks, and plugins only when reusable functionality is required.
+- Keep user-facing product text as WordPress.com.
+- Ask for the target site only when the available MCP context does not identify it.
+- Verify WordPress work through MCP-backed screenshots, block validation, audits, or WP-CLI commands when those tools are available.
+`,
+  },
+  {
+    fileName: "wordpress-com-mcp.md",
+    contents: `---
+trigger: model_decision
+description: Use when configuring or troubleshooting Cascade MCP access for WordPress.com and Jetpack-connected sites.
+---
+
+# WordPress.com MCP
+
+- Cascade reaches WordPress.com through the existing WordPress.com / Jetpack MCP flow exposed by the configured \`wordpress-studio\` MCP server.
+- Do not create a new backend service for WordPress.com access.
+- Keep the \`wordpress-studio\` server enabled for site operations, screenshots, block validation, audits, and WP-CLI access.
+- Keep the \`wordpress-telemetry\` server enabled when workflow telemetry is needed.
+- If Cascade cannot see WordPress.com tools, check Cascade MCP settings and the user's \`~/.codeium/windsurf/mcp_config.json\` file.
+`,
+  },
+];
+
 function buildOpenCodeConfig({ telemetrySource }) {
   return {
     "$schema": "https://opencode.ai/config.json",
@@ -536,6 +571,58 @@ The generated config also starts the bundled \`wordpress-telemetry\` MCP server 
 - The telemetry MCP server is the same bundled server generated for the other outputs, with the surface set to \`opencode\`.
 
 ## Included skills
+
+${skillList}
+`;
+}
+
+function buildWindsurfReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+
+  return `# WordPress.com for Windsurf Cascade
+
+This Windsurf/Cascade output packages the shared WordPress agent substrate from the \`build-with-wordpress\` source repo for WordPress.com work.
+
+## What is Windsurf-specific
+
+- Cascade rules live in \`.devin/rules/*.md\`, which the official docs list as the preferred workspace rule location.
+- \`mcp_config.json\` is shaped for Cascade's MCP configuration file at \`~/.codeium/windsurf/mcp_config.json\`.
+- The rules tell Cascade when to use WordPress.com MCP tools and how to route WordPress implementation work.
+
+## What is shared
+
+- The WordPress.com MCP path uses the existing \`wordpress-studio\` MCP server; this output does not add a new backend service.
+- Jetpack-connected site access stays part of the existing WordPress.com / Jetpack MCP flow.
+- The bundled \`wordpress-telemetry\` MCP server is the same repo-local telemetry server used by the other outputs.
+- Shared WordPress skills are copied into \`skills/\` so routing, Studio-backed workflows, auditing, theme, block, and plugin guidance stay aligned across agent surfaces.
+
+## Setup
+
+1. Install Devin Desktop / Windsurf and complete onboarding.
+2. Optionally install the \`windsurf\` command in \`PATH\` during onboarding.
+3. Build this repo with \`pnpm build\`.
+4. Copy the servers from \`plugins/windsurf/mcp_config.json\` into \`~/.codeium/windsurf/mcp_config.json\`.
+5. In Cascade MCP settings, confirm both servers are enabled:
+   - \`wordpress-studio\`
+   - \`wordpress-telemetry\`
+6. Open this output folder or copy \`.devin/rules/\` into the workspace where Cascade should be WordPress.com-aware.
+7. Ask Cascade for a WordPress.com site task and confirm it uses MCP tools before shell fallbacks.
+
+## Included Cascade rules
+
+- \`.devin/rules/wordpress-com.md\`: always-on WordPress.com routing and product guidance.
+- \`.devin/rules/wordpress-com-mcp.md\`: model-decision MCP setup and troubleshooting guidance.
+
+## Official references
+
+- Rules and memories: https://docs.windsurf.com/windsurf/cascade/memories
+- MCP configuration: https://docs.windsurf.com/windsurf/cascade/mcp
+- AGENTS.md discovery: https://docs.devin.ai/desktop/cascade/agents-md
+- Installation and onboarding: https://docs.windsurf.com/windsurf/getting-started
+
+## Included shared skills
 
 ${skillList}
 `;
@@ -956,6 +1043,23 @@ const pluginTargets = [
     },
   },
   {
+    logName: "Windsurf",
+    buildRootDir: path.join(pluginsDir, "windsurf"),
+    pluginDir: path.join(pluginsDir, "windsurf"),
+    legacyCleanupPaths: [],
+    includeMcpConfig: true,
+    mcpConfigPath: "mcp_config.json",
+    surface: "windsurf",
+    rules: windsurfRules,
+    writeExtraFiles: async ({ pluginDir, skillNames }) => {
+      await writeFile(
+        path.join(pluginDir, "README.md"),
+        buildWindsurfReadme({ skillNames }),
+        "utf8",
+      );
+    },
+  },
+  {
     logName: "OpenCode",
     buildRootDir: path.join(pluginsDir, "opencode"),
     pluginDir: path.join(pluginsDir, "opencode"),
@@ -1156,6 +1260,14 @@ async function buildPluginTarget(target, skillNames) {
       }),
       "utf8",
     );
+  }
+
+  if (target.rules) {
+    const rulesDir = path.join(target.pluginDir, ".devin", "rules");
+    await mkdir(rulesDir, { recursive: true });
+    for (const rule of target.rules) {
+      await writeFile(path.join(rulesDir, rule.fileName), rule.contents, "utf8");
+    }
   }
 
   if (target.marketplacePath && target.marketplaceContents) {

@@ -1,0 +1,16 @@
+{
+  "description": "Adds WordPress Studio plugin context at Droid session start.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh ${DROID_PLUGIN_ROOT}/hooks/session-context.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

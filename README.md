@@ -1,33 +1,40 @@
 # Build with WordPress
 
-Shared source for WordPress-focused agent skills and plugin packaging.
+Canonical source for WordPress-focused agent skills, MCP setup, and generated packages across coding-agent surfaces.
 
-This repo currently packages shared skills and setup files for Amp, Cline, Codex, Claude Code, Conductor, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Junie, Kilo Code, Pi, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
+Build with WordPress lets coding agents create, edit, inspect, and validate WordPress.com and WordPress Studio projects using the same shared guidance. The repository owns the portable skill source plus the generator that adapts those skills into each agent's native packaging, configuration, or workspace convention.
+
+Generated outputs are available for:
+
+- Aider
+- Amp
+- Claude Code
+- Cline
+- Codex
+- Conductor
+- Continue
+- Cursor
+- Devin CLI
+- Factory Droid
+- Gemini
+- GitHub Copilot
+- Junie
+- Kilo Code
+- OpenCode
+- Pi
+- Qodo
+- Roo Code
+- Windsurf/Cascade
+- Zed
+
+The shared WordPress workflow:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
 - uses `wp_cli` through the MCP server as the general-purpose WordPress escape hatch
-- includes a top-level WordPress routing skill for choosing the right implementation path
-- includes a custom block development skill for custom Gutenberg block plugins
-- includes a custom plugin development skill for extending functionality outside what themes and blocks can offer
-- includes an auditing skill for performance, accessibility, and frontend quality review
-- can optionally generate three design preview directions before building a site theme
+- routes requests to the right implementation path for site work, block themes, custom blocks, custom plugins, and audits
+- can generate three design preview directions before building a site theme
 - bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
-- includes an Aider config and conventions pack for terminal pair-programming
-- keeps skills shared so other surfaces can reuse them later
-- includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
-- adds Kilo Code-native rules, skills, agent, AGENTS.md, plugin directory documentation, and project MCP config
-- includes Devin CLI project config, rules, and skills under Devin's documented `.devin/` surfaces
-- adds Cline workspace rules, skills, MCP settings, and Cline plugin-surface documentation from official Cline docs
-- adds a Pi skills package using Pi's official package manifest and Agent Skills support
-- includes Conductor repository settings and guidance for running the existing Claude Code, Codex, and Cursor outputs in isolated Conductor workspaces
-- adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
-- adds a Qodo `AGENTS.md` workspace package and documents Qodo's manual MCP setup path from official Qodo docs
-- adds Zed project instructions, project-local skills, and project settings for MCP without introducing a Zed-specific backend service
-- adds Windsurf/Cascade workspace rules and MCP config without introducing a Windsurf-specific backend service
-- includes a Factory Droid marketplace output with a native Droid plugin, command, custom Droid, hook, and MCP configuration
-- adds Amp-native repository guidance, skills, MCP settings, and a project plugin command based on the official Amp manual
-- adds Junie project guidelines, skills, and project MCP config using Junie's `.junie/` conventions
 
 ## Testing
 
@@ -305,7 +312,7 @@ pi install ./plugins/pi
 5. For a project-local install, use `pi install -l ./plugins/pi`.
 6. Use the skills as Pi-readable WordPress workflows. Pi's official docs state that Pi has no built-in MCP support, so direct Studio MCP tool access requires a future Pi TypeScript extension.
 
-## Current scope
+## Repository Scope
 
 - Shared skills for:
   - WordPress request routing
@@ -448,7 +455,7 @@ The Claude Code plugin is generated to:
 plugins/claude-code/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `.claude-plugin/plugin.json`
 - `.mcp.json`
@@ -464,7 +471,7 @@ The GitHub Copilot plugin is generated to:
 plugins/copilot/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `.github/copilot-instructions.md`
 - `.github/instructions/wordpress-studio.instructions.md`
@@ -481,7 +488,7 @@ The Continue setup output is generated to:
 plugins/continue/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `README.md`
 - `config.yaml`
@@ -498,7 +505,7 @@ The Factory Droid marketplace output is generated to:
 plugins/factory/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `.factory-plugin/marketplace.json`
 - `plugins/wordpress-studio/.factory-plugin/plugin.json`
@@ -527,7 +534,7 @@ The Devin CLI setup output is generated to:
 plugins/devin/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `AGENTS.md`
 - `.devin/config.json`
@@ -552,7 +559,7 @@ The Conductor setup output is generated to:
 plugins/conductor/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `.conductor/settings.toml`
 - `README.md`
@@ -567,7 +574,7 @@ The Gemini plugin is generated to:
 plugins/gemini/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `.gemini/settings.json`
 - `GEMINI.md`
@@ -583,7 +590,7 @@ The Kilo Code output is generated to:
 plugins/kilo-code/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `kilo.jsonc`
 - `AGENTS.md`
@@ -602,7 +609,7 @@ The Zed workspace output is generated to:
 plugins/zed/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `.agents/skills/`
 - `.zed/settings.json`
@@ -618,7 +625,7 @@ The Pi package is generated to:
 plugins/pi/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `package.json`
 - `skills/`
@@ -632,7 +639,7 @@ The Roo Code workspace output is generated to:
 plugins/roo-code/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `.roo/mcp.json`
 - `.roo/rules/wordpress-com.md`
@@ -650,7 +657,7 @@ The Cline workspace output is generated to:
 plugins/cline/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `.clinerules/wordpress-com.md`
 - `.cline/skills/`
@@ -667,7 +674,7 @@ The Qodo workspace output is generated to:
 plugins/qodo/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `AGENTS.md`
 - `scripts/wordpress-telemetry-mcp.mjs`
@@ -682,7 +689,7 @@ The Aider output is generated to:
 plugins/aider/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `.aider.conf.yml`
 - `CONVENTIONS.md`
@@ -697,7 +704,7 @@ The Amp workspace output is generated to:
 plugins/amp/
 ```
 
-That folder currently contains:
+That folder contains:
 
 - `AGENTS.md`
 - `.agents/skills/`

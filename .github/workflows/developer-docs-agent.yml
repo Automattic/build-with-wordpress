@@ -67,5 +67,7 @@ jobs:
 
         Manual dispatch runs the bootstrap flow and should create or improve the initial developer documentation structure if the repository does not already have one. Push-triggered merge checks run the maintenance flow and should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when documentation is current.
 
-        Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows. Use the read-only context aliases `studio` and `wordpress-agent-skills` only as source evidence for integration behavior.
+        Write the developer documentation as repository docs: `docs/README.md` as the index, focused topic pages under `docs/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes. For the bootstrap surface, prefer `docs/architecture.md`, `docs/generated-outputs.md`, `docs/skills-and-integrations.md`, and `docs/contributor-workflows.md` as the main topic pages.
+
+        Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows. Document agent/plugin configuration files and generated plugin artifacts from those repository docs and plugin README files. Use the read-only context aliases `studio` and `wordpress-agent-skills` only as source evidence for integration behavior.
     secrets: inherit

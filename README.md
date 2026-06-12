@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Amp, Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Kilo Code, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
+This repo currently packages shared skills and setup files for Amp, Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Junie, Kilo Code, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -24,6 +24,7 @@ This repo currently packages shared skills and setup files for Amp, Codex, Claud
 - adds Windsurf/Cascade workspace rules and MCP config without introducing a Windsurf-specific backend service
 - includes a Factory Droid marketplace output with a native Droid plugin, command, custom Droid, hook, and MCP configuration
 - adds Amp-native repository guidance, skills, MCP settings, and a project plugin command based on the official Amp manual
+- adds Junie project guidelines, skills, and project MCP config using Junie's `.junie/` conventions
 
 ## Testing
 
@@ -144,6 +145,21 @@ claude --plugin-dir ./plugins/claude-code
    - creating a custom block
    - creating a custom plugin
    - running an audit request
+
+### Test in Junie
+
+1. Copy or open `./plugins/junie` as the Junie project root.
+2. Confirm the generated Junie guidelines exist at `plugins/junie/.junie/AGENTS.md`.
+3. Confirm the generated Junie skills exist at `plugins/junie/.junie/skills/`.
+4. Confirm the generated project MCP config exists at `plugins/junie/.junie/mcp/mcp.json`.
+5. Start Junie in a JetBrains IDE or Junie CLI and confirm `wordpress-studio` and `wordpress-telemetry` are available from MCP settings or the `/mcp` command.
+6. Try the same representative tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+7. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
 ### Test in Continue
 
@@ -267,6 +283,7 @@ droid plugin install wordpress-studio@wordpress-studio --scope project
 - Roo Code workspace output in `plugins/roo-code/`
 - Gemini packaging output in `plugins/gemini/`
 - Kilo Code packaging output in `plugins/kilo-code/`
+- Junie packaging output in `plugins/junie/`
 - GitHub Copilot packaging output in `plugins/copilot/`
 - Qodo workspace output in `plugins/qodo/`
 - Zed workspace output in `plugins/zed/`
@@ -289,6 +306,7 @@ The build packages the shared skills into:
 - `plugins/roo-code/skills/`
 - `plugins/factory/plugins/wordpress-studio/skills/`
 - `plugins/gemini/skills/`
+- `plugins/junie/.junie/skills/`
 - `plugins/copilot/skills/`
 - `plugins/kilo-code/.kilo/skills/`
 - `plugins/qodo/skills/`
@@ -308,6 +326,7 @@ It also generates plugin-specific MCP configs or setup guidance for each surface
 - Devin CLI: `plugins/devin/.devin/config.json`
 - Roo Code: `plugins/roo-code/.roo/mcp.json`
 - Gemini: `plugins/gemini/.gemini/settings.json`
+- Junie: `plugins/junie/.junie/mcp/mcp.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
 - Kilo Code: `plugins/kilo-code/kilo.jsonc`
 - Qodo: documented in `plugins/qodo/README.md` because official Qodo docs describe MCP setup through Agentic Tools or enterprise allow-lists, not automatic repo-local `.mcp.json` discovery

@@ -23,6 +23,7 @@ const cursorPluginDir = path.join(root, "plugins", "cursor");
 const continueOutputDir = path.join(root, "plugins", "continue");
 const openCodePluginDir = path.join(root, "plugins", "opencode");
 const rooPluginDir = path.join(root, "plugins", "roo-code");
+const juniePluginDir = path.join(root, "plugins", "junie");
 const geminiPluginDir = path.join(root, "plugins", "gemini");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
 const kiloCodePluginDir = path.join(root, "plugins", "kilo-code");
@@ -418,6 +419,29 @@ async function verifyClinePlugin(skillNames) {
   }
 }
 
+async function verifyJuniePlugin(skillNames) {
+  await access(path.join(juniePluginDir, "README.md"));
+  await access(path.join(juniePluginDir, ".junie", "AGENTS.md"));
+  await verifySharedSkillSet(path.join(juniePluginDir, ".junie"), skillNames);
+  await verifyMcpConfig(
+    juniePluginDir,
+    "Junie plugin",
+    path.join(".junie", "mcp", "mcp.json"),
+  );
+  await verifyTelemetryScript(juniePluginDir, "Junie");
+
+  const readme = await readFile(path.join(juniePluginDir, "README.md"), "utf8");
+  if (!readme.includes("WordPress.com for Junie")) {
+    throw new Error("Junie README is missing the expected title");
+  }
+  if (!readme.includes("https://www.jetbrains.com/help/junie/guidelines-and-memory.html")) {
+    throw new Error("Junie README must link official guidelines documentation");
+  }
+  if (!readme.includes("https://www.jetbrains.com/help/junie/junie-cli-mcp-configuration.html")) {
+    throw new Error("Junie README must link official MCP documentation");
+  }
+}
+
 async function verifyGeminiPlugin(skillNames) {
   await access(path.join(geminiPluginDir, "GEMINI.md"));
   await access(path.join(geminiPluginDir, "README.md"));
@@ -777,6 +801,7 @@ async function main() {
   await verifyKiloCodePlugin(skillNames);
   await verifyRooPlugin(skillNames);
   await verifyClinePlugin(skillNames);
+  await verifyJuniePlugin(skillNames);
   await verifyGeminiPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
   await verifyQodoPlugin(skillNames);
@@ -787,7 +812,7 @@ async function main() {
   await verifyDevinPlugin(skillNames);
   await verifyAmpPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Cline, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, and Amp verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Cline, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, and Amp verification passed");
 }
 
 main().catch((error) => {

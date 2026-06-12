@@ -1388,6 +1388,92 @@ ${skillList}
 `;
 }
 
+function buildJunieAgentsMd() {
+  return `# WordPress.com Junie Guidelines
+
+Use WordPress.com as the user-facing product name.
+
+## Role
+
+You help users build, customize, audit, and troubleshoot WordPress.com sites using the smallest suitable WordPress abstraction.
+
+## Workflow
+
+- Start by loading the \`wordpress-creator\` skill for WordPress.com build, theme, block, plugin, site-creation, or audit requests.
+- Prefer the WordPress Studio MCP server for site discovery, local site control, screenshots, block validation, and \`wp_cli\` access.
+- Use WordPress.com / Jetpack-connected MCP tools through the existing Studio MCP flow when the task targets a connected WordPress.com site.
+- Choose existing WordPress features and known plugins before creating custom code.
+- Use custom block plugins for reusable editor blocks that core blocks cannot cover.
+- Use custom plugins for reusable behavior that should survive theme changes.
+- Use theme work for templates, layout, styling, and visual presentation.
+- Verify changes with the relevant Studio MCP tools before calling the task complete.
+
+## Shared Substrate
+
+The WordPress.com MCP and agent substrate is shared across Junie, OpenCode, Codex, Claude Code, Cursor, and other outputs. Junie-specific files only adapt discovery and configuration to Junie's \`.junie/\` conventions.
+`;
+}
+
+function buildJunieReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+
+  return `# WordPress.com for Junie
+
+This Junie output packages the shared WordPress skills from the \`build-with-wordpress\` source repo for WordPress.com work.
+
+It is intentionally Junie-native:
+
+- \`.junie/AGENTS.md\` provides project-level Junie guidelines.
+- \`.junie/skills/\` contains the shared WordPress skills used by the other outputs.
+- \`.junie/mcp/mcp.json\` connects Junie to the existing WordPress Studio MCP server and bundled \`wordpress-telemetry\` server.
+- \`scripts/wordpress-telemetry-mcp.mjs\` contains the bundled telemetry MCP server artifact.
+
+## Setup
+
+1. Install Junie or use Junie from JetBrains AI Chat.
+2. Install WordPress Studio and make sure the \`studio\` CLI is available on your \`PATH\`.
+3. Open this folder as the project root, or copy \`.junie/\` and \`scripts/\` into your project.
+4. Confirm Junie loads project guidelines from \`.junie/AGENTS.md\`.
+5. Confirm the MCP servers are available in Junie MCP settings or with the Junie CLI \`/mcp\` command.
+
+## MCP servers
+
+\`.junie/mcp/mcp.json\` launches:
+
+- \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
+- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+
+This does not invent a Junie-only backend. Junie connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
+
+## Official Junie references
+
+- Getting started: https://www.jetbrains.com/help/junie/get-started-with-junie.html
+- IDE plugin and AI Chat usage: https://www.jetbrains.com/help/junie/junie-ide-plugin.html
+- Guidelines and memory: https://www.jetbrains.com/help/junie/guidelines-and-memory.html
+- Agent skills: https://www.jetbrains.com/help/junie/agent-skills.html
+- CLI MCP configuration: https://www.jetbrains.com/help/junie/junie-cli-mcp-configuration.html
+- IDE MCP settings: https://www.jetbrains.com/help/junie/junie-plugin-mcp-settings.html
+
+## What is Junie-specific
+
+- Junie loads project guidelines from \`.junie/AGENTS.md\`, falling back to root \`AGENTS.md\` when needed.
+- Junie loads project skills from \`.junie/skills/<name>/SKILL.md\`.
+- Junie loads project MCP servers from \`.junie/mcp/mcp.json\`.
+
+## What is shared
+
+- The WordPress.com site-building workflows are the same shared skills used by Codex, Claude Code, Cursor, OpenCode, and other outputs.
+- The Studio MCP server remains the shared substrate for local site management, screenshots, block validation, \`wp_cli\`, and WordPress.com / Jetpack-connected workflows.
+- The telemetry MCP server is the same bundled server generated for the other outputs, with the surface set to \`junie\`.
+
+## Included skills
+
+${skillList}
+`;
+}
+
 function buildCopilotInstructions({ skillNames }) {
   const skillList = skillNames.map((skillName) => `- ${skillName}`).join("\n");
 
@@ -1849,6 +1935,14 @@ const pluginTargets = [
     surface: "cline",
   },
   {
+    logName: "Junie",
+    buildRootDir: path.join(pluginsDir, "junie"),
+    pluginDir: path.join(pluginsDir, "junie"),
+    legacyCleanupPaths: [],
+    includeMcpConfig: false,
+    surface: "junie",
+  },
+  {
     logName: "OpenCode",
     buildRootDir: path.join(pluginsDir, "opencode"),
     pluginDir: path.join(pluginsDir, "opencode"),
@@ -2284,6 +2378,47 @@ async function buildPluginTarget(target, skillNames) {
     await writeFile(
       path.join(target.pluginDir, "README.md"),
       buildAmpReadme({ skillNames }),
+      "utf8",
+    );
+    console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);
+    return;
+  }
+
+  if (target.surface === "junie") {
+    await mkdir(path.join(target.pluginDir, ".junie", "mcp"), {
+      recursive: true,
+    });
+    await mkdir(path.join(target.pluginDir, ".junie", "skills"), {
+      recursive: true,
+    });
+    await rm(path.join(target.pluginDir, "skills"), {
+      recursive: true,
+      force: true,
+    });
+    await copySkillSet(
+      sharedSkillsSourceDir,
+      path.join(target.pluginDir, ".junie", "skills"),
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".junie", "AGENTS.md"),
+      buildJunieAgentsMd(),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".junie", "mcp", "mcp.json"),
+      `${JSON.stringify(
+        createMcpConfig({
+          surface: "junie",
+          telemetrySource,
+        }),
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, "README.md"),
+      buildJunieReadme({ skillNames }),
       "utf8",
     );
     console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);

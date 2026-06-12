@@ -26,6 +26,7 @@ const rooPluginDir = path.join(root, "plugins", "roo-code");
 const geminiPluginDir = path.join(root, "plugins", "gemini");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
 const kiloCodePluginDir = path.join(root, "plugins", "kilo-code");
+const qodoPluginDir = path.join(root, "plugins", "qodo");
 const zedPluginDir = path.join(root, "plugins", "zed");
 const windsurfPluginDir = path.join(root, "plugins", "windsurf");
 const aiderPluginDir = path.join(root, "plugins", "aider");
@@ -427,6 +428,40 @@ async function verifyCopilotPlugin(skillNames) {
   }
 }
 
+async function verifyQodoPlugin(skillNames) {
+  await access(path.join(qodoPluginDir, "AGENTS.md"));
+  await access(path.join(qodoPluginDir, "README.md"));
+  await verifySharedSkillSet(qodoPluginDir, skillNames);
+  await verifyTelemetryScript(qodoPluginDir, "Qodo");
+
+  const agentsRaw = await readFile(path.join(qodoPluginDir, "AGENTS.md"), "utf8");
+  if (!agentsRaw.includes("WordPress Studio for Qodo")) {
+    throw new Error("Qodo AGENTS.md is missing the expected heading");
+  }
+  if (!agentsRaw.includes("skills/wordpress-creator/SKILL.md")) {
+    throw new Error("Qodo AGENTS.md is missing wordpress-creator routing guidance");
+  }
+
+  const readmeRaw = await readFile(path.join(qodoPluginDir, "README.md"), "utf8");
+  const requiredDocLinks = [
+    "https://docs.qodo.ai/qodo-ide",
+    "https://docs.qodo.ai/qodo-ide/agent/agents.md-support",
+    "https://docs.qodo.ai/qodo-ide/tools-mcps/agentic-tools-mcps",
+    "https://docs.qodo.ai/install-and-configure/configuration-overview/configuration-file",
+    "https://docs.qodo.ai/agent-skills",
+  ];
+
+  for (const link of requiredDocLinks) {
+    if (!readmeRaw.includes(link)) {
+      throw new Error(`Qodo README is missing official reference: ${link}`);
+    }
+  }
+
+  if (!readmeRaw.includes("does not document a repo-local `.mcp.json`")) {
+    throw new Error("Qodo README must explain why no repo-local MCP config is generated");
+  }
+}
+
 async function verifyZedPlugin(skillNames) {
   await access(path.join(zedPluginDir, "README.md"));
   await access(path.join(zedPluginDir, "AGENTS.md"));
@@ -644,13 +679,14 @@ async function main() {
   await verifyRooPlugin(skillNames);
   await verifyGeminiPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
+  await verifyQodoPlugin(skillNames);
   await verifyZedPlugin(skillNames);
   await verifyWindsurfPlugin(skillNames);
   await verifyAiderPlugin(skillNames);
   await verifyFactoryPlugin(skillNames);
   await verifyDevinPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Gemini, Copilot, Windsurf, Aider, Factory Droid, Zed, and Devin verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Gemini, Copilot, Qodo, Windsurf, Aider, Factory Droid, Zed, and Devin verification passed");
 }
 
 main().catch((error) => {

@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Kilo Code, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
+This repo currently packages shared skills and setup files for Amp, Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Kilo Code, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -23,6 +23,7 @@ This repo currently packages shared skills and setup files for Codex, Claude Cod
 - adds Zed project instructions, project-local skills, and project settings for MCP without introducing a Zed-specific backend service
 - adds Windsurf/Cascade workspace rules and MCP config without introducing a Windsurf-specific backend service
 - includes a Factory Droid marketplace output with a native Droid plugin, command, custom Droid, hook, and MCP configuration
+- adds Amp-native repository guidance, skills, MCP settings, and a project plugin command based on the official Amp manual
 
 ## Testing
 
@@ -82,6 +83,24 @@ claude --plugin-dir ./plugins/claude-code
    - creating a custom block
     - creating a custom plugin
     - running an audit request
+
+### Test in Amp
+
+1. Install Amp using the official instructions at https://ampcode.com/manual.
+2. Open `./plugins/amp` as the project root, or copy its generated files into a target workspace root.
+3. Confirm the generated Amp files exist:
+   - `plugins/amp/AGENTS.md`
+   - `plugins/amp/.agents/skills/`
+   - `plugins/amp/.amp/settings.json`
+   - `plugins/amp/.amp/plugins/wordpress-studio.ts`
+4. Start Amp from that project root and approve workspace MCP servers if prompted.
+5. Confirm the configured MCP servers with `amp mcp doctor` or Amp's MCP UI.
+6. Try the same representative tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
 
 ### Test in GitHub Copilot
 
@@ -253,6 +272,7 @@ droid plugin install wordpress-studio@wordpress-studio --scope project
 - Zed workspace output in `plugins/zed/`
 - Windsurf/Cascade workspace output in `plugins/windsurf/`
 - Aider config and conventions output in `plugins/aider/`
+- Amp workspace output in `plugins/amp/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -276,6 +296,7 @@ The build packages the shared skills into:
 - `plugins/windsurf/skills/`
 - `plugins/aider/skills/`
 - `plugins/devin/.devin/skills/`
+- `plugins/amp/.agents/skills/`
 
 It also generates plugin-specific MCP configs or setup guidance for each surface:
 
@@ -292,6 +313,7 @@ It also generates plugin-specific MCP configs or setup guidance for each surface
 - Qodo: documented in `plugins/qodo/README.md` because official Qodo docs describe MCP setup through Agentic Tools or enterprise allow-lists, not automatic repo-local `.mcp.json` discovery
 - Zed: `plugins/zed/.zed/settings.json`
 - Windsurf/Cascade: `plugins/windsurf/mcp_config.json`
+- Amp: `plugins/amp/.amp/settings.json`
 
 Aider does not use a normal marketplace plugin or MCP package surface, so the Aider output uses `.aider.conf.yml` to read conventions and shared guidance files.
 
@@ -553,3 +575,29 @@ That folder currently contains:
 - `README.md`
 
 The generated Aider config loads `CONVENTIONS.md` and the shared WordPress.com guidance files as read-only context.
+
+The Amp workspace output is generated to:
+
+```text
+plugins/amp/
+```
+
+That folder currently contains:
+
+- `AGENTS.md`
+- `.agents/skills/`
+- `.amp/settings.json`
+- `.amp/plugins/wordpress-studio.ts`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `README.md`
+
+The generated Amp MCP settings launch both `studio mcp` and the bundled `wordpress-telemetry` MCP server. The Amp output uses official Amp project-local surfaces documented in the Owner's Manual: AGENTS.md, skills, MCP settings, and plugins. Amp does not document a marketplace-style project manifest for this packaging path, so this repo ships plain generated workspace files instead.
+
+Official Amp references:
+
+- https://ampcode.com/manual
+- https://ampcode.com/manual#AGENTS.md
+- https://ampcode.com/manual#agent-skills
+- https://ampcode.com/manual#mcp
+- https://ampcode.com/manual#plugins
+- https://ampcode.com/manual/plugin-api

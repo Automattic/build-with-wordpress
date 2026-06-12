@@ -38,6 +38,7 @@ const factoryMarketplacePath = path.join(
   "marketplace.json",
 );
 const devinPluginDir = path.join(root, "plugins", "devin");
+const ampPluginDir = path.join(root, "plugins", "amp");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -667,6 +668,63 @@ async function verifyDevinPlugin(skillNames) {
   }
 }
 
+async function verifyAmpPlugin(skillNames) {
+  await access(path.join(ampPluginDir, "README.md"));
+  await access(path.join(ampPluginDir, "AGENTS.md"));
+  await access(path.join(ampPluginDir, ".amp", "settings.json"));
+  await access(path.join(ampPluginDir, ".amp", "plugins", "wordpress-studio.ts"));
+  await verifySharedSkillSet(path.join(ampPluginDir, ".agents"), skillNames);
+  await verifyTelemetryScript(ampPluginDir, "Amp");
+
+  const settingsRaw = await readFile(
+    path.join(ampPluginDir, ".amp", "settings.json"),
+    "utf8",
+  );
+  const settings = JSON.parse(settingsRaw);
+  const servers = settings["amp.mcpServers"];
+
+  if (!servers || typeof servers !== "object") {
+    throw new Error("Amp settings are missing amp.mcpServers");
+  }
+
+  if (servers["wordpress-studio"]?.command !== "studio") {
+    throw new Error("Amp settings must launch wordpress-studio with studio");
+  }
+
+  if (!Array.isArray(servers["wordpress-studio"]?.args)) {
+    throw new Error("Amp wordpress-studio MCP config is missing args");
+  }
+
+  if (servers["wordpress-studio"].args.join(" ") !== "mcp") {
+    throw new Error("Amp wordpress-studio MCP args should launch studio mcp");
+  }
+
+  if (servers["wordpress-telemetry"]?.command !== "node") {
+    throw new Error("Amp settings are missing the bundled telemetry MCP server");
+  }
+
+  const agentsMd = await readFile(path.join(ampPluginDir, "AGENTS.md"), "utf8");
+  if (!agentsMd.includes("WordPress.com Amp Instructions")) {
+    throw new Error("Amp AGENTS.md is missing the expected heading");
+  }
+
+  const pluginRaw = await readFile(
+    path.join(ampPluginDir, ".amp", "plugins", "wordpress-studio.ts"),
+    "utf8",
+  );
+  if (!pluginRaw.includes("registerCommand")) {
+    throw new Error("Amp plugin must register a command");
+  }
+
+  const readme = await readFile(path.join(ampPluginDir, "README.md"), "utf8");
+  if (!readme.includes("https://ampcode.com/manual")) {
+    throw new Error("Amp README must link the official Amp manual");
+  }
+  if (!readme.includes("does not document a marketplace-style plugin manifest")) {
+    throw new Error("Amp README must document the marketplace-manifest conclusion");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
@@ -685,8 +743,9 @@ async function main() {
   await verifyAiderPlugin(skillNames);
   await verifyFactoryPlugin(skillNames);
   await verifyDevinPlugin(skillNames);
+  await verifyAmpPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Gemini, Copilot, Qodo, Windsurf, Aider, Factory Droid, Zed, and Devin verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, and Amp verification passed");
 }
 
 main().catch((error) => {

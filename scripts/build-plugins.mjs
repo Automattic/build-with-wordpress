@@ -1168,6 +1168,136 @@ ${skillList}
 `;
 }
 
+function buildAmpSettings({ telemetrySource }) {
+  return {
+    "amp.mcpServers": {
+      "wordpress-studio": {
+        command: "studio",
+        args: ["mcp"],
+      },
+      "wordpress-telemetry": {
+        command: "node",
+        args: createTelemetryBootstrapArgs({
+          surface: "amp",
+          telemetrySource,
+        }),
+      },
+    },
+  };
+}
+
+function buildAmpAgentsMd({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- Load \`.agents/skills/${skillName}/SKILL.md\` when the task matches that workflow.`)
+    .join("\n");
+
+  return `# WordPress.com Amp Instructions
+
+Use this workspace as a WordPress.com-aware Amp environment.
+
+## Role
+
+You help users build, customize, audit, and troubleshoot WordPress.com sites using the smallest suitable WordPress abstraction.
+
+## Workflow
+
+- Start with the \`wordpress-creator\` skill for WordPress.com build, theme, block, plugin, site-creation, or audit requests.
+- Prefer the WordPress Studio MCP server for site discovery, local site control, screenshots, block validation, and \`wp_cli\` access.
+- Use WordPress.com / Jetpack-connected MCP tools through the existing Studio MCP flow when the task targets a connected WordPress.com site.
+- Choose existing WordPress features and known plugins before creating custom code.
+- Use custom block plugins for reusable editor blocks that core blocks cannot cover.
+- Use custom plugins for reusable behavior that should survive theme changes.
+- Use theme work for templates, layout, styling, and visual presentation.
+- Verify changes with the relevant Studio MCP tools before calling the task complete.
+
+## Shared Skills
+
+${skillList}
+
+## Shared Substrate
+
+The WordPress.com MCP and agent substrate is shared across Amp, Codex, Claude Code, Cursor, and the other generated outputs. Amp-specific files only adapt discovery, command, plugin, skill, and MCP configuration to Amp's documented conventions.
+`;
+}
+
+function buildAmpPlugin() {
+  return `import type { PluginAPI } from '@ampcode/plugin'
+
+export default function (amp: PluginAPI) {
+	amp.registerCommand(
+		'wordpress-studio-task',
+		{
+			title: 'WordPress Studio Task',
+			category: 'wordpress',
+			description: 'Append WordPress.com Studio workflow guidance to the current Amp thread.',
+		},
+		async (ctx) => {
+			await ctx.thread?.append([
+				{
+					type: 'user-message',
+					content:
+						'Use the wordpress-creator skill, choose the smallest suitable WordPress.com implementation path, and prefer the wordpress-studio MCP server for site operations and verification.',
+				},
+			])
+		},
+	)
+}
+`;
+}
+
+function buildAmpReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+
+  return `# WordPress.com for Amp
+
+This Amp output packages the shared WordPress skills from the \`build-with-wordpress\` source repo for WordPress.com work.
+
+It is Amp-native according to the official Sourcegraph Amp Owner's Manual:
+
+- \`AGENTS.md\` provides repository guidance.
+- \`.agents/skills/\` contains the shared WordPress skills.
+- \`.amp/settings.json\` configures the WordPress Studio and bundled telemetry MCP servers.
+- \`.amp/plugins/wordpress-studio.ts\` adds an Amp command using the documented plugin API.
+
+Official Amp docs used as source of truth:
+
+- Owner's Manual: https://ampcode.com/manual
+- AGENTS.md guidance: https://ampcode.com/manual#AGENTS.md
+- Agent skills and MCP-in-skills: https://ampcode.com/manual#agent-skills
+- MCP configuration: https://ampcode.com/manual#mcp
+- Plugins and commands: https://ampcode.com/manual#plugins
+- Plugin API reference: https://ampcode.com/manual/plugin-api
+
+## Setup
+
+1. Install Amp using the official Amp setup instructions.
+2. Install WordPress Studio and make sure the \`studio\` CLI is available on your \`PATH\`.
+3. Open this directory as the project root, or copy \`AGENTS.md\`, \`.agents/\`, and \`.amp/\` into your project.
+4. Start Amp from the configured project root.
+5. Approve the workspace MCP servers if Amp prompts for trust.
+6. Confirm the MCP servers are available with \`amp mcp doctor\` or the Amp MCP UI.
+
+## MCP setup
+
+\`.amp/settings.json\` launches:
+
+- \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
+- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+
+This output does not introduce a new backend service. Amp connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
+
+## Marketplace and extension conclusion
+
+The official Amp manual documents project plugins in \`.amp/plugins/*.ts\`, user/system/global plugin locations, AGENTS.md files, skills, MCP configuration, and plugin-registered commands/tools. It does not document a marketplace-style plugin manifest for project packages. This output therefore ships plain repository files using Amp's documented project-local surfaces instead of inventing a marketplace manifest.
+
+## Included skills
+
+${skillList}
+`;
+}
+
 function buildCopilotInstructions({ skillNames }) {
   const skillList = skillNames.map((skillName) => `- ${skillName}`).join("\n");
 
@@ -1764,6 +1894,14 @@ const pluginTargets = [
     includeMcpConfig: false,
     surface: "devin",
   },
+  {
+    logName: "Amp",
+    buildRootDir: path.join(pluginsDir, "amp"),
+    pluginDir: path.join(pluginsDir, "amp"),
+    legacyCleanupPaths: [],
+    includeMcpConfig: false,
+    surface: "amp",
+  },
 ];
 
 async function copySkillSet(sourceDir, targetDir) {
@@ -1962,6 +2100,45 @@ async function buildPluginTarget(target, skillNames) {
       "utf8",
     );
     console.log(`Built ${target.logName} output at ${target.pluginDir}`);
+    return;
+  }
+
+  if (target.surface === "amp") {
+    await mkdir(path.join(target.pluginDir, ".agents", "skills"), {
+      recursive: true,
+    });
+    await mkdir(path.join(target.pluginDir, ".amp", "plugins"), {
+      recursive: true,
+    });
+    await rm(path.join(target.pluginDir, "skills"), {
+      recursive: true,
+      force: true,
+    });
+    await copySkillSet(
+      sharedSkillsSourceDir,
+      path.join(target.pluginDir, ".agents", "skills"),
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".amp", "settings.json"),
+      `${JSON.stringify(buildAmpSettings({ telemetrySource }), null, 2)}\n`,
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".amp", "plugins", "wordpress-studio.ts"),
+      buildAmpPlugin(),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, "AGENTS.md"),
+      buildAmpAgentsMd({ skillNames }),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, "README.md"),
+      buildAmpReadme({ skillNames }),
+      "utf8",
+    );
+    console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);
     return;
   }
 

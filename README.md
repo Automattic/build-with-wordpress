@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills for Codex, Claude Code, and Cursor as separate plugin outputs:
+This repo currently packages shared skills for Codex, Claude Code, Cursor, GitHub Copilot, Gemini, and Roo Code as separate plugin outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -14,6 +14,7 @@ This repo currently packages shared skills for Codex, Claude Code, and Cursor as
 - can optionally generate three design preview directions before building a site theme
 - bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
 - keeps skills shared so other surfaces can reuse them later
+- adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
 
 ## Testing
 
@@ -60,20 +61,47 @@ claude --plugin-dir ./plugins/claude-code
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
-### Test in Cursor
+### Test in Roo Code
 
-1. Open Cursor and install the plugin from the generated `./plugins/cursor` directory.
-2. Confirm the generated Cursor manifest exists at `plugins/cursor/.cursor-plugin/plugin.json`.
-3. Confirm the generated MCP config exists at `plugins/cursor/mcp.json`.
-4. Confirm the generated rule exists at `plugins/cursor/rules/wordpress-studio.mdc`.
-5. Confirm the bundled telemetry server exists at `plugins/cursor/scripts/wordpress-telemetry-mcp.mjs`.
+1. Install the Roo Code VS Code extension.
+2. Open `./plugins/roo-code` as the VS Code workspace root, or copy that folder's contents into a target workspace root.
+3. Confirm the generated workspace rules exist at `plugins/roo-code/.roo/rules/wordpress-com.md` and `plugins/roo-code/.roo/rules-code/wordpress-com-code.md`.
+4. Confirm the generated project MCP config exists at `plugins/roo-code/.roo/mcp.json`.
+5. In Roo Code, enable MCP servers and confirm `wordpress-studio` and `wordpress-telemetry` are available.
 6. Try the same representative tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+    - creating a custom plugin
+    - running an audit request
+
+### Test in GitHub Copilot
+
+1. Copy or open `./plugins/copilot` as the project root in VS Code.
+2. Confirm the generated repository instructions exist at `plugins/copilot/.github/copilot-instructions.md`.
+3. Confirm the scoped WordPress instructions exist at `plugins/copilot/.github/instructions/wordpress-studio.instructions.md`.
+4. Confirm the generated VS Code MCP config exists at `plugins/copilot/.vscode/mcp.json`.
+5. Start Copilot Chat in agent mode and try representative WordPress.com tasks:
    - creating a new site
    - building or editing a theme
    - creating a custom block
    - creating a custom plugin
    - running an audit request
-7. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
+6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
+
+### Test in Gemini
+
+1. Copy or reference `./plugins/gemini` as the Gemini project context directory.
+2. Confirm the generated Gemini instructions exist at `plugins/gemini/GEMINI.md`.
+3. Confirm the generated MCP config exists at `plugins/gemini/.gemini/settings.json`.
+4. Confirm the bundled telemetry server exists at `plugins/gemini/scripts/wordpress-telemetry-mcp.mjs`.
+5. Try the same representative tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
 ## Current scope
 
@@ -91,6 +119,9 @@ claude --plugin-dir ./plugins/claude-code
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
 - Cursor packaging output in `plugins/cursor/`
+- Roo Code workspace output in `plugins/roo-code/`
+- Gemini packaging output in `plugins/gemini/`
+- GitHub Copilot packaging output in `plugins/copilot/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -104,12 +135,18 @@ The build packages the shared skills into:
 - `plugins/codex/plugins/wordpress-studio/skills/`
 - `plugins/claude-code/skills/`
 - `plugins/cursor/skills/`
+- `plugins/roo-code/skills/`
+- `plugins/gemini/skills/`
+- `plugins/copilot/skills/`
 
 It also generates plugin-specific MCP configs for each surface:
 
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
 - Cursor: `plugins/cursor/mcp.json`
+- Roo Code: `plugins/roo-code/.roo/mcp.json`
+- Gemini: `plugins/gemini/.gemini/settings.json`
+- GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -122,6 +159,28 @@ pnpm install
 pnpm build:telemetry-mcp
 pnpm build
 pnpm verify
+```
+
+## Cursor Publishing
+
+Cursor requires a standalone plugin repository. This repo remains the canonical source for shared WordPress skills and generated plugin packaging, while the publishable Cursor repository lives at:
+
+https://github.com/Automattic/wordpress-cursor-plugin
+
+Do not edit the standalone Cursor repository as the source of truth. Update `skills/` and the Cursor packaging generator here, run the normal build and verification, then export `plugins/cursor/` to the standalone repo:
+
+```bash
+pnpm build
+pnpm verify
+pnpm export:cursor
+```
+
+The export command runs `git subtree split --prefix=plugins/cursor` and pushes the result to `Automattic/wordpress-cursor-plugin` on `sync/from-build-with-wordpress`. Open or update a PR from that branch into the standalone repo's `main` branch, then submit the standalone repo to Cursor.
+
+For a dry run:
+
+```bash
+pnpm export:cursor -- --dry-run
 ```
 
 ## Output
@@ -159,19 +218,53 @@ That folder currently contains:
 
 The generated Claude Code MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
 
-The Cursor plugin is generated to:
+The GitHub Copilot plugin is generated to:
 
 ```text
-plugins/cursor/
+plugins/copilot/
 ```
 
 That folder currently contains:
 
-- `.cursor-plugin/plugin.json`
-- `mcp.json`
-- `rules/wordpress-studio.mdc`
+- `.github/copilot-instructions.md`
+- `.github/instructions/wordpress-studio.instructions.md`
+- `.vscode/mcp.json`
 - `scripts/wordpress-telemetry-mcp.mjs`
 - `skills/`
 - `README.md`
 
-The generated Cursor MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
+The generated Copilot MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through VS Code's MCP configuration.
+
+The Gemini plugin is generated to:
+
+```text
+plugins/gemini/
+```
+
+That folder currently contains:
+
+- `.gemini/settings.json`
+- `GEMINI.md`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `skills/`
+- `README.md`
+
+The generated Gemini MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. `GEMINI.md` is the project-level instruction file for Gemini CLI and Gemini Code Assist workflows.
+
+The Roo Code workspace output is generated to:
+
+```text
+plugins/roo-code/
+```
+
+That folder currently contains:
+
+- `.roo/mcp.json`
+- `.roo/rules/wordpress-com.md`
+- `.roo/rules-code/wordpress-com-code.md`
+- `AGENTS.md`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `skills/`
+- `README.md`
+
+The generated Roo Code project MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. The `.roo/rules/` files are Roo-specific; the WordPress.com MCP and skill behavior is shared with the other outputs.

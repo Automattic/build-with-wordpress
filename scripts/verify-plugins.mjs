@@ -25,6 +25,7 @@ const openCodePluginDir = path.join(root, "plugins", "opencode");
 const rooPluginDir = path.join(root, "plugins", "roo-code");
 const geminiPluginDir = path.join(root, "plugins", "gemini");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
+const clinePluginDir = path.join(root, "plugins", "cline");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -306,6 +307,46 @@ async function verifyRooPlugin(skillNames) {
   }
 }
 
+async function verifyClinePlugin(skillNames) {
+  await access(path.join(clinePluginDir, "README.md"));
+  await access(path.join(clinePluginDir, ".clinerules", "wordpress-com.md"));
+  await access(path.join(clinePluginDir, ".cline", "plugins", "README.md"));
+  await verifySharedSkillSet(path.join(clinePluginDir, ".cline"), skillNames);
+  await verifyMcpConfig(clinePluginDir, "Cline plugin", "mcp.json");
+  await verifyTelemetryScript(clinePluginDir, "Cline");
+
+  const readme = await readFile(path.join(clinePluginDir, "README.md"), "utf8");
+  if (!readme.includes("WordPress.com for Cline")) {
+    throw new Error("Cline README is missing the expected title");
+  }
+  if (!readme.includes("https://docs.cline.bot/customization/cline-rules.md")) {
+    throw new Error("Cline README must link official rules documentation");
+  }
+  if (!readme.includes("https://docs.cline.bot/customization/skills.md")) {
+    throw new Error("Cline README must link official skills documentation");
+  }
+  if (!readme.includes("https://docs.cline.bot/mcp/mcp-overview.md")) {
+    throw new Error("Cline README must link official MCP documentation");
+  }
+  if (!readme.includes("https://docs.cline.bot/mcp/mcp-marketplace.md")) {
+    throw new Error("Cline README must link official MCP Marketplace documentation");
+  }
+  if (!readme.includes("https://docs.cline.bot/customization/plugins.md")) {
+    throw new Error("Cline README must link official plugin documentation");
+  }
+
+  const rules = await readFile(
+    path.join(clinePluginDir, ".clinerules", "wordpress-com.md"),
+    "utf8",
+  );
+  if (!rules.includes("WordPress.com Cline Rules")) {
+    throw new Error("Cline rules are missing the expected heading");
+  }
+  if (!rules.includes(".cline/skills/<name>/SKILL.md")) {
+    throw new Error("Cline rules must point at Cline skills");
+  }
+}
+
 async function verifyGeminiPlugin(skillNames) {
   await access(path.join(geminiPluginDir, "GEMINI.md"));
   await access(path.join(geminiPluginDir, "README.md"));
@@ -367,10 +408,11 @@ async function main() {
   await verifyContinueOutput();
   await verifyOpenCodePlugin(skillNames);
   await verifyRooPlugin(skillNames);
+  await verifyClinePlugin(skillNames);
   await verifyGeminiPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Gemini, and Copilot verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Cline, Gemini, and Copilot verification passed");
 }
 
 main().catch((error) => {

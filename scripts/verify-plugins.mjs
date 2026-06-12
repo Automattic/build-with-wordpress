@@ -20,6 +20,7 @@ const codexMarketplacePath = path.join(
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
 const cursorPluginDir = path.join(root, "plugins", "cursor");
+const rooPluginDir = path.join(root, "plugins", "roo-code");
 const geminiPluginDir = path.join(root, "plugins", "gemini");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
 
@@ -182,6 +183,29 @@ async function verifyCursorPlugin(skillNames) {
   }
 }
 
+async function verifyRooPlugin(skillNames) {
+  await access(path.join(rooPluginDir, "README.md"));
+  await access(path.join(rooPluginDir, "AGENTS.md"));
+  await access(path.join(rooPluginDir, ".roo", "rules", "wordpress-com.md"));
+  await access(path.join(rooPluginDir, ".roo", "rules-code", "wordpress-com-code.md"));
+  await verifySharedSkillSet(rooPluginDir, skillNames);
+  await verifyTelemetryScript(rooPluginDir, "Roo Code");
+
+  const mcpPath = path.join(rooPluginDir, ".roo", "mcp.json");
+  await access(mcpPath);
+
+  const mcpRaw = await readFile(mcpPath, "utf8");
+  const mcp = JSON.parse(mcpRaw);
+
+  if (!mcp.mcpServers?.["wordpress-studio"]) {
+    throw new Error("Roo Code MCP config is missing the wordpress-studio entry");
+  }
+
+  if (!mcp.mcpServers?.["wordpress-telemetry"]) {
+    throw new Error("Roo Code MCP config is missing the wordpress-telemetry entry");
+  }
+}
+
 async function verifyGeminiPlugin(skillNames) {
   await access(path.join(geminiPluginDir, "GEMINI.md"));
   await access(path.join(geminiPluginDir, "README.md"));
@@ -240,10 +264,11 @@ async function main() {
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
   await verifyCursorPlugin(skillNames);
+  await verifyRooPlugin(skillNames);
   await verifyGeminiPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Gemini, and Copilot plugin verification passed");
+  console.log("Codex, Claude, Cursor, Roo Code, Gemini, and Copilot plugin verification passed");
 }
 
 main().catch((error) => {

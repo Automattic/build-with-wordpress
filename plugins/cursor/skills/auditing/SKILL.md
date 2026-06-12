@@ -106,7 +106,7 @@ Focus on issues this repo can realistically help with:
 - readability issues caused by font size, line height, or dense layouts
 - color choices that make important information hard to distinguish
 
-When the issue is visual, prefer `take_screenshot`-backed observations. Use `inspect_design` when the rendered DOM or computed styles would identify the root cause faster than code inspection alone.
+When the issue is visual, prefer `take_screenshot`-backed observations. Use `inspect_design` when the rendered DOM or computed styles would identify the root cause faster than code inspection.
 
 When the issue appears structural, inspect the relevant theme or plugin files before recommending a fix.
 

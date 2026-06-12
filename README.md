@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, and Roo Code as separate outputs:
+This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, Roo Code, and Zed as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -16,6 +16,7 @@ This repo currently packages shared skills and setup files for Codex, Claude Cod
 - keeps skills shared so other surfaces can reuse them later
 - includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
+- adds Zed project instructions, project-local skills, and project settings for MCP without introducing a Zed-specific backend service
 
 ## Testing
 
@@ -117,6 +118,21 @@ claude --plugin-dir ./plugins/claude-code
 3. In Continue, copy the `.continue/` examples into a project or merge the `config.yaml` MCP snippet into `~/.continue/config.yaml`.
 4. Use Continue Agent mode for WordPress.com MCP tool access.
 
+### Test in Zed
+
+1. Open `./plugins/zed` as a Zed workspace root, or copy that folder's contents into a target workspace root.
+2. Confirm the generated project instructions exist at `plugins/zed/AGENTS.md`.
+3. Confirm the generated project-local skills exist under `plugins/zed/.agents/skills/`.
+4. Confirm the generated Zed MCP config exists at `plugins/zed/.zed/settings.json`.
+5. Trust the worktree in Zed so project-local skills are available.
+6. In the Agent Panel settings, confirm the `wordpress-studio` and `wordpress-telemetry` context servers are active.
+7. Try representative WordPress.com tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+
 ## Current scope
 
 - Shared skills for:
@@ -137,6 +153,7 @@ claude --plugin-dir ./plugins/claude-code
 - Roo Code workspace output in `plugins/roo-code/`
 - Gemini packaging output in `plugins/gemini/`
 - GitHub Copilot packaging output in `plugins/copilot/`
+- Zed workspace output in `plugins/zed/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -153,6 +170,7 @@ The build packages the shared skills into:
 - `plugins/roo-code/skills/`
 - `plugins/gemini/skills/`
 - `plugins/copilot/skills/`
+- `plugins/zed/.agents/skills/`
 
 It also generates plugin-specific MCP configs for each surface:
 
@@ -163,6 +181,7 @@ It also generates plugin-specific MCP configs for each surface:
 - Roo Code: `plugins/roo-code/.roo/mcp.json`
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
+- Zed: `plugins/zed/.zed/settings.json`
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -285,6 +304,22 @@ That folder currently contains:
 - `README.md`
 
 The generated Gemini MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. `GEMINI.md` is the project-level instruction file for Gemini CLI and Gemini Code Assist workflows.
+
+The Zed workspace output is generated to:
+
+```text
+plugins/zed/
+```
+
+That folder currently contains:
+
+- `.agents/skills/`
+- `.zed/settings.json`
+- `AGENTS.md`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `README.md`
+
+The generated Zed MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through Zed's `context_servers` settings shape. Zed's official docs support project `AGENTS.md` instructions and project-local `.agents/skills/`, so this output does not generate a Zed extension package.
 
 The Roo Code workspace output is generated to:
 

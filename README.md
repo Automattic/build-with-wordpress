@@ -14,6 +14,12 @@ Use Build with WordPress when you want your coding agent to understand WordPress
 - generated packages that fit each tool's native conventions instead of a lowest-common-denominator config
 - local verification that every generated output still builds and points at the expected files
 
+## How It Relates To WordPress Studio
+
+WordPress Studio is the local runtime this package teaches agents to use. Studio owns the local WordPress sites, the `studio` CLI, and the `studio mcp` server. Build with WordPress owns the agent-facing layer around Studio: instructions, skills, MCP config snippets, telemetry wiring, and native package files for each coding agent.
+
+In practice, a developer installs WordPress Studio once, then uses the generated output for their preferred agent. That agent can ask Studio to create and manage sites, inspect screenshots, validate blocks, run performance checks, and use WP-CLI through MCP instead of guessing how to operate a WordPress project from files alone.
+
 Generated outputs are available for:
 
 - Aider

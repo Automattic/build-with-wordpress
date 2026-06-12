@@ -1,0 +1,22 @@
+# Merge the relevant sections into ~/.continue/config.yaml.
+# Continue also loads project-local files from .continue/rules,
+# .continue/prompts, and .continue/mcpServers when they are present in a workspace.
+
+name: WordPress.com
+version: 0.0.1
+schema: v1
+
+# Project-local rule and prompt files can stay in .continue/rules and
+# .continue/prompts. If you publish them to Continue Hub, reference them here:
+# rules:
+#   - uses: your-org/wordpress-com
+# prompts:
+#   - uses: your-org/create-wordpress-com-site
+#   - uses: your-org/audit-wordpress-com-project
+
+mcpServers:
+  - name: WordPress.com MCP
+    type: stdio
+    command: studio
+    args:
+      - mcp

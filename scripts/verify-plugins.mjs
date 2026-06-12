@@ -20,6 +20,7 @@ const codexMarketplacePath = path.join(
 );
 const claudePluginDir = path.join(root, "plugins", "claude-code");
 const cursorPluginDir = path.join(root, "plugins", "cursor");
+const continueOutputDir = path.join(root, "plugins", "continue");
 const openCodePluginDir = path.join(root, "plugins", "opencode");
 const rooPluginDir = path.join(root, "plugins", "roo-code");
 const geminiPluginDir = path.join(root, "plugins", "gemini");
@@ -218,6 +219,54 @@ async function verifyCursorPlugin(skillNames) {
   }
 }
 
+async function verifyContinueOutput() {
+  const requiredFiles = [
+    "README.md",
+    "config.yaml",
+    path.join(".continue", "rules", "wordpress-com.md"),
+    path.join(".continue", "prompts", "create-wordpress-com-site.md"),
+    path.join(".continue", "prompts", "audit-wordpress-com-project.md"),
+    path.join(".continue", "mcpServers", "wordpress-com.yaml"),
+  ];
+
+  for (const filePath of requiredFiles) {
+    await access(path.join(continueOutputDir, filePath));
+  }
+
+  const readme = await readFile(
+    path.join(continueOutputDir, "README.md"),
+    "utf8"
+  );
+  if (!readme.includes("WordPress.com for Continue")) {
+    throw new Error("Continue README is missing the expected title");
+  }
+  if (!readme.includes("Continue-specific pieces")) {
+    throw new Error("Continue README must explain Continue-specific pieces");
+  }
+  if (!readme.includes("Shared WordPress.com substrate")) {
+    throw new Error("Continue README must explain the shared MCP substrate");
+  }
+
+  const mcpServerBlock = await readFile(
+    path.join(continueOutputDir, ".continue", "mcpServers", "wordpress-com.yaml"),
+    "utf8"
+  );
+  if (!mcpServerBlock.includes("mcpServers:")) {
+    throw new Error("Continue MCP block is missing mcpServers");
+  }
+  if (!mcpServerBlock.includes("command: studio")) {
+    throw new Error("Continue MCP block must use the existing studio MCP entrypoint");
+  }
+
+  const rule = await readFile(
+    path.join(continueOutputDir, ".continue", "rules", "wordpress-com.md"),
+    "utf8"
+  );
+  if (!rule.includes("name: WordPress.com")) {
+    throw new Error("Continue rule is missing WordPress.com frontmatter");
+  }
+}
+
 async function verifyOpenCodePlugin(skillNames) {
   await access(path.join(openCodePluginDir, "README.md"));
   await access(path.join(openCodePluginDir, "AGENTS.md"));
@@ -315,12 +364,13 @@ async function main() {
   await verifyCodexPlugin(skillNames);
   await verifyClaudePlugin(skillNames);
   await verifyCursorPlugin(skillNames);
+  await verifyContinueOutput();
   await verifyOpenCodePlugin(skillNames);
   await verifyRooPlugin(skillNames);
   await verifyGeminiPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, OpenCode, Roo Code, Gemini, and Copilot plugin verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Gemini, and Copilot verification passed");
 }
 
 main().catch((error) => {

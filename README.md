@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills for Codex, Claude Code, Cursor, GitHub Copilot, Gemini, and Roo Code as separate plugin outputs:
+This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, and Roo Code as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -14,6 +14,7 @@ This repo currently packages shared skills for Codex, Claude Code, Cursor, GitHu
 - can optionally generate three design preview directions before building a site theme
 - bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
 - keeps skills shared so other surfaces can reuse them later
+- includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
 
 ## Testing
@@ -103,6 +104,19 @@ claude --plugin-dir ./plugins/claude-code
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
+### Test in Continue
+
+1. Review the generated Continue output in `./plugins/continue`.
+2. Confirm the generated setup files exist:
+   - `plugins/continue/README.md`
+   - `plugins/continue/config.yaml`
+   - `plugins/continue/.continue/rules/wordpress-com.md`
+   - `plugins/continue/.continue/prompts/create-wordpress-com-site.md`
+   - `plugins/continue/.continue/prompts/audit-wordpress-com-project.md`
+   - `plugins/continue/.continue/mcpServers/wordpress-com.yaml`
+3. In Continue, copy the `.continue/` examples into a project or merge the `config.yaml` MCP snippet into `~/.continue/config.yaml`.
+4. Use Continue Agent mode for WordPress.com MCP tool access.
+
 ## Current scope
 
 - Shared skills for:
@@ -119,6 +133,7 @@ claude --plugin-dir ./plugins/claude-code
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
 - Cursor packaging output in `plugins/cursor/`
+- Continue setup output in `plugins/continue/`
 - Roo Code workspace output in `plugins/roo-code/`
 - Gemini packaging output in `plugins/gemini/`
 - GitHub Copilot packaging output in `plugins/copilot/`
@@ -144,6 +159,7 @@ It also generates plugin-specific MCP configs for each surface:
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
 - Cursor: `plugins/cursor/mcp.json`
+- Continue: `plugins/continue/.continue/mcpServers/wordpress-com.yaml`
 - Roo Code: `plugins/roo-code/.roo/mcp.json`
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
@@ -232,6 +248,25 @@ That folder currently contains:
 - `scripts/wordpress-telemetry-mcp.mjs`
 - `skills/`
 - `README.md`
+
+The generated Cursor MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server.
+
+The Continue setup output is generated to:
+
+```text
+plugins/continue/
+```
+
+That folder currently contains:
+
+- `README.md`
+- `config.yaml`
+- `.continue/rules/wordpress-com.md`
+- `.continue/prompts/create-wordpress-com-site.md`
+- `.continue/prompts/audit-wordpress-com-project.md`
+- `.continue/mcpServers/wordpress-com.yaml`
+
+The generated Continue MCP guidance uses the same existing `studio mcp` entrypoint as the shared WordPress.com MCP substrate. Continue-specific files cover rules, prompts, and MCP block placement; they do not define a separate backend service.
 
 The generated Copilot MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through VS Code's MCP configuration.
 

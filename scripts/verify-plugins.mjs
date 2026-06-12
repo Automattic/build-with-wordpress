@@ -27,6 +27,7 @@ const geminiPluginDir = path.join(root, "plugins", "gemini");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
 const zedPluginDir = path.join(root, "plugins", "zed");
 const windsurfPluginDir = path.join(root, "plugins", "windsurf");
+const aiderPluginDir = path.join(root, "plugins", "aider");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -438,6 +439,30 @@ async function verifyWindsurfPlugin(skillNames) {
   }
 }
 
+async function verifyAiderPlugin(skillNames) {
+  await access(path.join(aiderPluginDir, ".aider.conf.yml"));
+  await access(path.join(aiderPluginDir, "CONVENTIONS.md"));
+  await access(path.join(aiderPluginDir, "README.md"));
+  await verifySharedSkillSet(aiderPluginDir, skillNames);
+
+  const config = await readFile(path.join(aiderPluginDir, ".aider.conf.yml"), "utf8");
+
+  if (!config.includes("read:")) {
+    throw new Error("Aider config is missing the read list");
+  }
+
+  if (!config.includes("CONVENTIONS.md")) {
+    throw new Error("Aider config does not load CONVENTIONS.md");
+  }
+
+  for (const skillName of skillNames) {
+    const skillPath = `skills/${skillName}/SKILL.md`;
+    if (!config.includes(skillPath)) {
+      throw new Error(`Aider config does not load ${skillPath}`);
+    }
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
@@ -451,8 +476,9 @@ async function main() {
   await verifyCopilotPlugin(skillNames);
   await verifyZedPlugin(skillNames);
   await verifyWindsurfPlugin(skillNames);
+  await verifyAiderPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Gemini, Copilot, Windsurf, and Zed verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Gemini, Copilot, Windsurf, Aider, and Zed verification passed");
 }
 
 main().catch((error) => {

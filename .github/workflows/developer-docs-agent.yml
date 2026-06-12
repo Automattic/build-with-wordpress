@@ -51,6 +51,7 @@ jobs:
         ]
       verification_commands: |
         [
+          "pnpm install --frozen-lockfile",
           "pnpm build",
           "pnpm verify"
         ]

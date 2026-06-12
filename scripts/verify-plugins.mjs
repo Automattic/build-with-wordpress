@@ -21,6 +21,7 @@ const codexMarketplacePath = path.join(
 const claudePluginDir = path.join(root, "plugins", "claude-code");
 const cursorPluginDir = path.join(root, "plugins", "cursor");
 const continueOutputDir = path.join(root, "plugins", "continue");
+const conductorOutputDir = path.join(root, "plugins", "conductor");
 const openCodePluginDir = path.join(root, "plugins", "opencode");
 const rooPluginDir = path.join(root, "plugins", "roo-code");
 const juniePluginDir = path.join(root, "plugins", "junie");
@@ -281,6 +282,50 @@ async function verifyContinueOutput() {
   );
   if (!rule.includes("name: WordPress.com")) {
     throw new Error("Continue rule is missing WordPress.com frontmatter");
+  }
+}
+
+async function verifyConductorOutput() {
+  await access(path.join(conductorOutputDir, "README.md"));
+  await access(path.join(conductorOutputDir, ".conductor", "settings.toml"));
+
+  const settings = await readFile(
+    path.join(conductorOutputDir, ".conductor", "settings.toml"),
+    "utf8",
+  );
+
+  if (!settings.includes('"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"')) {
+    throw new Error("Conductor settings are missing the repository schema URL");
+  }
+
+  if (!settings.includes("[scripts]")) {
+    throw new Error("Conductor settings must define a scripts table");
+  }
+
+  if (!settings.includes('setup = "pnpm install"')) {
+    throw new Error("Conductor settings are missing the setup script");
+  }
+
+  if (!settings.includes('run = "pnpm build && pnpm verify"')) {
+    throw new Error("Conductor settings are missing the run script");
+  }
+
+  const readme = await readFile(path.join(conductorOutputDir, "README.md"), "utf8");
+
+  if (!readme.includes("WordPress.com for Conductor")) {
+    throw new Error("Conductor README is missing the expected title");
+  }
+
+  if (!readme.includes("Legacy `conductor.json` is not generated")) {
+    throw new Error("Conductor README must explain why conductor.json is not generated");
+  }
+
+  if (!readme.includes("does not define a repository-level MCP server table")) {
+    throw new Error("Conductor README must explain MCP config boundaries");
+  }
+
+  if (!readme.includes("message queues are a native composer/workspace feature")) {
+    throw new Error("Conductor README must explain message queue boundaries");
   }
 }
 
@@ -841,6 +886,7 @@ async function main() {
   await verifyClaudePlugin(skillNames);
   await verifyCursorPlugin(skillNames);
   await verifyContinueOutput();
+  await verifyConductorOutput();
   await verifyOpenCodePlugin(skillNames);
   await verifyKiloCodePlugin(skillNames);
   await verifyRooPlugin(skillNames);
@@ -857,7 +903,7 @@ async function main() {
   await verifyAmpPlugin(skillNames);
   await verifyPiPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Cline, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, Amp, and Pi verification passed");
+  console.log("Amp, Cline, Codex, Claude, Conductor, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, and Pi verification passed");
 }
 
 main().catch((error) => {

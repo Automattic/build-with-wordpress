@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Amp, Cline, Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Junie, Kilo Code, Pi, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
+This repo currently packages shared skills and setup files for Amp, Cline, Codex, Claude Code, Conductor, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Junie, Kilo Code, Pi, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -20,6 +20,7 @@ This repo currently packages shared skills and setup files for Amp, Cline, Codex
 - includes Devin CLI project config, rules, and skills under Devin's documented `.devin/` surfaces
 - adds Cline workspace rules, skills, MCP settings, and Cline plugin-surface documentation from official Cline docs
 - adds a Pi skills package using Pi's official package manifest and Agent Skills support
+- includes Conductor repository settings and guidance for running the existing Claude Code, Codex, and Cursor outputs in isolated Conductor workspaces
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
 - adds a Qodo `AGENTS.md` workspace package and documents Qodo's manual MCP setup path from official Qodo docs
 - adds Zed project instructions, project-local skills, and project settings for MCP without introducing a Zed-specific backend service
@@ -136,6 +137,15 @@ claude --plugin-dir ./plugins/claude-code
    - creating a custom plugin
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
+
+### Test in Conductor
+
+1. Review the generated Conductor output in `./plugins/conductor`.
+2. Confirm the generated repository settings exist at `plugins/conductor/.conductor/settings.toml`.
+3. Confirm `plugins/conductor/README.md` documents why this output uses `.conductor/settings.toml` instead of legacy `conductor.json`.
+4. Confirm the README points Conductor MCP setup back to the existing Claude Code, Codex, and Cursor MCP configs instead of generating a Conductor-only MCP file.
+5. In Conductor, open a workspace and use the generated settings as the shared repository script layer when the package workflow should run `pnpm install`, `pnpm build`, and `pnpm verify`.
+6. Use Conductor's MCP/provider settings or Sync Agent Configs to make the existing `wordpress-studio` and `wordpress-telemetry` MCP servers available to the agents you run in Conductor.
 
 ### Test in Gemini
 
@@ -310,6 +320,7 @@ pi install ./plugins/pi
 - A bundled standalone telemetry MCP server built from repo-local Node dependencies
 - Codex packaging output in `plugins/codex/`
 - Claude Code packaging output in `plugins/claude-code/`
+- Conductor setup output in `plugins/conductor/`
 - Cursor packaging output in `plugins/cursor/`
 - Continue setup output in `plugins/continue/`
 - Factory Droid marketplace output in `plugins/factory/`
@@ -534,6 +545,19 @@ Official Devin references:
 - Skill format: https://docs.devin.ai/cli/extensibility/skills/creating-skills.md
 - MCP configuration: https://docs.devin.ai/cli/extensibility/mcp/configuration.md
 - Configuration files: https://docs.devin.ai/cli/extensibility/configuration.md
+
+The Conductor setup output is generated to:
+
+```text
+plugins/conductor/
+```
+
+That folder currently contains:
+
+- `.conductor/settings.toml`
+- `README.md`
+
+The generated Conductor settings use the current `.conductor/settings.toml` repository settings format for shared setup and run scripts. Conductor MCP support stays in Conductor's app/provider settings and in the existing Claude Code, Codex, and Cursor MCP configs; this output intentionally does not generate legacy `conductor.json` or a Conductor-only MCP file.
 
 The generated Copilot MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through VS Code's MCP configuration.
 

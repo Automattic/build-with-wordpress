@@ -856,7 +856,7 @@ Roo-specific files in this folder are intentionally small:
 - \`.roo/mcp.json\` connects Roo to the existing WordPress Studio MCP server and bundled \`wordpress-telemetry\` server.
 - \`AGENTS.md\` mirrors the same high-level routing for Roo installations that load agent rules.
 
-The shared WordPress.com substrate is not Roo-specific: the skills in \`skills/\`, the \`studio mcp\` server, and the bundled telemetry MCP server are the same flow used by the other agent outputs. Roo Code supplies the VS Code workspace rules and MCP configuration layer only.
+The shared WordPress.com substrate is not Roo-specific: the skills in \`skills/\`, the \`studio mcp\` server, and the embedded telemetry MCP bootstrap are the same flow used by the other agent outputs. Roo Code supplies the VS Code workspace rules and MCP configuration layer only.
 
 ## Setup
 
@@ -871,7 +871,7 @@ The shared WordPress.com substrate is not Roo-specific: the skills in \`skills/\
 \`.roo/mcp.json\` launches:
 
 - \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
-- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+- \`wordpress-telemetry\`: runs an embedded bootstrap generated from the shared telemetry server artifact.
 
 This does not invent a Roo-only backend. Roo connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
 
@@ -897,14 +897,14 @@ Cline-specific files in this folder are intentionally small:
 - \`mcp.json\` contains the MCP server entries to merge into Cline's MCP settings.
 - \`.cline/plugins/README.md\` documents why this output does not ship a Cline SDK plugin yet.
 
-The shared WordPress.com substrate is not Cline-specific: the skills, the \`studio mcp\` server, and the bundled telemetry MCP server are the same flow used by the other agent outputs. Cline supplies the workspace rules, skills, and MCP configuration layer only.
+The shared WordPress.com substrate is not Cline-specific: the skills, the \`studio mcp\` server, and the embedded telemetry MCP bootstrap are the same flow used by the other agent outputs. Cline supplies the workspace rules, skills, and MCP configuration layer only.
 
 Cline's official plugin documentation says plugins currently apply to Cline SDK, CLI, and Kanban, and are not applicable to the VS Code and JetBrains extensions yet. This output therefore does not claim extension marketplace packaging; it packages the Cline-native workspace files that official docs support today.
 
 ## Setup
 
 1. Install Cline using the official Cline installation instructions.
-2. Open this folder, or copy \`.clinerules/\`, \`.cline/skills/\`, \`mcp.json\`, and \`scripts/\` into the root of the workspace where Cline should assist with WordPress.com work.
+2. Open this folder, or copy \`.clinerules/\`, \`.cline/skills/\`, and \`mcp.json\` into the root of the workspace where Cline should assist with WordPress.com work.
 3. Make sure WordPress Studio is installed and the \`studio\` CLI is available on your PATH.
 4. Merge the server entries from \`mcp.json\` into Cline's MCP settings. Cline's docs describe CLI MCP settings at \`~/.cline/mcp.json\`; IDE extensions open their MCP settings JSON through the MCP Servers Configure tab.
 5. Confirm the \`wordpress-studio\` and \`wordpress-telemetry\` MCP tools are available in Cline before starting site work.
@@ -914,7 +914,7 @@ Cline's official plugin documentation says plugins currently apply to Cline SDK,
 \`mcp.json\` launches:
 
 - \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
-- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+- \`wordpress-telemetry\`: runs an embedded bootstrap generated from the shared telemetry server artifact.
 
 This does not invent a Cline-only backend. Cline connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
 
@@ -1164,12 +1164,12 @@ Qodo-specific files in this folder are intentionally small:
 
 - \`AGENTS.md\` provides repo-local WordPress guidance using Qodo's documented AGENTS.md support.
 - \`skills/\` contains the shared WordPress skill playbooks used by the other outputs.
-- \`scripts/wordpress-telemetry-mcp.mjs\` is bundled for users who manually add the telemetry MCP to Qodo.
+- The MCP setup below embeds the telemetry bootstrap generated from the shared \`dist/wordpress-telemetry-mcp.mjs\` artifact.
 
 ## Setup
 
 1. Install Qodo IDE Plugin for VS Code, JetBrains, or Visual Studio.
-2. Open this folder, or copy \`AGENTS.md\`, \`skills/\`, and \`scripts/\` into the root of the workspace where Qodo should assist with WordPress work.
+2. Open this folder, or copy \`AGENTS.md\` and \`skills/\` into the root of the workspace where Qodo should assist with WordPress work.
 3. Make sure WordPress Studio is installed and the \`studio\` CLI is available on your PATH.
 4. If your Qodo plan supports Agentic Tools, add the MCP configuration below in Qodo's Tools Management page or through your enterprise MCP allow-list.
 5. Use Qodo's local review workflows or agents for representative WordPress tasks such as creating a site, editing a theme, creating a custom block, creating a custom plugin, or running an audit.
@@ -1360,15 +1360,14 @@ Zed-specific files in this folder are intentionally small:
 - \`AGENTS.md\` provides project instructions that Zed Agent loads as always-on guidance.
 - \`.agents/skills/\` contains project-local Zed skills copied from the shared Build with WordPress skill source.
 - \`.zed/settings.json\` configures Zed's \`context_servers\` entries for the existing WordPress Studio MCP server and bundled \`wordpress-telemetry\` server.
-- \`scripts/wordpress-telemetry-mcp.mjs\` is the same bundled telemetry MCP server artifact generated for the other outputs, with the surface set to \`zed\`.
 
-The shared WordPress.com substrate is not Zed-specific: the skills, the \`studio mcp\` server, and the bundled telemetry MCP server are the same flow used by the other agent outputs. Zed supplies native project instructions, project-local skills, and settings JSON around that workflow.
+The shared WordPress.com substrate is not Zed-specific: the skills, the \`studio mcp\` server, and the embedded telemetry MCP bootstrap are the same flow used by the other agent outputs. Zed supplies native project instructions, project-local skills, and settings JSON around that workflow.
 
 ## Setup
 
 1. Install Zed.
 2. Install WordPress Studio and make sure the \`studio\` CLI is available on your PATH.
-3. Open this folder, or copy \`AGENTS.md\`, \`.agents/\`, \`.zed/\`, and \`scripts/\` into the root of the workspace where Zed should assist with WordPress.com work.
+3. Open this folder, or copy \`AGENTS.md\`, \`.agents/\`, and \`.zed/\` into the root of the workspace where Zed should assist with WordPress.com work.
 4. Trust the worktree in Zed so project-local skills are available.
 5. Open the Agent Panel and confirm the \`wordpress-studio\` and \`wordpress-telemetry\` MCP servers are active.
 
@@ -1377,7 +1376,7 @@ The shared WordPress.com substrate is not Zed-specific: the skills, the \`studio
 \`.zed/settings.json\` launches:
 
 - \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
-- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+- \`wordpress-telemetry\`: runs an embedded bootstrap generated from the shared telemetry server artifact.
 
 This does not invent a Zed-only backend. Zed connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
 
@@ -1518,7 +1517,7 @@ Official Amp docs used as source of truth:
 \`.amp/settings.json\` launches:
 
 - \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
-- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+- \`wordpress-telemetry\`: runs an embedded bootstrap generated from the shared telemetry server artifact.
 
 This output does not introduce a new backend service. Amp connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
 
@@ -1572,13 +1571,12 @@ It is intentionally Junie-native:
 - \`.junie/AGENTS.md\` provides project-level Junie guidelines.
 - \`.junie/skills/\` contains the shared WordPress skills used by the other outputs.
 - \`.junie/mcp/mcp.json\` connects Junie to the existing WordPress Studio MCP server and bundled \`wordpress-telemetry\` server.
-- \`scripts/wordpress-telemetry-mcp.mjs\` contains the bundled telemetry MCP server artifact.
 
 ## Setup
 
 1. Install Junie or use Junie from JetBrains AI Chat.
 2. Install WordPress Studio and make sure the \`studio\` CLI is available on your \`PATH\`.
-3. Open this folder as the project root, or copy \`.junie/\` and \`scripts/\` into your project.
+3. Open this folder as the project root, or copy \`.junie/\` into your project.
 4. Confirm Junie loads project guidelines from \`.junie/AGENTS.md\`.
 5. Confirm the MCP servers are available in Junie MCP settings or with the Junie CLI \`/mcp\` command.
 
@@ -1587,7 +1585,7 @@ It is intentionally Junie-native:
 \`.junie/mcp/mcp.json\` launches:
 
 - \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
-- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+- \`wordpress-telemetry\`: runs an embedded bootstrap generated from the shared telemetry server artifact.
 
 This does not invent a Junie-only backend. Junie connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
 
@@ -1852,7 +1850,7 @@ Official references:
 \`.devin/config.json\` launches:
 
 - \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
-- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+- \`wordpress-telemetry\`: runs an embedded bootstrap generated from the shared telemetry server artifact.
 
 This does not invent a Devin-only backend. Devin connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
 
@@ -2529,17 +2527,7 @@ async function buildPluginTarget(target, skillNames) {
 
   let telemetrySource = "";
   if (target.includeTelemetry !== false) {
-    await mkdir(path.join(target.pluginDir, "scripts"), { recursive: true });
-    await cp(
-      telemetryMcpServerDistPath,
-      path.join(target.pluginDir, "scripts", "wordpress-telemetry-mcp.mjs"),
-    );
-    const telemetryScriptPath = path.join(
-      target.pluginDir,
-      "scripts",
-      "wordpress-telemetry-mcp.mjs",
-    );
-    telemetrySource = await readFile(telemetryScriptPath, "utf8");
+    telemetrySource = await readFile(telemetryMcpServerDistPath, "utf8");
   }
 
   if (target.surface === "opencode") {

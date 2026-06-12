@@ -117,8 +117,11 @@ async function verifyOpenCodeMcpConfig() {
 async function verifyTelemetryScript(pluginDir, surfaceName) {
   try {
     await access(path.join(pluginDir, "scripts", "wordpress-telemetry-mcp.mjs"));
+    throw new Error(`${surfaceName} plugin should not copy scripts/wordpress-telemetry-mcp.mjs; MCP configs embed the shared dist artifact`);
   } catch (error) {
-    throw new Error(`${surfaceName} plugin is missing scripts/wordpress-telemetry-mcp.mjs`);
+    if (error.message?.includes("should not copy")) {
+      throw error;
+    }
   }
 }
 

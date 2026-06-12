@@ -66,7 +66,7 @@ Use `pnpm build:telemetry-mcp` when you only need to rebuild `dist/wordpress-tel
 
 ## What Gets Generated
 
-Each build packages the shared `skills/` directory and the bundled telemetry MCP server into the surfaces that can consume them. Outputs use the native extension point for each agent instead of forcing one universal plugin shape.
+Each build packages the shared `skills/` directory into the surfaces that can consume them. MCP-enabled outputs embed a telemetry bootstrap generated from the shared `dist/wordpress-telemetry-mcp.mjs` artifact, instead of copying that 23k-line bundle into every output folder. Outputs use the native extension point for each agent instead of forcing one universal plugin shape.
 
 | Surface | Output | Native files |
 | --- | --- | --- |

@@ -4,6 +4,16 @@ Canonical source for WordPress-focused agent skills, MCP setup, and generated pa
 
 Build with WordPress lets coding agents create, edit, inspect, and validate WordPress.com and WordPress Studio projects using the same shared guidance. The repository owns the portable skill source plus the generator that adapts those skills into each agent's native packaging, configuration, or workspace convention.
 
+## Why Developers Use It
+
+Use Build with WordPress when you want your coding agent to understand WordPress projects without hand-writing a different setup for every tool. It gives developers:
+
+- ready-to-use WordPress guidance for site builds, theme edits, custom blocks, plugins, and audits
+- Studio MCP and `wp_cli` access wired into each agent surface that supports it
+- one shared skill source, so behavior stays consistent across agents
+- generated packages that fit each tool's native conventions instead of a lowest-common-denominator config
+- local verification that every generated output still builds and points at the expected files
+
 Generated outputs are available for:
 
 - Aider

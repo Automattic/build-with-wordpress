@@ -52,6 +52,17 @@ The shared WordPress workflow:
 - can generate three design preview directions before building a site theme
 - bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
 
+## Developer Documentation
+
+Start with the [developer documentation index](docs/README.md) if you maintain Build with WordPress, change shared skills, update generator behavior, or need to understand the generated plugin contracts.
+
+Core topics:
+
+- [Architecture](docs/architecture.md) — repository boundaries, generation flow, agent-facing contracts, and design principles.
+- [Skills and integrations](docs/skills-and-integrations.md) — skill inventory, routing, WordPress Studio integration, public tool/event names, and examples.
+- [Generated outputs](docs/generated-outputs.md) — build pipeline, generated package matrix, MCP/telemetry contracts, verification, and Cursor export.
+- [Contributor workflows](docs/contributor-workflows.md) — local setup, change workflows, review checklist, smoke testing, automation, and future coverage.
+
 ## Commands
 
 ```bash

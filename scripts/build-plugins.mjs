@@ -23,6 +23,42 @@ const factoryPluginDir = path.join(factoryOutputDir, "plugins", pluginName);
 const geminiDisplayName = "WordPress.com";
 const qodoPluginDir = path.join(pluginsDir, "qodo");
 
+function buildClineRules() {
+  return `# WordPress.com Cline Rules
+
+Use this workspace as a WordPress.com-aware Cline environment.
+
+## Shared substrate
+
+- Use the existing WordPress Studio MCP server for local WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
+- Use the bundled \`wordpress-telemetry\` MCP server for workflow telemetry emitted by this package.
+- Treat these MCP servers as the shared WordPress.com agent substrate used by the other package outputs; Cline only supplies the workspace rules, skills, and MCP configuration surface.
+
+## Cline-specific behavior
+
+- Load these instructions from \`.clinerules/\`, Cline's primary workspace rules directory.
+- Load detailed task playbooks from \`.cline/skills/<name>/SKILL.md\` when the request matches a bundled skill.
+- Ask the user to configure the MCP servers from \`mcp.json\` in Cline's MCP settings if \`wordpress-studio\` or \`wordpress-telemetry\` tools are unavailable.
+
+## WordPress.com work
+
+- Refer to the product as WordPress.com in user-facing text.
+- Start with the \`wordpress-creator\` skill unless the user clearly asks for a specific implementation path.
+- Prefer Studio MCP tools before shelling out to the \`studio\` CLI.
+- Use \`wp_cli\` through the WordPress Studio MCP server as the general-purpose WordPress escape hatch.
+- Choose the smallest fitting WordPress abstraction: site, theme, block, plugin, or audit.
+`;
+}
+
+function buildClinePluginsReadme() {
+  return `# Cline Plugins
+
+Cline's official plugin documentation says plugins currently apply to the Cline SDK, CLI, and Kanban, and are not applicable to the VS Code and JetBrains extensions yet.
+
+This WordPress.com output does not ship a Cline SDK plugin because the current integration uses Cline-native workspace rules, Cline skills, and MCP configuration instead of a custom executable plugin hook.
+`;
+}
+
 function createZedMcpConfig({ surface, telemetrySource }) {
   return {
     context_servers: {
@@ -694,6 +730,60 @@ The shared WordPress.com substrate is not Roo-specific: the skills in \`skills/\
 - \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
 
 This does not invent a Roo-only backend. Roo connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
+
+## Included skills
+
+${skillList}
+`;
+}
+
+function buildClineReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+
+  return `# WordPress.com for Cline
+
+This output packages the shared Build with WordPress skills for Cline.
+
+Cline-specific files in this folder are intentionally small:
+
+- \`.clinerules/wordpress-com.md\` gives Cline workspace-wide WordPress.com guidance using Cline's primary workspace rules directory.
+- \`.cline/skills/\` contains the shared WordPress skills using Cline's documented skill structure.
+- \`mcp.json\` contains the MCP server entries to merge into Cline's MCP settings.
+- \`.cline/plugins/README.md\` documents why this output does not ship a Cline SDK plugin yet.
+
+The shared WordPress.com substrate is not Cline-specific: the skills, the \`studio mcp\` server, and the bundled telemetry MCP server are the same flow used by the other agent outputs. Cline supplies the workspace rules, skills, and MCP configuration layer only.
+
+Cline's official plugin documentation says plugins currently apply to Cline SDK, CLI, and Kanban, and are not applicable to the VS Code and JetBrains extensions yet. This output therefore does not claim extension marketplace packaging; it packages the Cline-native workspace files that official docs support today.
+
+## Setup
+
+1. Install Cline using the official Cline installation instructions.
+2. Open this folder, or copy \`.clinerules/\`, \`.cline/skills/\`, \`mcp.json\`, and \`scripts/\` into the root of the workspace where Cline should assist with WordPress.com work.
+3. Make sure WordPress Studio is installed and the \`studio\` CLI is available on your PATH.
+4. Merge the server entries from \`mcp.json\` into Cline's MCP settings. Cline's docs describe CLI MCP settings at \`~/.cline/mcp.json\`; IDE extensions open their MCP settings JSON through the MCP Servers Configure tab.
+5. Confirm the \`wordpress-studio\` and \`wordpress-telemetry\` MCP tools are available in Cline before starting site work.
+
+## MCP servers
+
+\`mcp.json\` launches:
+
+- \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
+- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+
+This does not invent a Cline-only backend. Cline connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
+
+## Official Cline references
+
+- Rules: https://docs.cline.bot/customization/cline-rules.md
+- Skills: https://docs.cline.bot/customization/skills.md
+- MCP: https://docs.cline.bot/mcp/mcp-overview.md
+- MCP Marketplace: https://docs.cline.bot/mcp/mcp-marketplace.md
+- Configuration locations: https://docs.cline.bot/getting-started/config.md
+- Plugins: https://docs.cline.bot/customization/plugins.md
+- Plugin installation: https://docs.cline.bot/sdk/plugin-install.md
+- Installing Cline: https://docs.cline.bot/getting-started/installing-cline.md
 
 ## Included skills
 
@@ -1750,6 +1840,15 @@ const pluginTargets = [
     },
   },
   {
+    logName: "Cline",
+    buildRootDir: path.join(pluginsDir, "cline"),
+    pluginDir: path.join(pluginsDir, "cline"),
+    legacyCleanupPaths: [],
+    readmeIntro: "",
+    includeMcpConfig: false,
+    surface: "cline",
+  },
+  {
     logName: "OpenCode",
     buildRootDir: path.join(pluginsDir, "opencode"),
     pluginDir: path.join(pluginsDir, "opencode"),
@@ -2066,6 +2165,55 @@ async function buildPluginTarget(target, skillNames) {
     await writeFile(
       path.join(target.pluginDir, "README.md"),
       buildKiloReadme({ skillNames }),
+      "utf8",
+    );
+    console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);
+    return;
+  }
+
+  if (target.surface === "cline") {
+    await mkdir(path.join(target.pluginDir, ".cline", "plugins"), {
+      recursive: true,
+    });
+    await mkdir(path.join(target.pluginDir, ".cline", "skills"), {
+      recursive: true,
+    });
+    await mkdir(path.join(target.pluginDir, ".clinerules"), {
+      recursive: true,
+    });
+    await rm(path.join(target.pluginDir, "skills"), {
+      recursive: true,
+      force: true,
+    });
+    await copySkillSet(
+      sharedSkillsSourceDir,
+      path.join(target.pluginDir, ".cline", "skills"),
+    );
+    await writeFile(
+      path.join(target.pluginDir, "mcp.json"),
+      `${JSON.stringify(
+        createMcpConfig({
+          surface: "cline",
+          telemetrySource,
+        }),
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".clinerules", "wordpress-com.md"),
+      buildClineRules(),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".cline", "plugins", "README.md"),
+      buildClinePluginsReadme(),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, "README.md"),
+      buildClineReadme({ skillNames }),
       "utf8",
     );
     console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);

@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Amp, Cline, Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Junie, Pi, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
+This repo currently packages shared skills and setup files for Amp, Cline, Codex, Claude Code, Cursor, Continue, Devin CLI, Factory Droid, GitHub Copilot, Gemini, Junie, Kilo Code, Pi, Qodo, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -16,6 +16,7 @@ This repo currently packages shared skills and setup files for Amp, Cline, Codex
 - includes an Aider config and conventions pack for terminal pair-programming
 - keeps skills shared so other surfaces can reuse them later
 - includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
+- adds Kilo Code-native rules, skills, agent, AGENTS.md, plugin directory documentation, and project MCP config
 - includes Devin CLI project config, rules, and skills under Devin's documented `.devin/` surfaces
 - adds Cline workspace rules, skills, MCP settings, and Cline plugin-surface documentation from official Cline docs
 - adds a Pi skills package using Pi's official package manifest and Agent Skills support
@@ -149,6 +150,21 @@ claude --plugin-dir ./plugins/claude-code
    - creating a custom plugin
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
+
+### Test in Kilo Code
+
+1. Install Kilo Code from the official docs: https://kilocode.ai/docs/getting-started/installing
+2. Open `./plugins/kilo-code` as the Kilo Code project root, or copy `kilo.jsonc`, `AGENTS.md`, and `.kilo/` into a target workspace root.
+3. Confirm the generated Kilo config exists at `plugins/kilo-code/kilo.jsonc`.
+4. Confirm the generated Kilo custom rule exists at `plugins/kilo-code/.kilo/rules/wordpress-com.md`.
+5. Confirm the shared skills exist under `plugins/kilo-code/.kilo/skills/`.
+6. In Kilo Code, confirm `wordpress-studio` and `wordpress-telemetry` are available in MCP settings.
+7. Try the same representative tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
 
 ### Test in Junie
 
@@ -301,6 +317,7 @@ pi install ./plugins/pi
 - Roo Code workspace output in `plugins/roo-code/`
 - Cline workspace output in `plugins/cline/`
 - Gemini packaging output in `plugins/gemini/`
+- Kilo Code packaging output in `plugins/kilo-code/`
 - Junie packaging output in `plugins/junie/`
 - GitHub Copilot packaging output in `plugins/copilot/`
 - Qodo workspace output in `plugins/qodo/`
@@ -328,6 +345,7 @@ The build packages the shared skills into:
 - `plugins/gemini/skills/`
 - `plugins/junie/.junie/skills/`
 - `plugins/copilot/skills/`
+- `plugins/kilo-code/.kilo/skills/`
 - `plugins/qodo/skills/`
 - `plugins/zed/.agents/skills/`
 - `plugins/windsurf/skills/`
@@ -349,6 +367,7 @@ It also generates plugin-specific MCP configs or setup guidance for each surface
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - Junie: `plugins/junie/.junie/mcp/mcp.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
+- Kilo Code: `plugins/kilo-code/kilo.jsonc`
 - Qodo: documented in `plugins/qodo/README.md` because official Qodo docs describe MCP setup through Agentic Tools or enterprise allow-lists, not automatic repo-local `.mcp.json` discovery
 - Zed: `plugins/zed/.zed/settings.json`
 - Windsurf/Cascade: `plugins/windsurf/mcp_config.json`
@@ -533,6 +552,25 @@ That folder currently contains:
 - `README.md`
 
 The generated Gemini MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. `GEMINI.md` is the project-level instruction file for Gemini CLI and Gemini Code Assist workflows.
+
+The Kilo Code output is generated to:
+
+```text
+plugins/kilo-code/
+```
+
+That folder currently contains:
+
+- `kilo.jsonc`
+- `AGENTS.md`
+- `.kilo/agents/wordpress-com.md`
+- `.kilo/rules/wordpress-com.md`
+- `.kilo/plugin/README.md`
+- `.kilo/skills/`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `README.md`
+
+The generated Kilo Code project config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server using Kilo's current `mcp` config shape. It uses Kilo-native rules, agents, skills, and AGENTS.md support documented at https://kilocode.ai/docs/.
 
 The Zed workspace output is generated to:
 

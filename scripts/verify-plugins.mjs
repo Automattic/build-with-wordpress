@@ -26,6 +26,7 @@ const rooPluginDir = path.join(root, "plugins", "roo-code");
 const juniePluginDir = path.join(root, "plugins", "junie");
 const geminiPluginDir = path.join(root, "plugins", "gemini");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
+const kiloCodePluginDir = path.join(root, "plugins", "kilo-code");
 const qodoPluginDir = path.join(root, "plugins", "qodo");
 const zedPluginDir = path.join(root, "plugins", "zed");
 const windsurfPluginDir = path.join(root, "plugins", "windsurf");
@@ -296,6 +297,63 @@ async function verifyOpenCodePlugin(skillNames) {
   const readme = await readFile(path.join(openCodePluginDir, "README.md"), "utf8");
   if (!readme.includes("WordPress.com")) {
     throw new Error("OpenCode README should use the WordPress.com product name");
+  }
+}
+
+async function verifyKiloCodePlugin(skillNames) {
+  await access(path.join(kiloCodePluginDir, "README.md"));
+  await access(path.join(kiloCodePluginDir, "AGENTS.md"));
+  await access(path.join(kiloCodePluginDir, "kilo.jsonc"));
+  await access(path.join(kiloCodePluginDir, ".kilo", "agents", "wordpress-com.md"));
+  await access(path.join(kiloCodePluginDir, ".kilo", "rules", "wordpress-com.md"));
+  await access(path.join(kiloCodePluginDir, ".kilo", "plugin", "README.md"));
+  await verifySharedSkillSet(path.join(kiloCodePluginDir, ".kilo"), skillNames);
+  await verifyTelemetryScript(kiloCodePluginDir, "Kilo Code");
+
+  const configRaw = await readFile(path.join(kiloCodePluginDir, "kilo.jsonc"), "utf8");
+  const config = JSON.parse(configRaw);
+
+  if (config.$schema !== "https://app.kilo.ai/config.json") {
+    throw new Error("Kilo Code config is missing the Kilo schema");
+  }
+
+  if (!Array.isArray(config.instructions)) {
+    throw new Error("Kilo Code config is missing project instructions");
+  }
+
+  if (!config.instructions.includes(".kilo/rules/wordpress-com.md")) {
+    throw new Error("Kilo Code config should load the generated custom rule");
+  }
+
+  if (!config.mcp || typeof config.mcp !== "object") {
+    throw new Error("Kilo Code config is missing the mcp wrapper");
+  }
+
+  if (config.mcp["wordpress-studio"]?.type !== "local") {
+    throw new Error("Kilo Code config is missing the local wordpress-studio MCP entry");
+  }
+
+  if (!Array.isArray(config.mcp["wordpress-studio"]?.command)) {
+    throw new Error("Kilo Code wordpress-studio MCP entry must use command array syntax");
+  }
+
+  if (config.mcp["wordpress-studio"].command.join(" ") !== "studio mcp") {
+    throw new Error("Kilo Code wordpress-studio MCP command should launch studio mcp");
+  }
+
+  if (config.mcp["wordpress-telemetry"]?.type !== "local") {
+    throw new Error("Kilo Code config is missing the local wordpress-telemetry MCP entry");
+  }
+
+  const readme = await readFile(path.join(kiloCodePluginDir, "README.md"), "utf8");
+  if (!readme.includes("https://kilocode.ai/docs/customize/custom-rules")) {
+    throw new Error("Kilo Code README should link official custom rules docs");
+  }
+  if (!readme.includes("https://kilocode.ai/docs/automate/mcp/using-in-kilo-code")) {
+    throw new Error("Kilo Code README should link official MCP docs");
+  }
+  if (!readme.includes("https://github.com/Kilo-Org/kilo-marketplace")) {
+    throw new Error("Kilo Code README should link the Kilo Marketplace repository");
   }
 }
 
@@ -784,6 +842,7 @@ async function main() {
   await verifyCursorPlugin(skillNames);
   await verifyContinueOutput();
   await verifyOpenCodePlugin(skillNames);
+  await verifyKiloCodePlugin(skillNames);
   await verifyRooPlugin(skillNames);
   await verifyClinePlugin(skillNames);
   await verifyJuniePlugin(skillNames);
@@ -798,7 +857,7 @@ async function main() {
   await verifyAmpPlugin(skillNames);
   await verifyPiPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Cline, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, Amp, and Pi verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Cline, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, Amp, and Pi verification passed");
 }
 
 main().catch((error) => {

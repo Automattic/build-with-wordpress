@@ -23,6 +23,7 @@ const factoryPluginDir = path.join(factoryOutputDir, "plugins", pluginName);
 const conductorOutputDir = path.join(pluginsDir, "conductor");
 const geminiDisplayName = "WordPress.com";
 const qodoPluginDir = path.join(pluginsDir, "qodo");
+const openClawPluginDir = path.join(pluginsDir, "openclaw");
 
 function buildClineRules() {
   return `# WordPress.com Cline Rules
@@ -1866,6 +1867,92 @@ function buildDevinConfig({ telemetrySource }) {
     telemetrySource,
   });
 }
+
+const openClawPackageManifest = {
+  name: pluginName,
+  version: "0.3.0",
+  description:
+    "WordPress.com site building and auditing skills for OpenClaw, backed by WordPress Studio MCP.",
+  publisher: "Automattic",
+  license: "GPL-2.0-or-later",
+  homepage: "https://developer.wordpress.com/",
+  repository: "https://github.com/Automattic/build-with-wordpress",
+  keywords: [
+    "wordpress",
+    "wordpress-com",
+    "studio",
+    "mcp",
+    "openclaw",
+    "clawhub",
+  ],
+  openclaw: {
+    compat: {
+      pluginApi: "^1.0.0",
+    },
+    build: {
+      openclawVersion: ">=0.1.0",
+    },
+    skills: "./skills",
+    mcpServers: "./mcp.json",
+  },
+};
+
+function buildOpenClawAgentsMd({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- Load \`skills/${skillName}/SKILL.md\` when the task matches that workflow.`)
+    .join("\n");
+
+  return `# WordPress.com OpenClaw Instructions
+
+Use this package as the WordPress.com and WordPress Studio layer for OpenClaw.
+
+## Shared substrate
+
+- Use the WordPress Studio MCP server for local site management, screenshots, block validation, performance tooling, and WP-CLI access.
+- Use the bundled \`wordpress-telemetry\` MCP server when workflow telemetry is available.
+- Treat ClawHub as the distribution surface for this package's skills and native package metadata.
+- Refer to the product as WordPress.com in user-facing text.
+
+## Skills
+
+${skillList}
+
+Start with \`skills/wordpress-creator/SKILL.md\` for broad WordPress implementation requests so OpenClaw routes the task to the right site, theme, block, plugin, or audit workflow.
+`;
+}
+
+function buildOpenClawReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+
+  return `# WordPress.com for OpenClaw
+
+This OpenClaw output packages the shared Build with WordPress skills for OpenClaw and ClawHub.
+
+## Official OpenClaw surface
+
+- OpenClaw: https://openclaw.ai
+- OpenClaw repository: https://github.com/openclaw/openclaw
+- ClawHub: https://clawhub.ai
+- ClawHub repository: https://github.com/openclaw/clawhub
+
+ClawHub describes itself as OpenClaw's public skill registry and also exposes a native package catalog for code plugins and bundle plugins. This output therefore includes both:
+
+- \`skills/\` for ClawHub-compatible skill publishing
+- \`package.json\` with \`openclaw.compat.pluginApi\` and \`openclaw.build.openclawVersion\` metadata for native OpenClaw package publishing
+
+## Included skills
+
+${skillList}
+
+## MCP setup
+
+The generated \`mcp.json\` launches the existing WordPress Studio MCP server plus the bundled \`wordpress-telemetry\` MCP server. This package does not introduce a new WordPress backend service.
+
+Use the normal Studio and WordPress.com connection flow to connect local sites, Jetpack-enabled sites, and WordPress.com-backed tooling.
+`;
+}
 const pluginTargets = [
   {
     logName: "Codex",
@@ -2110,6 +2197,29 @@ const pluginTargets = [
     manifestDir: ".opencode",
     includeMcpConfig: false,
     surface: "opencode",
+  },
+  {
+    logName: "OpenClaw",
+    buildRootDir: openClawPluginDir,
+    pluginDir: openClawPluginDir,
+    legacyCleanupPaths: [],
+    manifestFileName: "package.json",
+    manifestContents: openClawPackageManifest,
+    includeMcpConfig: true,
+    mcpConfigPath: "mcp.json",
+    surface: "openclaw",
+    writeExtraFiles: async ({ pluginDir, skillNames }) => {
+      await writeFile(
+        path.join(pluginDir, "AGENTS.md"),
+        buildOpenClawAgentsMd({ skillNames }),
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, "README.md"),
+        buildOpenClawReadme({ skillNames }),
+        "utf8",
+      );
+    },
   },
   {
     logName: "Kilo Code",

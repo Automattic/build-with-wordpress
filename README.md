@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, Factory Droid, GitHub Copilot, Gemini, Kilo Code, Roo Code, Windsurf/Cascade, and Aider as separate outputs:
+This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, Factory Droid, GitHub Copilot, Gemini, Kilo Code, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -18,6 +18,7 @@ This repo currently packages shared skills and setup files for Codex, Claude Cod
 - includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
 - adds Kilo Code-native rules, skills, agent, AGENTS.md, plugin directory documentation, and project MCP config
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
+- adds Zed project instructions, project-local skills, and project settings for MCP without introducing a Zed-specific backend service
 - adds Windsurf/Cascade workspace rules and MCP config without introducing a Windsurf-specific backend service
 - includes a Factory Droid marketplace output with a native Droid plugin, command, custom Droid, hook, and MCP configuration
 
@@ -136,6 +137,21 @@ claude --plugin-dir ./plugins/claude-code
 3. In Continue, copy the `.continue/` examples into a project or merge the `config.yaml` MCP snippet into `~/.continue/config.yaml`.
 4. Use Continue Agent mode for WordPress.com MCP tool access.
 
+### Test in Zed
+
+1. Open `./plugins/zed` as a Zed workspace root, or copy that folder's contents into a target workspace root.
+2. Confirm the generated project instructions exist at `plugins/zed/AGENTS.md`.
+3. Confirm the generated project-local skills exist under `plugins/zed/.agents/skills/`.
+4. Confirm the generated Zed MCP config exists at `plugins/zed/.zed/settings.json`.
+5. Trust the worktree in Zed so project-local skills are available.
+6. In the Agent Panel settings, confirm the `wordpress-studio` and `wordpress-telemetry` context servers are active.
+7. Try representative WordPress.com tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+
 ### Test in Windsurf/Cascade
 
 1. Install Devin Desktop / Windsurf and complete onboarding.
@@ -198,6 +214,7 @@ droid plugin install wordpress-studio@wordpress-studio --scope project
 - Gemini packaging output in `plugins/gemini/`
 - Kilo Code packaging output in `plugins/kilo-code/`
 - GitHub Copilot packaging output in `plugins/copilot/`
+- Zed workspace output in `plugins/zed/`
 - Windsurf/Cascade workspace output in `plugins/windsurf/`
 - Aider config and conventions output in `plugins/aider/`
 - Bundled telemetry artifact in `dist/`
@@ -218,6 +235,7 @@ The build packages the shared skills into:
 - `plugins/gemini/skills/`
 - `plugins/copilot/skills/`
 - `plugins/kilo-code/.kilo/skills/`
+- `plugins/zed/.agents/skills/`
 - `plugins/windsurf/skills/`
 - `plugins/aider/skills/`
 
@@ -232,6 +250,7 @@ It also generates plugin-specific MCP configs for each surface:
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
 - Kilo Code: `plugins/kilo-code/kilo.jsonc`
+- Zed: `plugins/zed/.zed/settings.json`
 - Windsurf/Cascade: `plugins/windsurf/mcp_config.json`
 
 Aider does not use a normal marketplace plugin or MCP package surface, so the Aider output uses `.aider.conf.yml` to read conventions and shared guidance files.
@@ -405,6 +424,22 @@ That folder currently contains:
 - `README.md`
 
 The generated Kilo Code project config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server using Kilo's current `mcp` config shape. It uses Kilo-native rules, agents, skills, and AGENTS.md support documented at https://kilocode.ai/docs/.
+
+The Zed workspace output is generated to:
+
+```text
+plugins/zed/
+```
+
+That folder currently contains:
+
+- `.agents/skills/`
+- `.zed/settings.json`
+- `AGENTS.md`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `README.md`
+
+The generated Zed MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through Zed's `context_servers` settings shape. Zed's official docs support project `AGENTS.md` instructions and project-local `.agents/skills/`, so this output does not generate a Zed extension package.
 
 The Roo Code workspace output is generated to:
 

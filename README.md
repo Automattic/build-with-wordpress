@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, and Roo Code as separate outputs:
+This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, Qodo, and Roo Code as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -16,6 +16,7 @@ This repo currently packages shared skills and setup files for Codex, Claude Cod
 - keeps skills shared so other surfaces can reuse them later
 - includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
+- adds a Qodo `AGENTS.md` workspace package and documents Qodo's manual MCP setup path from official Qodo docs
 
 ## Testing
 
@@ -117,6 +118,20 @@ claude --plugin-dir ./plugins/claude-code
 3. In Continue, copy the `.continue/` examples into a project or merge the `config.yaml` MCP snippet into `~/.continue/config.yaml`.
 4. Use Continue Agent mode for WordPress.com MCP tool access.
 
+### Test in Qodo
+
+1. Install Qodo IDE Plugin for VS Code, JetBrains, or Visual Studio.
+2. Open `./plugins/qodo` as the workspace root, or copy that folder's `AGENTS.md`, `skills/`, and `scripts/` into a target workspace root.
+3. Confirm Qodo can read the generated repository guidance at `plugins/qodo/AGENTS.md`.
+4. If your Qodo plan supports Agentic Tools, add the MCP JSON shown in `plugins/qodo/README.md` through Qodo's Tools Management page or enterprise MCP allow-list.
+5. Try representative local review or agent tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio` after you add the documented MCP JSON in Qodo.
+
 ## Current scope
 
 - Shared skills for:
@@ -137,6 +152,7 @@ claude --plugin-dir ./plugins/claude-code
 - Roo Code workspace output in `plugins/roo-code/`
 - Gemini packaging output in `plugins/gemini/`
 - GitHub Copilot packaging output in `plugins/copilot/`
+- Qodo workspace output in `plugins/qodo/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
 
@@ -153,8 +169,9 @@ The build packages the shared skills into:
 - `plugins/roo-code/skills/`
 - `plugins/gemini/skills/`
 - `plugins/copilot/skills/`
+- `plugins/qodo/skills/`
 
-It also generates plugin-specific MCP configs for each surface:
+It also generates plugin-specific MCP configs or setup guidance for each surface:
 
 - Codex: `plugins/codex/plugins/wordpress-studio/.mcp.json`
 - Claude Code: `plugins/claude-code/.mcp.json`
@@ -163,6 +180,7 @@ It also generates plugin-specific MCP configs for each surface:
 - Roo Code: `plugins/roo-code/.roo/mcp.json`
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
+- Qodo: documented in `plugins/qodo/README.md` because official Qodo docs describe MCP setup through Agentic Tools or enterprise allow-lists, not automatic repo-local `.mcp.json` discovery
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -303,3 +321,18 @@ That folder currently contains:
 - `README.md`
 
 The generated Roo Code project MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. The `.roo/rules/` files are Roo-specific; the WordPress.com MCP and skill behavior is shared with the other outputs.
+
+The Qodo workspace output is generated to:
+
+```text
+plugins/qodo/
+```
+
+That folder currently contains:
+
+- `AGENTS.md`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `skills/`
+- `README.md`
+
+The generated Qodo output follows official Qodo docs by using repo-local `AGENTS.md` for project guidance and documenting MCP JSON for Qodo's Agentic Tools UI or enterprise allow-list. Qodo's docs do not describe automatic repo-local `.mcp.json` discovery, so this output intentionally does not generate a Qodo-only `.mcp.json` file.

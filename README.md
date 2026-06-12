@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
+This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, Factory Droid, GitHub Copilot, Gemini, Roo Code, Windsurf/Cascade, Aider, and Zed as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -19,6 +19,7 @@ This repo currently packages shared skills and setup files for Codex, Claude Cod
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
 - adds Zed project instructions, project-local skills, and project settings for MCP without introducing a Zed-specific backend service
 - adds Windsurf/Cascade workspace rules and MCP config without introducing a Windsurf-specific backend service
+- includes a Factory Droid marketplace output with a native Droid plugin, command, custom Droid, hook, and MCP configuration
 
 ## Testing
 
@@ -155,6 +156,26 @@ claude --plugin-dir ./plugins/claude-code
 5. Start Aider from the repo root that contains `.aider.conf.yml`.
 6. Try a representative WordPress.com coding task and confirm Aider loads the conventions as read-only context.
 
+### Test in Factory Droid
+
+1. Review the generated Factory marketplace output in `./plugins/factory`.
+2. Confirm the generated setup files exist:
+   - `plugins/factory/.factory-plugin/marketplace.json`
+   - `plugins/factory/plugins/wordpress-studio/.factory-plugin/plugin.json`
+   - `plugins/factory/plugins/wordpress-studio/mcp.json`
+   - `plugins/factory/plugins/wordpress-studio/commands/wordpress.md`
+   - `plugins/factory/plugins/wordpress-studio/droids/wordpress-builder.md`
+   - `plugins/factory/plugins/wordpress-studio/hooks/hooks.json`
+   - `plugins/factory/plugins/wordpress-studio/skills/`
+3. Install from the local marketplace with Factory Droid:
+
+```bash
+droid plugin marketplace add ./plugins/factory
+droid plugin install wordpress-studio@wordpress-studio --scope project
+```
+
+4. In Droid, confirm the `wordpress-studio` and `wordpress-telemetry` MCP servers are available, then try representative WordPress.com tasks.
+
 ## Current scope
 
 - Shared skills for:
@@ -172,6 +193,7 @@ claude --plugin-dir ./plugins/claude-code
 - Claude Code packaging output in `plugins/claude-code/`
 - Cursor packaging output in `plugins/cursor/`
 - Continue setup output in `plugins/continue/`
+- Factory Droid marketplace output in `plugins/factory/`
 - Roo Code workspace output in `plugins/roo-code/`
 - Gemini packaging output in `plugins/gemini/`
 - GitHub Copilot packaging output in `plugins/copilot/`
@@ -192,6 +214,7 @@ The build packages the shared skills into:
 - `plugins/claude-code/skills/`
 - `plugins/cursor/skills/`
 - `plugins/roo-code/skills/`
+- `plugins/factory/plugins/wordpress-studio/skills/`
 - `plugins/gemini/skills/`
 - `plugins/copilot/skills/`
 - `plugins/zed/.agents/skills/`
@@ -204,6 +227,7 @@ It also generates plugin-specific MCP configs for each surface:
 - Claude Code: `plugins/claude-code/.mcp.json`
 - Cursor: `plugins/cursor/mcp.json`
 - Continue: `plugins/continue/.continue/mcpServers/wordpress-com.yaml`
+- Factory Droid: `plugins/factory/plugins/wordpress-studio/mcp.json`
 - Roo Code: `plugins/roo-code/.roo/mcp.json`
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
@@ -315,6 +339,35 @@ That folder currently contains:
 - `.continue/mcpServers/wordpress-com.yaml`
 
 The generated Continue MCP guidance uses the same existing `studio mcp` entrypoint as the shared WordPress.com MCP substrate. Continue-specific files cover rules, prompts, and MCP block placement; they do not define a separate backend service.
+
+The Factory Droid marketplace output is generated to:
+
+```text
+plugins/factory/
+```
+
+That folder currently contains:
+
+- `.factory-plugin/marketplace.json`
+- `plugins/wordpress-studio/.factory-plugin/plugin.json`
+- `plugins/wordpress-studio/mcp.json`
+- `plugins/wordpress-studio/scripts/wordpress-telemetry-mcp.mjs`
+- `plugins/wordpress-studio/commands/wordpress.md`
+- `plugins/wordpress-studio/droids/wordpress-builder.md`
+- `plugins/wordpress-studio/hooks/hooks.json`
+- `plugins/wordpress-studio/hooks/session-context.sh`
+- `plugins/wordpress-studio/skills/`
+- `plugins/wordpress-studio/README.md`
+
+The generated Factory Droid MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. The Factory output follows the official Factory plugin, skills, custom slash command, custom Droid, MCP, hooks, and marketplace docs:
+
+- https://docs.factory.ai/cli/configuration/plugins
+- https://docs.factory.ai/guides/building/building-plugins
+- https://docs.factory.ai/cli/configuration/skills
+- https://docs.factory.ai/cli/configuration/custom-slash-commands
+- https://docs.factory.ai/cli/configuration/custom-droids
+- https://docs.factory.ai/cli/configuration/mcp
+- https://docs.factory.ai/reference/hooks-reference
 
 The generated Copilot MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server through VS Code's MCP configuration.
 

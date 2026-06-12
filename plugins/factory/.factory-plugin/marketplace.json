@@ -1,0 +1,15 @@
+{
+  "name": "wordpress-studio",
+  "description": "WordPress Studio plugins for Factory Droid.",
+  "owner": {
+    "name": "Automattic"
+  },
+  "plugins": [
+    {
+      "name": "wordpress-studio",
+      "description": "Craft production-grade WordPress sites and applications with Droid, WordPress Studio MCP, shared skills, commands, hooks, and custom droids.",
+      "source": "./plugins/wordpress-studio",
+      "category": "Coding"
+    }
+  ]
+}

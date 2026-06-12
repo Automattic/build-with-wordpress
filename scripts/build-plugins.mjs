@@ -630,6 +630,157 @@ This WordPress.com output does not currently ship an OpenCode-only plugin hook. 
 `;
 }
 
+function buildKiloConfig({ telemetrySource }) {
+  return {
+    "$schema": "https://app.kilo.ai/config.json",
+    instructions: [".kilo/rules/wordpress-com.md"],
+    mcp: createOpenCodeMcpConfig({
+      surface: "kilo-code",
+      telemetrySource,
+    }),
+  };
+}
+
+function buildKiloAgentsMd() {
+  return `# WordPress.com Kilo Code Instructions
+
+Use WordPress.com as the user-facing product name.
+
+## Role
+
+You help users build, customize, audit, and troubleshoot WordPress.com sites using the smallest suitable WordPress abstraction.
+
+## Workflow
+
+- Start by loading the \`wordpress-creator\` skill for WordPress.com build, theme, block, plugin, site-creation, or audit requests.
+- Prefer the WordPress Studio MCP server for site discovery, local site control, screenshots, block validation, and \`wp_cli\` access.
+- Use WordPress.com / Jetpack-connected MCP tools through the existing Studio MCP flow when the task targets a connected WordPress.com site.
+- Choose existing WordPress features and known plugins before creating custom code.
+- Use custom block plugins for reusable editor blocks that core blocks cannot cover.
+- Use custom plugins for reusable behavior that should survive theme changes.
+- Use theme work for templates, layout, styling, and visual presentation.
+- Verify changes with the relevant Studio MCP tools before calling the task complete.
+
+## Shared Substrate
+
+The WordPress.com MCP and agent substrate is shared across Kilo Code, OpenCode, Codex, Claude Code, Cursor, and Roo Code. Kilo-specific files only adapt discovery, rules, agents, skills, plugins, and configuration to Kilo's \`kilo.jsonc\` and \`.kilo/\` conventions.
+`;
+}
+
+function buildKiloRule() {
+  return `# WordPress.com for Kilo Code
+
+- Use the product name WordPress.com in user-facing text.
+- Prefer the configured \`wordpress-studio\` MCP server for site discovery, site changes, screenshots, block validation, and WordPress operations.
+- Use the bundled \`wordpress-telemetry\` MCP server for workflow telemetry emitted by this package.
+- Route implementation requests through the shared skills in \`.kilo/skills/\`, starting with \`wordpress-creator\` unless the user clearly asks for a narrower path.
+- Preserve existing project conventions and make the smallest complete change.
+- For themes, blocks, plugins, and content changes, inspect the current WordPress project structure before editing.
+- Use WordPress APIs, Gutenberg block markup, and WP-CLI-compatible operations instead of custom one-off storage or service layers.
+`;
+}
+
+function buildKiloAgent() {
+  return `---
+description: Builds, customizes, audits, and troubleshoots WordPress.com sites using Studio MCP and shared WordPress skills.
+mode: all
+---
+
+You are a WordPress.com specialist for Kilo Code.
+
+Use WordPress.com as the product name in user-facing text. For WordPress.com build, theme, block, plugin, site-creation, or audit requests, load the \`wordpress-creator\` skill first and follow its routing.
+
+Prefer the \`wordpress-studio\` MCP server for site operations, screenshots, block validation, \`wp_cli\`, and WordPress.com / Jetpack-connected workflows. Use the \`wordpress-telemetry\` MCP server for workflow telemetry when available.
+`;
+}
+
+function buildKiloPluginsReadme() {
+  return `# Kilo Code Plugins
+
+Kilo Code loads project-local JavaScript or TypeScript plugins from this directory.
+
+This WordPress.com output does not currently ship a Kilo-only plugin hook. The integration uses Kilo's native config, custom rules, agents, skills, AGENTS.md, and MCP support instead of inventing a plugin marketplace or a new backend service.
+`;
+}
+
+function buildKiloReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+
+  return `# WordPress.com for Kilo Code
+
+This Kilo Code output packages the shared WordPress skills from the \`build-with-wordpress\` source repo for WordPress.com work.
+
+It is intentionally Kilo-native:
+
+- \`kilo.jsonc\` configures project instructions and MCP servers using Kilo's current config shape.
+- \`.kilo/rules/wordpress-com.md\` contains Kilo custom rules for the workspace.
+- \`.kilo/skills/\` contains the shared Agent Skills used by the other outputs.
+- \`.kilo/agents/wordpress-com.md\` defines a focused Kilo agent/mode for WordPress.com work.
+- \`.kilo/plugin/README.md\` documents why no local Kilo plugin JavaScript is shipped yet.
+- \`AGENTS.md\` provides portable project instructions that Kilo loads automatically.
+
+## Setup
+
+1. Install Kilo Code using the official installation docs.
+2. Install WordPress Studio and make sure the \`studio\` CLI is available on your \`PATH\`.
+3. Open this directory as the project root, or copy \`kilo.jsonc\`, \`AGENTS.md\`, and \`.kilo/\` into your project.
+4. Start a new Kilo Code session from the configured project root so Kilo discovers the rules, skills, agent, and MCP servers.
+5. Confirm the \`wordpress-studio\` and \`wordpress-telemetry\` MCP servers are available in Kilo's MCP settings.
+
+## MCP setup
+
+The Kilo config uses the existing WordPress.com / Jetpack MCP flow through WordPress Studio:
+
+\`\`\`json
+{
+  "mcp": {
+    "wordpress-studio": {
+      "type": "local",
+      "command": ["studio", "mcp"],
+      "enabled": true
+    }
+  }
+}
+\`\`\`
+
+Use the normal Studio and WordPress.com connection flow to connect local sites, Jetpack-enabled sites, and WordPress.com-backed tooling. This output does not introduce a new backend service or Kilo-specific WordPress.com MCP server.
+
+The generated config also starts the bundled \`wordpress-telemetry\` MCP server so workflow events stay aligned with the other agent surfaces.
+
+## What is Kilo-specific
+
+- Kilo project config lives in \`kilo.jsonc\` and uses Kilo's \`mcp\` shape.
+- Kilo custom rules live in \`.kilo/rules/*.md\` and are referenced through the \`instructions\` config key.
+- Kilo discovers skills from \`.kilo/skills/<name>/SKILL.md\`.
+- Kilo discovers agents/modes from \`.kilo/agents/*.md\`.
+- Kilo discovers local plugins from \`.kilo/plugin/*.js\` or \`.kilo/plugin/*.ts\`; this output only documents that directory because no Kilo-only plugin hook is needed for the current WordPress.com integration.
+- Kilo also loads \`AGENTS.md\` automatically, which preserves compatibility with the shared agent instruction convention.
+
+## Official Kilo references
+
+- Installation and extension distribution: https://kilocode.ai/docs/getting-started/installing
+- Custom rules: https://kilocode.ai/docs/customize/custom-rules
+- Custom modes and agents: https://kilocode.ai/docs/customize/custom-modes
+- Agent Skills: https://kilocode.ai/docs/customize/skills
+- AGENTS.md support: https://kilocode.ai/docs/customize/agents-md
+- MCP configuration: https://kilocode.ai/docs/automate/mcp/using-in-kilo-code
+- Plugins and marketplace-style extension support: https://kilocode.ai/docs/automate/extending/plugins
+- Kilo Marketplace repository: https://github.com/Kilo-Org/kilo-marketplace
+
+## What is shared
+
+- The WordPress.com site-building workflows are the same shared skills used by Codex, Claude Code, Cursor, Roo Code, and OpenCode.
+- The Studio MCP server remains the shared substrate for local site management, screenshots, block validation, \`wp_cli\`, and WordPress.com / Jetpack-connected workflows.
+- The telemetry MCP server is the same bundled server generated for the other outputs, with the surface set to \`kilo-code\`.
+
+## Included skills
+
+${skillList}
+`;
+}
+
 function buildCopilotInstructions({ skillNames }) {
   const skillList = skillNames.map((skillName) => `- ${skillName}`).join("\n");
 
@@ -867,6 +1018,14 @@ const pluginTargets = [
     includeMcpConfig: false,
     surface: "opencode",
   },
+  {
+    logName: "Kilo Code",
+    buildRootDir: path.join(pluginsDir, "kilo-code"),
+    pluginDir: path.join(pluginsDir, "kilo-code"),
+    legacyCleanupPaths: [],
+    includeMcpConfig: false,
+    surface: "kilo-code",
+  },
 ];
 
 async function copySkillSet(sourceDir, targetDir) {
@@ -970,6 +1129,61 @@ async function buildPluginTarget(target, skillNames) {
     await writeFile(
       path.join(target.pluginDir, "README.md"),
       buildOpenCodeReadme({ skillNames }),
+      "utf8",
+    );
+    console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);
+    return;
+  }
+
+  if (target.surface === "kilo-code") {
+    await mkdir(path.join(target.pluginDir, ".kilo", "agents"), {
+      recursive: true,
+    });
+    await mkdir(path.join(target.pluginDir, ".kilo", "plugin"), {
+      recursive: true,
+    });
+    await mkdir(path.join(target.pluginDir, ".kilo", "rules"), {
+      recursive: true,
+    });
+    await mkdir(path.join(target.pluginDir, ".kilo", "skills"), {
+      recursive: true,
+    });
+    await rm(path.join(target.pluginDir, "skills"), {
+      recursive: true,
+      force: true,
+    });
+    await copySkillSet(
+      sharedSkillsSourceDir,
+      path.join(target.pluginDir, ".kilo", "skills"),
+    );
+    await writeFile(
+      path.join(target.pluginDir, "kilo.jsonc"),
+      `${JSON.stringify(buildKiloConfig({ telemetrySource }), null, 2)}\n`,
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, "AGENTS.md"),
+      buildKiloAgentsMd(),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".kilo", "agents", "wordpress-com.md"),
+      buildKiloAgent(),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".kilo", "rules", "wordpress-com.md"),
+      buildKiloRule(),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".kilo", "plugin", "README.md"),
+      buildKiloPluginsReadme(),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, "README.md"),
+      buildKiloReadme({ skillNames }),
       "utf8",
     );
     console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);

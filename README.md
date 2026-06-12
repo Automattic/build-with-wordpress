@@ -2,7 +2,7 @@
 
 Shared source for WordPress-focused agent skills and plugin packaging.
 
-This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, and Roo Code as separate outputs:
+This repo currently packages shared skills and setup files for Codex, Claude Code, Cursor, Continue, GitHub Copilot, Gemini, Kilo Code, and Roo Code as separate outputs:
 
 - prefers the WordPress Studio MCP server for site management, screenshots, and block validation
 - falls back to the Studio CLI through a shared Studio skill when MCP is unavailable
@@ -15,6 +15,7 @@ This repo currently packages shared skills and setup files for Codex, Claude Cod
 - bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
 - keeps skills shared so other surfaces can reuse them later
 - includes Continue-native setup files for WordPress.com rules, prompts, and MCP configuration
+- adds Kilo Code-native rules, skills, agent, AGENTS.md, plugin directory documentation, and project MCP config
 - adds Roo Code workspace rules and project MCP config without introducing a Roo-specific backend service
 
 ## Testing
@@ -104,6 +105,21 @@ claude --plugin-dir ./plugins/claude-code
    - running an audit request
 6. For workflow telemetry coverage, make sure the generated `wordpress-telemetry` MCP server starts alongside `wordpress-studio`.
 
+### Test in Kilo Code
+
+1. Install Kilo Code from the official docs: https://kilocode.ai/docs/getting-started/installing
+2. Open `./plugins/kilo-code` as the Kilo Code project root, or copy `kilo.jsonc`, `AGENTS.md`, and `.kilo/` into a target workspace root.
+3. Confirm the generated Kilo config exists at `plugins/kilo-code/kilo.jsonc`.
+4. Confirm the generated Kilo custom rule exists at `plugins/kilo-code/.kilo/rules/wordpress-com.md`.
+5. Confirm the shared skills exist under `plugins/kilo-code/.kilo/skills/`.
+6. In Kilo Code, confirm `wordpress-studio` and `wordpress-telemetry` are available in MCP settings.
+7. Try the same representative tasks:
+   - creating a new site
+   - building or editing a theme
+   - creating a custom block
+   - creating a custom plugin
+   - running an audit request
+
 ### Test in Continue
 
 1. Review the generated Continue output in `./plugins/continue`.
@@ -136,6 +152,7 @@ claude --plugin-dir ./plugins/claude-code
 - Continue setup output in `plugins/continue/`
 - Roo Code workspace output in `plugins/roo-code/`
 - Gemini packaging output in `plugins/gemini/`
+- Kilo Code packaging output in `plugins/kilo-code/`
 - GitHub Copilot packaging output in `plugins/copilot/`
 - Bundled telemetry artifact in `dist/`
 - `pnpm` scripts for build and verification
@@ -153,6 +170,7 @@ The build packages the shared skills into:
 - `plugins/roo-code/skills/`
 - `plugins/gemini/skills/`
 - `plugins/copilot/skills/`
+- `plugins/kilo-code/.kilo/skills/`
 
 It also generates plugin-specific MCP configs for each surface:
 
@@ -163,6 +181,7 @@ It also generates plugin-specific MCP configs for each surface:
 - Roo Code: `plugins/roo-code/.roo/mcp.json`
 - Gemini: `plugins/gemini/.gemini/settings.json`
 - GitHub Copilot: `plugins/copilot/.vscode/mcp.json`
+- Kilo Code: `plugins/kilo-code/kilo.jsonc`
 
 The telemetry server source lives in `scripts/wordpress-telemetry-mcp.mjs` and is bundled to:
 
@@ -285,6 +304,25 @@ That folder currently contains:
 - `README.md`
 
 The generated Gemini MCP config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server. `GEMINI.md` is the project-level instruction file for Gemini CLI and Gemini Code Assist workflows.
+
+The Kilo Code output is generated to:
+
+```text
+plugins/kilo-code/
+```
+
+That folder currently contains:
+
+- `kilo.jsonc`
+- `AGENTS.md`
+- `.kilo/agents/wordpress-com.md`
+- `.kilo/rules/wordpress-com.md`
+- `.kilo/plugin/README.md`
+- `.kilo/skills/`
+- `scripts/wordpress-telemetry-mcp.mjs`
+- `README.md`
+
+The generated Kilo Code project config launches both `studio mcp` and the bundled `wordpress-telemetry` MCP server using Kilo's current `mcp` config shape. It uses Kilo-native rules, agents, skills, and AGENTS.md support documented at https://kilocode.ai/docs/.
 
 The Roo Code workspace output is generated to:
 

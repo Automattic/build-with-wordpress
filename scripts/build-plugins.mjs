@@ -1191,6 +1191,82 @@ ${skillList}
 `;
 }
 
+function buildDevinAgentsMd() {
+  return `# WordPress.com Devin Instructions
+
+Use this output as a Devin CLI project configuration for WordPress.com work.
+
+## Workflow
+
+- Start with the \`wordpress-creator\` skill for WordPress.com build, theme, block, plugin, site-creation, or audit requests.
+- Prefer the WordPress Studio MCP server for site discovery, local site control, screenshots, block validation, frontend audits, and \`wp_cli\` access.
+- Use the bundled \`wordpress-telemetry\` MCP server for workflow telemetry when available.
+- Choose the smallest fitting WordPress abstraction: site settings, content, theme, block, plugin, or audit.
+- Keep WordPress.com as the user-facing product name.
+
+## Devin-Specific Setup
+
+- Devin CLI loads project rules from \`AGENTS.md\`.
+- Devin CLI loads project skills from \`.devin/skills/<name>/SKILL.md\`.
+- Devin CLI loads shared project MCP servers from \`.devin/config.json\`.
+- This output uses Devin-native project configuration around the shared WordPress.com MCP and skill substrate; it does not introduce a Devin-specific backend service.
+`;
+}
+
+function buildDevinReadme({ skillNames }) {
+  const skillList = skillNames
+    .map((skillName) => `- \`${skillName}\``)
+    .join("\n");
+
+  return `# WordPress.com for Devin CLI
+
+This Devin output packages the shared Build with WordPress skills for Devin CLI using Devin-native project configuration.
+
+## Official Devin surfaces used
+
+- Project rules: \`AGENTS.md\`
+- Project config: \`.devin/config.json\`
+- Project skills: \`.devin/skills/<name>/SKILL.md\`
+- MCP servers: \`mcpServers\` in Devin config
+
+Official references:
+
+- Extensibility overview: https://docs.devin.ai/cli/extensibility/index.md
+- Rules and AGENTS.md: https://docs.devin.ai/cli/extensibility/rules.md
+- Skills overview: https://docs.devin.ai/cli/extensibility/skills/overview.md
+- Skill format: https://docs.devin.ai/cli/extensibility/skills/creating-skills.md
+- MCP configuration: https://docs.devin.ai/cli/extensibility/mcp/configuration.md
+- Configuration files: https://docs.devin.ai/cli/extensibility/configuration.md
+
+## Setup
+
+1. Install Devin CLI using the official Devin CLI instructions.
+2. Install WordPress Studio and make sure the \`studio\` CLI is available on your \`PATH\`.
+3. Open this directory as the project root, or copy \`AGENTS.md\` and \`.devin/\` into the root of the project where Devin should assist with WordPress.com work.
+4. Start Devin CLI from the configured project root.
+5. Confirm the configured MCP servers are available in Devin CLI.
+
+## MCP servers
+
+\`.devin/config.json\` launches:
+
+- \`wordpress-studio\`: runs \`studio mcp\` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
+- \`wordpress-telemetry\`: runs the bundled telemetry server artifact from this package.
+
+This does not invent a Devin-only backend. Devin connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
+
+## Included skills
+
+${skillList}
+`;
+}
+
+function buildDevinConfig({ telemetrySource }) {
+  return createMcpConfig({
+    surface: "devin",
+    telemetrySource,
+  });
+}
 const pluginTargets = [
   {
     logName: "Codex",
@@ -1521,6 +1597,14 @@ const pluginTargets = [
       );
     },
   },
+  {
+    logName: "Devin CLI",
+    buildRootDir: path.join(pluginsDir, "devin"),
+    pluginDir: path.join(pluginsDir, "devin"),
+    legacyCleanupPaths: [],
+    includeMcpConfig: false,
+    surface: "devin",
+  },
 ];
 
 async function copySkillSet(sourceDir, targetDir) {
@@ -1633,6 +1717,37 @@ async function buildPluginTarget(target, skillNames) {
       "utf8",
     );
     console.log(`Built ${target.logName} plugin at ${target.pluginDir}`);
+    return;
+  }
+
+  if (target.surface === "devin") {
+    await mkdir(path.join(target.pluginDir, ".devin", "skills"), {
+      recursive: true,
+    });
+    await rm(path.join(target.pluginDir, "skills"), {
+      recursive: true,
+      force: true,
+    });
+    await copySkillSet(
+      sharedSkillsSourceDir,
+      path.join(target.pluginDir, ".devin", "skills"),
+    );
+    await writeFile(
+      path.join(target.pluginDir, ".devin", "config.json"),
+      `${JSON.stringify(buildDevinConfig({ telemetrySource }), null, 2)}\n`,
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, "AGENTS.md"),
+      buildDevinAgentsMd(),
+      "utf8",
+    );
+    await writeFile(
+      path.join(target.pluginDir, "README.md"),
+      buildDevinReadme({ skillNames }),
+      "utf8",
+    );
+    console.log(`Built ${target.logName} output at ${target.pluginDir}`);
     return;
   }
 

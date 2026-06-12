@@ -36,6 +36,7 @@ const factoryMarketplacePath = path.join(
   ".factory-plugin",
   "marketplace.json",
 );
+const devinPluginDir = path.join(root, "plugins", "devin");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -572,6 +573,42 @@ async function verifyFactoryPlugin(skillNames) {
   }
 }
 
+async function verifyDevinPlugin(skillNames) {
+  await access(path.join(devinPluginDir, "README.md"));
+  await access(path.join(devinPluginDir, "AGENTS.md"));
+  await access(path.join(devinPluginDir, ".devin", "config.json"));
+  await verifySharedSkillSet(path.join(devinPluginDir, ".devin"), skillNames);
+  await verifyTelemetryScript(devinPluginDir, "Devin CLI");
+
+  const configRaw = await readFile(
+    path.join(devinPluginDir, ".devin", "config.json"),
+    "utf8",
+  );
+  const config = JSON.parse(configRaw);
+
+  if (!config.mcpServers?.["wordpress-studio"]) {
+    throw new Error("Devin config is missing the wordpress-studio MCP entry");
+  }
+
+  if (!config.mcpServers?.["wordpress-telemetry"]) {
+    throw new Error("Devin config is missing the wordpress-telemetry MCP entry");
+  }
+
+  if (config.mcpServers["wordpress-studio"].command !== "studio") {
+    throw new Error("Devin wordpress-studio MCP command should launch studio");
+  }
+
+  const readme = await readFile(path.join(devinPluginDir, "README.md"), "utf8");
+  if (!readme.includes("https://docs.devin.ai/cli/extensibility/index.md")) {
+    throw new Error("Devin README is missing official Devin documentation links");
+  }
+
+  const agents = await readFile(path.join(devinPluginDir, "AGENTS.md"), "utf8");
+  if (!agents.includes(".devin/skills/<name>/SKILL.md")) {
+    throw new Error("Devin AGENTS.md is missing Devin skill path guidance");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
@@ -588,8 +625,9 @@ async function main() {
   await verifyWindsurfPlugin(skillNames);
   await verifyAiderPlugin(skillNames);
   await verifyFactoryPlugin(skillNames);
+  await verifyDevinPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Gemini, Copilot, Qodo, Windsurf, Aider, Factory Droid, and Zed verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Gemini, Copilot, Qodo, Windsurf, Aider, Factory Droid, Zed, and Devin verification passed");
 }
 
 main().catch((error) => {

@@ -25,6 +25,7 @@ const openCodePluginDir = path.join(root, "plugins", "opencode");
 const rooPluginDir = path.join(root, "plugins", "roo-code");
 const geminiPluginDir = path.join(root, "plugins", "gemini");
 const copilotPluginDir = path.join(root, "plugins", "copilot");
+const zedPluginDir = path.join(root, "plugins", "zed");
 const windsurfPluginDir = path.join(root, "plugins", "windsurf");
 const clinePluginDir = path.join(root, "plugins", "cline");
 const aiderPluginDir = path.join(root, "plugins", "aider");
@@ -408,6 +409,54 @@ async function verifyCopilotPlugin(skillNames) {
   }
 }
 
+async function verifyZedPlugin(skillNames) {
+  await access(path.join(zedPluginDir, "README.md"));
+  await access(path.join(zedPluginDir, "AGENTS.md"));
+  await access(path.join(zedPluginDir, ".zed", "settings.json"));
+  await verifySharedSkillSet(path.join(zedPluginDir, ".agents"), skillNames);
+  await verifyTelemetryScript(zedPluginDir, "Zed");
+
+  const settingsRaw = await readFile(
+    path.join(zedPluginDir, ".zed", "settings.json"),
+    "utf8",
+  );
+  const settings = JSON.parse(settingsRaw);
+
+  if (!settings.context_servers?.["wordpress-studio"]) {
+    throw new Error("Zed settings are missing the wordpress-studio context server");
+  }
+
+  if (!settings.context_servers?.["wordpress-telemetry"]) {
+    throw new Error("Zed settings are missing the wordpress-telemetry context server");
+  }
+
+  if (settings.context_servers["wordpress-studio"].command !== "studio") {
+    throw new Error("Zed wordpress-studio context server should launch studio");
+  }
+
+  const readme = await readFile(path.join(zedPluginDir, "README.md"), "utf8");
+  const requiredDocLinks = [
+    "https://zed.dev/docs/ai/instructions",
+    "https://zed.dev/docs/ai/skills",
+    "https://zed.dev/docs/ai/agent-settings",
+    "https://zed.dev/docs/ai/agent-profiles",
+    "https://zed.dev/docs/ai/mcp",
+    "https://zed.dev/docs/extensions/developing-extensions",
+    "https://zed.dev/docs/extensions/mcp-extensions",
+    "https://zed.dev/docs/extensions/agent-servers",
+  ];
+
+  for (const docLink of requiredDocLinks) {
+    if (!readme.includes(docLink)) {
+      throw new Error(`Zed README is missing official documentation link: ${docLink}`);
+    }
+  }
+
+  if (!readme.includes("does not generate a Zed extension")) {
+    throw new Error("Zed README must document the extension packaging decision");
+  }
+}
+
 async function verifyWindsurfPlugin(skillNames) {
   await access(path.join(windsurfPluginDir, "README.md"));
   await access(path.join(windsurfPluginDir, ".devin", "rules", "wordpress-com.md"));
@@ -541,11 +590,12 @@ async function main() {
   await verifyClinePlugin(skillNames);
   await verifyGeminiPlugin(skillNames);
   await verifyCopilotPlugin(skillNames);
+  await verifyZedPlugin(skillNames);
   await verifyWindsurfPlugin(skillNames);
   await verifyAiderPlugin(skillNames);
   await verifyFactoryPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Cline, Gemini, Copilot, Windsurf, Aider, and Factory Droid verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Cline, Gemini, Copilot, Windsurf, Aider, Factory Droid, and Zed verification passed");
 }
 
 main().catch((error) => {

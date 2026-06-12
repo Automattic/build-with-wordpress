@@ -16,7 +16,7 @@ Use Build with WordPress when you want your coding agent to understand WordPress
 
 ## How It Relates To WordPress Studio
 
-WordPress Studio is the local runtime this package teaches agents to use. [Studio](https://github.com/Automattic/studio) is a desktop development environment for running local WordPress sites, opening them in the browser, and controlling them from developer tools. Studio owns the local WordPress sites, the `studio` CLI, and the `studio mcp` server. Build with WordPress owns the agent-facing layer around Studio: instructions, skills, MCP config snippets, telemetry wiring, and native package files for each coding agent.
+WordPress Studio is the runtime this package teaches agents to use. [Studio](https://github.com/Automattic/studio) is a desktop and web-based surface for building and managing custom WordPress websites and applications. Studio owns the WordPress sites, the `studio` CLI, and the `studio mcp` server. Build with WordPress owns the agent-facing layer around Studio: instructions, skills, MCP config snippets, telemetry wiring, and native package files for each coding agent.
 
 In practice, a developer installs WordPress Studio once, then uses the generated output for their preferred agent. That agent can ask Studio to create and manage sites, inspect screenshots, validate blocks, run performance checks, and use WP-CLI through MCP instead of guessing how to operate a WordPress project from files alone.
 

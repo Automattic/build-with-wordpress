@@ -1,0 +1,12 @@
+# WordPress.com guidance for Aider.
+# See https://aider.chat/docs/config.html and https://aider.chat/docs/usage/conventions.html.
+read:
+  - CONVENTIONS.md
+  - skills/auditing/SKILL.md
+  - skills/block-creator/SKILL.md
+  - skills/design-previews-creator/SKILL.md
+  - skills/plugin-creator/SKILL.md
+  - skills/site-creator/SKILL.md
+  - skills/studio/SKILL.md
+  - skills/theme-creator/SKILL.md
+  - skills/wordpress-creator/SKILL.md

@@ -7,13 +7,12 @@ It is intentionally Junie-native:
 - `.junie/AGENTS.md` provides project-level Junie guidelines.
 - `.junie/skills/` contains the shared WordPress skills used by the other outputs.
 - `.junie/mcp/mcp.json` connects Junie to the existing WordPress Studio MCP server and bundled `wordpress-telemetry` server.
-- `scripts/wordpress-telemetry-mcp.mjs` contains the bundled telemetry MCP server artifact.
 
 ## Setup
 
 1. Install Junie or use Junie from JetBrains AI Chat.
 2. Install WordPress Studio and make sure the `studio` CLI is available on your `PATH`.
-3. Open this folder as the project root, or copy `.junie/` and `scripts/` into your project.
+3. Open this folder as the project root, or copy `.junie/` into your project.
 4. Confirm Junie loads project guidelines from `.junie/AGENTS.md`.
 5. Confirm the MCP servers are available in Junie MCP settings or with the Junie CLI `/mcp` command.
 
@@ -22,7 +21,7 @@ It is intentionally Junie-native:
 `.junie/mcp/mcp.json` launches:
 
 - `wordpress-studio`: runs `studio mcp` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
-- `wordpress-telemetry`: runs the bundled telemetry server artifact from this package.
+- `wordpress-telemetry`: runs an embedded bootstrap generated from the shared telemetry server artifact.
 
 This does not invent a Junie-only backend. Junie connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
 

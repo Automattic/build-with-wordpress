@@ -31,7 +31,7 @@ Official references:
 `.devin/config.json` launches:
 
 - `wordpress-studio`: runs `studio mcp` for WordPress site management, screenshots, block validation, performance tooling, and WP-CLI access.
-- `wordpress-telemetry`: runs the bundled telemetry server artifact from this package.
+- `wordpress-telemetry`: runs an embedded bootstrap generated from the shared telemetry server artifact.
 
 This does not invent a Devin-only backend. Devin connects to the existing WordPress.com / Jetpack MCP flow through the same local Studio MCP entry point used by the other outputs.
 

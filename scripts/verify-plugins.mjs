@@ -43,6 +43,7 @@ const factoryMarketplacePath = path.join(
 const devinPluginDir = path.join(root, "plugins", "devin");
 const ampPluginDir = path.join(root, "plugins", "amp");
 const piPluginDir = path.join(root, "plugins", "pi");
+const hermesPluginDir = path.join(root, "plugins", "hermes");
 const openClawPluginDir = path.join(root, "plugins", "openclaw");
 
 async function getSharedSkillNames() {
@@ -116,8 +117,11 @@ async function verifyOpenCodeMcpConfig() {
 async function verifyTelemetryScript(pluginDir, surfaceName) {
   try {
     await access(path.join(pluginDir, "scripts", "wordpress-telemetry-mcp.mjs"));
+    throw new Error(`${surfaceName} plugin should not copy scripts/wordpress-telemetry-mcp.mjs; MCP configs embed the shared dist artifact`);
   } catch (error) {
-    throw new Error(`${surfaceName} plugin is missing scripts/wordpress-telemetry-mcp.mjs`);
+    if (error.message?.includes("should not copy")) {
+      throw error;
+    }
   }
 }
 
@@ -880,6 +884,58 @@ async function verifyPiPlugin(skillNames) {
   }
 }
 
+async function verifyHermesPlugin(skillNames) {
+  await access(path.join(hermesPluginDir, "plugin.yaml"));
+  await access(path.join(hermesPluginDir, "__init__.py"));
+  await access(path.join(hermesPluginDir, "README.md"));
+  await access(path.join(hermesPluginDir, ".hermes", "config.yaml"));
+  await verifySharedSkillSet(hermesPluginDir, skillNames);
+  await verifyTelemetryScript(hermesPluginDir, "Hermes");
+
+  const manifest = await readFile(path.join(hermesPluginDir, "plugin.yaml"), "utf8");
+  if (!manifest.includes("name: wordpress-studio")) {
+    throw new Error("Hermes plugin.yaml is missing the plugin name");
+  }
+
+  const pluginPython = await readFile(path.join(hermesPluginDir, "__init__.py"), "utf8");
+  for (const skillName of skillNames) {
+    if (!pluginPython.includes(`ctx.register_skill(${JSON.stringify(skillName)}`)) {
+      throw new Error(`Hermes plugin does not register ${skillName}`);
+    }
+  }
+
+  const configRaw = await readFile(
+    path.join(hermesPluginDir, ".hermes", "config.yaml"),
+    "utf8",
+  );
+  const config = JSON.parse(configRaw);
+  if (!config.mcp_servers?.["wordpress-studio"]) {
+    throw new Error("Hermes config is missing the wordpress-studio MCP entry");
+  }
+  if (!config.mcp_servers?.["wordpress-telemetry"]) {
+    throw new Error("Hermes config is missing the wordpress-telemetry MCP entry");
+  }
+
+  const readme = await readFile(path.join(hermesPluginDir, "README.md"), "utf8");
+  const requiredDocLinks = [
+    "https://hermes-agent.nousresearch.com/",
+    "https://github.com/NousResearch/hermes-agent",
+    "https://hermes-agent.nousresearch.com/docs/user-guide/features/skills",
+    "https://hermes-agent.nousresearch.com/docs/user-guide/features/plugins",
+    "https://agentskills.io",
+  ];
+
+  for (const docLink of requiredDocLinks) {
+    if (!readme.includes(docLink)) {
+      throw new Error(`Hermes README is missing official documentation link: ${docLink}`);
+    }
+  }
+
+  if (!readme.includes("hermes plugins install")) {
+    throw new Error("Hermes README is missing plugin install guidance");
+  }
+}
+
 async function verifyOpenClawPlugin(skillNames) {
   await access(path.join(openClawPluginDir, "package.json"));
   await access(path.join(openClawPluginDir, "AGENTS.md"));
@@ -954,9 +1010,10 @@ async function main() {
   await verifyDevinPlugin(skillNames);
   await verifyAmpPlugin(skillNames);
   await verifyPiPlugin(skillNames);
+  await verifyHermesPlugin(skillNames);
   await verifyOpenClawPlugin(skillNames);
 
-  console.log("Amp, Cline, Codex, Claude, Conductor, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, Pi, and OpenClaw verification passed");
+  console.log("Amp, Cline, Codex, Claude, Conductor, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, Pi, Hermes, and OpenClaw verification passed");
 }
 
 main().catch((error) => {

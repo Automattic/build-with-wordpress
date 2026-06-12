@@ -34,6 +34,7 @@ Generated outputs are available for:
 - Factory Droid
 - Gemini
 - GitHub Copilot
+- Hermes
 - Junie
 - Kilo Code
 - OpenClaw
@@ -65,7 +66,7 @@ Use `pnpm build:telemetry-mcp` when you only need to rebuild `dist/wordpress-tel
 
 ## What Gets Generated
 
-Each build packages the shared `skills/` directory and the bundled telemetry MCP server into the surfaces that can consume them. Outputs use the native extension point for each agent instead of forcing one universal plugin shape.
+Each build packages the shared `skills/` directory into the surfaces that can consume them. MCP-enabled outputs embed a telemetry bootstrap generated from the shared `dist/wordpress-telemetry-mcp.mjs` artifact, instead of copying that 23k-line bundle into every output folder. Outputs use the native extension point for each agent instead of forcing one universal plugin shape.
 
 | Surface | Output | Native files |
 | --- | --- | --- |
@@ -81,6 +82,7 @@ Each build packages the shared `skills/` directory and the bundled telemetry MCP
 | Factory Droid | `plugins/factory/` | Factory marketplace, plugin, command, Droid, hooks, MCP config, skills |
 | Gemini | `plugins/gemini/` | `GEMINI.md`, `.gemini/settings.json`, `skills/` |
 | GitHub Copilot | `plugins/copilot/` | `.github/copilot-instructions.md`, scoped instructions, `.vscode/mcp.json` |
+| Hermes | `plugins/hermes/` | `plugin.yaml`, `__init__.py`, `.hermes/config.yaml`, `skills/` |
 | Junie | `plugins/junie/` | `.junie/AGENTS.md`, `.junie/skills/`, `.junie/mcp/mcp.json` |
 | Kilo Code | `plugins/kilo-code/` | `kilo.jsonc`, `AGENTS.md`, `.kilo/agents/`, `.kilo/rules/`, `.kilo/skills/` |
 | OpenClaw | `plugins/openclaw/` | `package.json` with OpenClaw package metadata, `AGENTS.md`, `mcp.json`, `skills/` |

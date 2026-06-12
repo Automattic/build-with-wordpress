@@ -9,6 +9,7 @@ const sharedSkillsDir = path.join(root, "skills");
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
 const cursorPluginName = pluginName;
+const cursorPluginDisplayName = pluginDisplayName;
 const codexRootDir = path.join(root, "plugins", "codex");
 const codexPluginDir = path.join(codexRootDir, "plugins", pluginName);
 const codexMarketplacePath = path.join(
@@ -20,6 +21,10 @@ const codexMarketplacePath = path.join(
 const claudePluginDir = path.join(root, "plugins", "claude-code");
 const cursorPluginDir = path.join(root, "plugins", "cursor");
 const continueOutputDir = path.join(root, "plugins", "continue");
+const openCodePluginDir = path.join(root, "plugins", "opencode");
+const rooPluginDir = path.join(root, "plugins", "roo-code");
+const geminiPluginDir = path.join(root, "plugins", "gemini");
+const copilotPluginDir = path.join(root, "plugins", "copilot");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -35,22 +40,57 @@ async function verifySharedSkillSet(pluginDir, skillNames) {
   }
 }
 
-async function verifyMcpConfig(pluginDir, surfaceName, configFileName = ".mcp.json") {
-  await access(path.join(pluginDir, configFileName));
+async function verifyMcpConfig(pluginDir, surfaceName, configPath = ".mcp.json") {
+  await access(path.join(pluginDir, configPath));
 
-  const mcpRaw = await readFile(path.join(pluginDir, configFileName), "utf8");
+  const mcpRaw = await readFile(path.join(pluginDir, configPath), "utf8");
   const mcp = JSON.parse(mcpRaw);
+  const servers = mcp.mcpServers ?? mcp.servers;
 
-  if (!mcp.mcpServers || typeof mcp.mcpServers !== "object") {
-    throw new Error(`${surfaceName} MCP config is missing the mcpServers wrapper`);
+  if (!servers || typeof servers !== "object") {
+    throw new Error(`${surfaceName} MCP config is missing a server wrapper`);
   }
 
-  if (!mcp.mcpServers["wordpress-studio"]) {
+  if (!servers["wordpress-studio"]) {
     throw new Error(`${surfaceName} MCP config is missing the wordpress-studio entry`);
   }
 
-  if (!mcp.mcpServers["wordpress-telemetry"]) {
+  if (!servers["wordpress-telemetry"]) {
     throw new Error(`${surfaceName} MCP config is missing the wordpress-telemetry entry`);
+  }
+}
+
+async function verifyOpenCodeMcpConfig() {
+  await access(path.join(openCodePluginDir, "opencode.json"));
+
+  const configRaw = await readFile(
+    path.join(openCodePluginDir, "opencode.json"),
+    "utf8"
+  );
+  const config = JSON.parse(configRaw);
+
+  if (config.$schema !== "https://opencode.ai/config.json") {
+    throw new Error("OpenCode config is missing the OpenCode schema");
+  }
+
+  if (!config.mcp || typeof config.mcp !== "object") {
+    throw new Error("OpenCode config is missing the mcp wrapper");
+  }
+
+  if (config.mcp["wordpress-studio"]?.type !== "local") {
+    throw new Error("OpenCode config is missing the local wordpress-studio MCP entry");
+  }
+
+  if (!Array.isArray(config.mcp["wordpress-studio"]?.command)) {
+    throw new Error("OpenCode wordpress-studio MCP entry must use command array syntax");
+  }
+
+  if (config.mcp["wordpress-studio"].command.join(" ") !== "studio mcp") {
+    throw new Error("OpenCode wordpress-studio MCP command should launch studio mcp");
+  }
+
+  if (config.mcp["wordpress-telemetry"]?.type !== "local") {
+    throw new Error("OpenCode config is missing the local wordpress-telemetry MCP entry");
   }
 }
 
@@ -149,7 +189,7 @@ async function verifyCursorPlugin(skillNames) {
     throw new Error("Unexpected Cursor plugin name");
   }
 
-  if (manifest.displayName !== pluginDisplayName) {
+  if (manifest.displayName !== cursorPluginDisplayName) {
     throw new Error("Cursor plugin manifest has the wrong display name");
   }
 
@@ -227,6 +267,97 @@ async function verifyContinueOutput() {
   }
 }
 
+async function verifyOpenCodePlugin(skillNames) {
+  await access(path.join(openCodePluginDir, "README.md"));
+  await access(path.join(openCodePluginDir, "AGENTS.md"));
+  await access(path.join(openCodePluginDir, ".opencode", "agents", "wordpress-com.md"));
+  await access(path.join(openCodePluginDir, ".opencode", "commands", "wordpress.md"));
+  await access(path.join(openCodePluginDir, ".opencode", "plugins", "README.md"));
+  await verifySharedSkillSet(path.join(openCodePluginDir, ".opencode"), skillNames);
+  await verifyOpenCodeMcpConfig();
+  await verifyTelemetryScript(openCodePluginDir, "OpenCode");
+
+  const readme = await readFile(path.join(openCodePluginDir, "README.md"), "utf8");
+  if (!readme.includes("WordPress.com")) {
+    throw new Error("OpenCode README should use the WordPress.com product name");
+  }
+}
+
+async function verifyRooPlugin(skillNames) {
+  await access(path.join(rooPluginDir, "README.md"));
+  await access(path.join(rooPluginDir, "AGENTS.md"));
+  await access(path.join(rooPluginDir, ".roo", "rules", "wordpress-com.md"));
+  await access(path.join(rooPluginDir, ".roo", "rules-code", "wordpress-com-code.md"));
+  await verifySharedSkillSet(rooPluginDir, skillNames);
+  await verifyTelemetryScript(rooPluginDir, "Roo Code");
+
+  const mcpPath = path.join(rooPluginDir, ".roo", "mcp.json");
+  await access(mcpPath);
+
+  const mcpRaw = await readFile(mcpPath, "utf8");
+  const mcp = JSON.parse(mcpRaw);
+
+  if (!mcp.mcpServers?.["wordpress-studio"]) {
+    throw new Error("Roo Code MCP config is missing the wordpress-studio entry");
+  }
+
+  if (!mcp.mcpServers?.["wordpress-telemetry"]) {
+    throw new Error("Roo Code MCP config is missing the wordpress-telemetry entry");
+  }
+}
+
+async function verifyGeminiPlugin(skillNames) {
+  await access(path.join(geminiPluginDir, "GEMINI.md"));
+  await access(path.join(geminiPluginDir, "README.md"));
+  await verifySharedSkillSet(geminiPluginDir, skillNames);
+  await verifyMcpConfig(
+    geminiPluginDir,
+    "Gemini plugin",
+    path.join(".gemini", "settings.json"),
+  );
+  await verifyTelemetryScript(geminiPluginDir, "Gemini");
+
+  const instructions = await readFile(path.join(geminiPluginDir, "GEMINI.md"), "utf8");
+
+  if (!instructions.includes("WordPress Studio MCP server")) {
+    throw new Error("Gemini instructions are missing Studio MCP guidance");
+  }
+
+  if (!instructions.includes("skills/wordpress-creator/SKILL.md")) {
+    throw new Error("Gemini instructions are missing wordpress-creator routing guidance");
+  }
+}
+
+async function verifyCopilotPlugin(skillNames) {
+  await access(path.join(copilotPluginDir, ".github", "copilot-instructions.md"));
+  await access(
+    path.join(
+      copilotPluginDir,
+      ".github",
+      "instructions",
+      "wordpress-studio.instructions.md",
+    ),
+  );
+  await access(path.join(copilotPluginDir, ".vscode", "mcp.json"));
+  await access(path.join(copilotPluginDir, "README.md"));
+  await verifySharedSkillSet(copilotPluginDir, skillNames);
+  await verifyMcpConfig(
+    copilotPluginDir,
+    "GitHub Copilot plugin",
+    path.join(".vscode", "mcp.json"),
+  );
+  await verifyTelemetryScript(copilotPluginDir, "GitHub Copilot");
+
+  const instructionsRaw = await readFile(
+    path.join(copilotPluginDir, ".github", "copilot-instructions.md"),
+    "utf8",
+  );
+
+  if (!instructionsRaw.includes("WordPress Studio for GitHub Copilot")) {
+    throw new Error("Copilot instructions are missing the expected heading");
+  }
+}
+
 async function main() {
   const skillNames = await getSharedSkillNames();
 
@@ -234,8 +365,12 @@ async function main() {
   await verifyClaudePlugin(skillNames);
   await verifyCursorPlugin(skillNames);
   await verifyContinueOutput();
+  await verifyOpenCodePlugin(skillNames);
+  await verifyRooPlugin(skillNames);
+  await verifyGeminiPlugin(skillNames);
+  await verifyCopilotPlugin(skillNames);
 
-  console.log("Codex, Claude, Cursor, and Continue verification passed");
+  console.log("Codex, Claude, Cursor, Continue, OpenCode, Roo Code, Gemini, and Copilot verification passed");
 }
 
 main().catch((error) => {

@@ -19,7 +19,7 @@ Start here before changing skills, generator code, verification contracts, or ge
 | [Architecture](architecture.md) | Repository layout, product names, module boundaries, runtime data flow, storage/auth boundaries, failure modes, and design principles. | Understand how shared skills, generator scripts, verification, telemetry, Studio MCP, and generated packages fit together. |
 | [Generated outputs](generated-outputs.md) | Generated package matrix, build pipeline, generated-output contracts, MCP config shape, telemetry MCP tool reference, verifier expectations, and Cursor export contract. | Change or review generated files under `plugins/`, add a surface, or reason about package artifacts. |
 | [Skills and integrations](skills-and-integrations.md) | Skill inventory, Studio integration concepts, MCP contracts, relationship to WordPress agent skills packaging, and safe extension boundaries. | Update shared skills, Studio guidance, or agent integration behavior. |
-| [Contributor workflows](contributor-workflows.md) | Setup, commands, change recipes, manual smoke testing, CI automation, and pull request checklist. | Prepare, verify, and review a repository change. |
+| [Contributor workflows](contributor-workflows.md) | Setup, commands, change recipes, manual smoke testing, CI automation contracts, and pull request checklist. | Prepare, verify, and review a repository change. |
 
 ## Repository source inventory
 

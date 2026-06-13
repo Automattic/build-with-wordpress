@@ -138,6 +138,24 @@ The repository includes GitHub Actions workflows for documentation maintenance a
 
 Manual documentation bootstrap runs should create or improve the initial documentation structure. Push-triggered merge checks should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when docs are current.
 
+### Developer docs workflow contract
+
+`developer-docs-agent.yml` calls the reusable `Automattic/docs-agent/.github/workflows/maintain-docs.yml` workflow for the technical documentation lane. The workflow source defines the documentation maintenance boundary that this repository expects reviewers to enforce:
+
+- `workflow_dispatch` runs with `run_kind: bootstrap`; pushes to `trunk` run with `run_kind: maintenance`.
+- `docs_branch` is `docs-agent/build-with-wordpress-developer-docs` and `base_ref` is `trunk`.
+- writable documentation paths are limited to `README.md`, `docs/**`, and `plugins/**/README.md`.
+- the bootstrap contract requires the top-level README, `docs/README.md`, and the four topic pages `docs/architecture.md`, `docs/generated-outputs.md`, `docs/skills-and-integrations.md`, and `docs/contributor-workflows.md`.
+- the contract also requires at least five Markdown files under `docs/**`, a README link to `docs/README.md`, docs-index links to each required topic page, and avoidance of backlog-style phrases such as `future coverage`, `deferred`, and `saved for later`.
+- read-only context evidence is scoped to the `studio` and `wordpress-agent-skills` aliases for Studio MCP behavior and skill packaging patterns.
+- verification commands are `pnpm install --frozen-lockfile`, `pnpm build`, and `pnpm verify`; the drift check is `git diff --exit-code` so generated package outputs must be committed after a build.
+
+When changing the docs workflow, keep this contract aligned with the repository documentation structure in [the docs index](README.md). When changing generated-output behavior, update the docs and generated files in the same pull request so maintenance runs can finish cleanly.
+
+### Skills workflow contract
+
+`skills-agent.yml` uses the same reusable Docs Agent workflow with `audience: skills`. It is triggered manually and on a weekly Monday schedule, writes only to `skills/**`, generated skill copies under `plugins/**/skills/**`, and plugin README files, and runs the same install, build, verify, and generated-output drift checks. Keep this workflow focused on live skill content; generated package structure and developer documentation belong in the technical docs workflow and the generator/verifier source.
+
 ## Pull request checklist
 
 Before requesting review:

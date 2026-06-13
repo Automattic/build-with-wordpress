@@ -18,13 +18,50 @@ concurrency:
 jobs:
   developer-docs-agent:
     name: Maintain Developer Docs
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@71308ff49538b2a27f1cebe50ee9477e6268a1ce
     with:
       audience: technical
       run_kind: ${{ github.event_name == 'workflow_dispatch' && 'bootstrap' || 'maintenance' }}
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-developer-docs
       writable_paths: README.md,docs/**,plugins/**/README.md
+      bootstrap_contract: |
+        {
+          "required_paths": [
+            "README.md",
+            "docs/README.md",
+            "docs/architecture.md",
+            "docs/generated-outputs.md",
+            "docs/skills-and-integrations.md",
+            "docs/contributor-workflows.md"
+          ],
+          "required_globs": [
+            {
+              "pattern": "docs/**/*.md",
+              "min": 5
+            }
+          ],
+          "entry_points": [
+            {
+              "path": "README.md",
+              "must_link_to": ["docs/README.md"]
+            },
+            {
+              "path": "docs/README.md",
+              "must_link_to": [
+                "docs/architecture.md",
+                "docs/generated-outputs.md",
+                "docs/skills-and-integrations.md",
+                "docs/contributor-workflows.md"
+              ]
+            }
+          ],
+          "forbidden_phrases": [
+            "future coverage",
+            "deferred",
+            "saved for later"
+          ]
+        }
       context_repositories: |
         [
           {

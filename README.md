@@ -54,6 +54,10 @@ The shared WordPress workflow:
 - can generate three design preview directions before building a site theme
 - bundles a plugin-local telemetry MCP server so workflow events do not depend on Studio shipping telemetry support
 
+## Developer Documentation
+
+Start with the [developer documentation index](docs/README.md) when changing skills, generator code, verification contracts, or generated plugin artifacts. The docs cover repository architecture, generated-output contracts, Studio and skill integrations, and contributor workflows.
+
 ## Commands
 
 ```bash

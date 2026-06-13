@@ -87,7 +87,7 @@ Repository-native names used across the source and generated outputs:
 
 `scripts/build-plugins.mjs` owns the mapping from shared skills and repository constants to files under `plugins/`. It packages the same WordPress behavior through each agent's native conventions instead of forcing one universal plugin shape.
 
-The generator also wires MCP-enabled packages to the generated telemetry artifact and to the Studio MCP command. The build command in `package.json` always builds telemetry first and plugin outputs second:
+The generator also wires MCP-enabled packages to the generated telemetry artifact and to the Studio MCP command. For telemetry, `createTelemetryBootstrapArgs()` compresses `dist/wordpress-telemetry-mcp.mjs` into an inline Node `--eval` bootstrap for each surface, so generated packages do not carry a copy of `scripts/wordpress-telemetry-mcp.mjs`. The build command in `package.json` always builds telemetry first and plugin outputs second:
 
 ```bash
 pnpm build
@@ -102,7 +102,7 @@ Important verification behaviors include:
 
 - `verifySharedSkillSet()` checks that every shared skill has a generated `SKILL.md` in a surface's skill directory.
 - `verifyMcpConfig()` checks that JSON MCP configs expose a server wrapper and both `wordpress-studio` and `wordpress-telemetry` entries.
-- `verifyTelemetryScript()` prevents generated packages from copying `scripts/wordpress-telemetry-mcp.mjs` directly; MCP configs should point at the shared built artifact instead.
+- `verifyTelemetryScript()` prevents generated packages from copying `scripts/wordpress-telemetry-mcp.mjs` directly; MCP configs should embed the bootstrap generated from the shared built artifact instead.
 - Surface-specific checks validate manifest names, display names, schema URLs, command shapes, package metadata, and expected setup files.
 
 ### Generated output boundary
@@ -140,7 +140,7 @@ pnpm verify
 At agent runtime, the generated package tells the selected coding agent how to perform WordPress work. Where the surface supports MCP, the package configures:
 
 - `wordpress-studio`, usually launching `studio mcp` for Studio-owned site operations and WP-CLI access.
-- `wordpress-telemetry`, launching the bundled telemetry MCP server with a surface identifier.
+- `wordpress-telemetry`, launching the inline telemetry bootstrap with a surface identifier.
 
 If Studio MCP is unavailable, shared Studio guidance directs agents to use the Studio CLI path instead of inventing file-only workflows.
 

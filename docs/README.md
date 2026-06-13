@@ -45,6 +45,10 @@ pnpm verify
 
 Use `pnpm build:telemetry-mcp` for telemetry-only bundling and `pnpm export:cursor` for the standalone Cursor plugin export flow.
 
+## Source evidence used by this documentation
+
+This bootstrap surface is grounded in the repository source inventory: `package.json` command scripts, `scripts/build-plugins.mjs`, `scripts/build-telemetry-mcp.mjs`, `scripts/verify-plugins.mjs`, `scripts/export-cursor-plugin.mjs`, `scripts/wordpress-telemetry-mcp.mjs`, the shared `skills/**/SKILL.md` directories, generated `plugins/**` packages, and the automation under `.github/workflows/**`. Integration notes also use the read-only `studio` and `wordpress-agent-skills` context aliases as evidence for Studio MCP ownership and shared skill packaging patterns.
+
 ## Current generated surfaces
 
 Build with WordPress currently generates outputs for Aider, Amp, Claude Code, Cline, Codex, Conductor, Continue, Cursor, Devin CLI, Factory Droid, Gemini, GitHub Copilot, Hermes, Junie, Kilo Code, OpenClaw, OpenCode, Pi, Qodo, Roo Code, Windsurf/Cascade, and Zed.

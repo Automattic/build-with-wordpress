@@ -49,7 +49,7 @@ pnpm build:telemetry-mcp
 | Pi | `plugins/pi/` | `package.json` with `pi-package` metadata and `skills/`. |
 | Qodo | `plugins/qodo/` | `AGENTS.md`, `skills/`, and MCP setup guidance for Qodo Agentic Tools. |
 | Roo Code | `plugins/roo-code/` | `.roo/mcp.json`, `.roo/rules/`, `.roo/rules-code/`, `skills/`. |
-| Devin Desktop | `plugins/devin-desktop/` | `.devin/rules/`, `mcp_config.json`, `skills/`. The generated output uses the Devin Desktop name; Cascade's official MCP config destination still uses `~/.codeium/windsurf/mcp_config.json`. |
+| Devin Desktop | `plugins/devin-desktop/` | `.devin/rules/`, `.devin/skills/`, `mcp_config.json`. The generated output uses the Devin Desktop name; Cascade's official MCP config destination still uses `~/.codeium/windsurf/mcp_config.json`, and Devin Desktop docs say marketplace extensions cannot be installed. |
 | VS Code Marketplace extension scaffold | `plugins/vscode/` | `package.json`, `extension.js`, `mcp.json`, `skills/`. Publisher is `automattic`. |
 | Zed | `plugins/zed/` | `AGENTS.md`, `.agents/skills/`, `.zed/settings.json`. |
 

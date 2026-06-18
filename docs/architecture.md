@@ -66,6 +66,7 @@ Repository-native names used across the source and generated outputs:
     ├── qodo/
     ├── roo-code/
     ├── devin-desktop/
+    ├── vscode/
     └── zed/
 ```
 
@@ -150,6 +151,8 @@ If Studio MCP is unavailable, shared Studio guidance directs agents to use the S
 Build with WordPress does not own WordPress site storage, Studio authentication, or WordPress.com authentication. Those responsibilities live in WordPress Studio and the user's environment. This repository owns generated files that point agents at Studio and explain how to use Studio safely.
 
 Generated output packages are repository-local files. Some agents consume package metadata or marketplace manifests, while other agents consume workspace instructions, MCP config files, or setup notes. The verification script documents which boundary each surface currently supports.
+
+The VS Code output is a repository-generated extension scaffold. It uses the Automattic Marketplace publisher and lightweight local commands, but publishing credentials and Marketplace release automation remain outside this repository until maintainers explicitly add that workflow.
 
 ## Failure modes and invariants
 

@@ -62,7 +62,7 @@ The current generated surfaces are listed in the top-level README and [Generated
 
 | Group | Examples | Integration style |
 | --- | --- | --- |
-| Plugin or marketplace packages | Codex, Claude Code, Cursor, Factory, Hermes, OpenClaw, Pi | Generated manifests, package metadata, marketplace entries, and skills. |
+| Plugin or marketplace packages | Codex, Claude Code, Cursor, Factory, Hermes, OpenClaw, Pi, VS Code | Generated manifests, package metadata, marketplace entries or extension scaffolds, and skills. |
 | Workspace instruction surfaces | Aider, Gemini, Qodo, Zed | Generated agent instructions plus skills or setup notes. |
 | MCP-configurable workspaces | Amp, Cline, Continue, Copilot, Devin, Junie, Kilo Code, OpenCode, Roo Code, Windsurf | Generated MCP config in the agent's native location plus skills/instructions. |
 | App/provider configured surfaces | Conductor and some Qodo use cases | Generated setup notes or settings where repository-local MCP config is not the supported path. |
@@ -129,6 +129,8 @@ The shared WordPress workflow can produce three design preview directions before
 4. Configure `wordpress-studio` and `wordpress-telemetry` if the surface supports MCP.
 5. Add verification for the generated files users or marketplaces will consume.
 6. Document the new surface in `README.md` and [Generated outputs](generated-outputs.md).
+
+For VS Code Marketplace work, keep the generated scaffold separate from publishing. The generated manifest uses the Automattic Marketplace publisher, and this repository should not store Marketplace credentials.
 
 ## Safe extension boundaries
 

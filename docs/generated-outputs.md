@@ -50,9 +50,12 @@ pnpm build:telemetry-mcp
 | Qodo | `plugins/qodo/` | `AGENTS.md`, `skills/`, and MCP setup guidance for Qodo Agentic Tools. |
 | Roo Code | `plugins/roo-code/` | `.roo/mcp.json`, `.roo/rules/`, `.roo/rules-code/`, `skills/`. |
 | Devin Desktop | `plugins/devin-desktop/` | `.devin/rules/`, `mcp_config.json`, `skills/`. The generated output uses the Devin Desktop name; Cascade's official MCP config destination still uses `~/.codeium/windsurf/mcp_config.json`. |
+| VS Code Marketplace extension scaffold | `plugins/vscode/` | `package.json`, `extension.js`, `mcp.json`, `skills/`. Publisher is `automattic`. |
 | Zed | `plugins/zed/` | `AGENTS.md`, `.agents/skills/`, `.zed/settings.json`. |
 
 Some surfaces support a complete plugin/marketplace package. Others only support workspace instructions, local settings, or user-facing setup notes. The generator should use the best supported native integration point for each surface.
+
+The VS Code output is intentionally a scaffold, not a publishing workflow. It includes Marketplace-shaped extension metadata, the Automattic publisher, command contributions, a thin JavaScript runtime, the bundled MCP config, and shared skills. Add packaging credentials and release automation outside this generated output before attempting Marketplace publication.
 
 ## Shared generated contracts
 
@@ -110,6 +113,7 @@ Several surfaces require package metadata. Verification checks representative fi
 - MCP config path such as `./.mcp.json`
 - marketplace entries pointing to the generated plugin path
 - schema URLs and package metadata required by a surface
+- publishing identity and release credentials for Marketplace surfaces
 
 Keep these values stable unless the corresponding agent surface changes its contract.
 

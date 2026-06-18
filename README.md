@@ -123,18 +123,22 @@ Cursor requires a standalone plugin repository. This repo remains the source of 
 
 https://github.com/Automattic/wordpress-cursor-plugin
 
-Update `skills/` and the Cursor generator here, then export `plugins/cursor/`:
+Update `skills/` and the Cursor generator here, then verify the generated output:
 
 ```bash
 pnpm build
 pnpm verify
+pnpm export:cursor -- --dry-run
+```
+
+The dry run prints the exact subtree split and push commands without creating a split branch, pushing to the standalone repository, or mutating the standalone checkout.
+
+When maintainers are ready to update the standalone repository, run the non-dry-run export from a clean source worktree:
+
+```bash
 pnpm export:cursor
 ```
 
-The export command runs `git subtree split --prefix=plugins/cursor` and pushes the result to `Automattic/wordpress-cursor-plugin` on `sync/from-build-with-wordpress`. Open or update a PR from that branch into the standalone repo's `main` branch, then submit the standalone repo to Cursor.
+The export command runs `git subtree split --prefix=plugins/cursor` and pushes the result to `Automattic/wordpress-cursor-plugin` on `sync/from-build-with-wordpress`. Open or update a PR from that branch into the standalone repo's `main` branch.
 
-For a dry run:
-
-```bash
-pnpm export:cursor -- --dry-run
-```
+Before submitting or updating the Cursor listing, confirm the standalone branch includes the expected generated files, review `.cursor-plugin/plugin.json` listing metadata, verify the README and MCP setup match the generated source, and submit to Cursor only after the standalone repository PR is accepted.

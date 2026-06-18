@@ -3,7 +3,7 @@
 Build with WordPress is the source repository for WordPress-focused agent skills and the generated packages that adapt those skills to different coding-agent surfaces. The source of truth is intentionally small:
 
 - `skills/` contains portable WordPress workflow guidance.
-- `scripts/` contains the generators and verification code.
+- `scripts/` contains the shared MCP setup contract, generators, and verification code.
 - `plugins/` contains generated, agent-native output packages.
 - `package.json` exposes the build, telemetry build, verification, and Cursor export commands.
 
@@ -32,6 +32,7 @@ Repository-native names used across the source and generated outputs:
 │   ├── build-plugins.mjs
 │   ├── build-telemetry-mcp.mjs
 │   ├── export-cursor-plugin.mjs
+│   ├── mcp-setup-contract.mjs
 │   ├── verify-plugins.mjs
 │   └── wordpress-telemetry-mcp.mjs
 ├── skills/
@@ -87,7 +88,7 @@ Repository-native names used across the source and generated outputs:
 
 `scripts/build-plugins.mjs` owns the mapping from shared skills and repository constants to files under `plugins/`. It packages the same WordPress behavior through each agent's native conventions instead of forcing one universal plugin shape.
 
-The generator also wires MCP-enabled packages to the generated telemetry artifact and to the Studio MCP command. For telemetry, `createTelemetryBootstrapArgs()` compresses `dist/wordpress-telemetry-mcp.mjs` into an inline Node `--eval` bootstrap for each surface, so generated packages do not carry a copy of `scripts/wordpress-telemetry-mcp.mjs`. The build command in `package.json` always builds telemetry first and plugin outputs second:
+The generator also wires MCP-enabled packages to the generated telemetry artifact and to the Studio MCP command through `scripts/mcp-setup-contract.mjs`. The contract owns shared server names, the `studio mcp` command, surface-specific config wrappers, and `createTelemetryBootstrapArgs()`, which compresses `dist/wordpress-telemetry-mcp.mjs` into an inline Node `--eval` bootstrap for each surface. Generated packages do not carry a copy of `scripts/wordpress-telemetry-mcp.mjs`. The build command in `package.json` always builds telemetry first and plugin outputs second:
 
 ```bash
 pnpm build
@@ -101,7 +102,7 @@ pnpm build
 Important verification behaviors include:
 
 - `verifySharedSkillSet()` checks that every shared skill has a generated `SKILL.md` in a surface's skill directory.
-- `verifyMcpConfig()` checks that JSON MCP configs expose a server wrapper and both `wordpress-studio` and `wordpress-telemetry` entries.
+- `verifyMcpConfig()` checks that JSON MCP configs expose a server wrapper and both shared WordPress MCP entries from `scripts/mcp-setup-contract.mjs`.
 - `verifyTelemetryScript()` prevents generated packages from copying `scripts/wordpress-telemetry-mcp.mjs` directly; MCP configs should embed the bootstrap generated from the shared built artifact instead.
 - Surface-specific checks validate manifest names, display names, schema URLs, command shapes, package metadata, and expected setup files.
 
@@ -156,7 +157,7 @@ Generated output packages are repository-local files. Some agents consume packag
 | --- | --- | --- |
 | Build order | Plugin outputs reference a telemetry artifact that has not been bundled. | Use `pnpm build`, which runs telemetry bundling before plugin generation. |
 | Skill drift | A shared skill is added but not present in generated packages. | `pnpm verify` compares generated skill directories against `skills/`. |
-| MCP drift | A generated MCP config omits `wordpress-studio` or `wordpress-telemetry`. | `verifyMcpConfig()` fails the surface-specific check. |
+| MCP drift | A generated MCP config omits `wordpress-studio` or `wordpress-telemetry`. | The verifier imports the shared MCP setup contract and fails the surface-specific check. |
 | Telemetry copy drift | Generated packages copy source telemetry server code instead of using the built artifact. | `verifyTelemetryScript()` fails if `scripts/wordpress-telemetry-mcp.mjs` appears inside a plugin package. |
 | Telemetry network failure | Pixel request fails or times out. | The telemetry server catches request errors and never blocks the workflow. |
 | Telemetry opt-out | A user disables telemetry. | `WP_SITE_CREATOR_NO_TELEMETRY=1` returns a skipped message from `record_workflow_event`. |

@@ -19,6 +19,17 @@ const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
 const cursorPluginName = pluginName;
 const cursorPluginDisplayName = pluginDisplayName;
+const cursorPluginRepository = "https://github.com/Automattic/wordpress-cursor-plugin";
+const cursorRequiredKeywords = [
+  "wordpress",
+  "studio",
+  "wp-cli",
+  "cursor",
+  "site-creator",
+  "theme-creator",
+  "block-creator",
+  "plugin-creator",
+];
 const codexRootDir = path.join(root, "plugins", "codex");
 const codexPluginDir = path.join(codexRootDir, "plugins", pluginName);
 const codexMarketplacePath = path.join(
@@ -224,6 +235,36 @@ async function verifyCursorPlugin(skillNames) {
 
   if (manifest.displayName !== cursorPluginDisplayName) {
     throw new Error("Cursor plugin manifest has the wrong display name");
+  }
+
+  if (manifest.version !== "0.3.0") {
+    throw new Error("Cursor plugin manifest has the wrong version");
+  }
+
+  if (!manifest.description?.includes("WordPress sites and applications")) {
+    throw new Error("Cursor plugin manifest is missing the listing description");
+  }
+
+  if (manifest.author?.name !== "Automattic") {
+    throw new Error("Cursor plugin manifest has the wrong author");
+  }
+
+  if (manifest.homepage !== "https://developer.wordpress.com/") {
+    throw new Error("Cursor plugin manifest has the wrong homepage");
+  }
+
+  if (manifest.repository !== cursorPluginRepository) {
+    throw new Error("Cursor plugin manifest has the wrong repository");
+  }
+
+  if (manifest.license !== "GPL-2.0-or-later") {
+    throw new Error("Cursor plugin manifest has the wrong license");
+  }
+
+  for (const keyword of cursorRequiredKeywords) {
+    if (!manifest.keywords?.includes(keyword)) {
+      throw new Error(`Cursor plugin manifest is missing keyword ${keyword}`);
+    }
   }
 
   if (manifest.rules !== "./rules/") {

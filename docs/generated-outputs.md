@@ -172,25 +172,36 @@ The verifier checks generated files rather than source style. It should fail whe
 
 When adding a new surface, add generator code and a verification function in the same change. The verification function should prove the public files that users or agent marketplaces consume.
 
-## Cursor export contract
+## Cursor export and listing contract
 
 Cursor requires a standalone plugin repository. Build with WordPress remains the source of truth and exports `plugins/cursor/` to `Automattic/wordpress-cursor-plugin`.
 
-Normal export:
+Reviewable dry run:
 
 ```bash
 pnpm build
 pnpm verify
-pnpm export:cursor
-```
-
-Dry run:
-
-```bash
 pnpm export:cursor -- --dry-run
 ```
 
+The dry run prints the subtree split, push target, and cleanup command without creating a local split branch, pushing to the standalone repository, or touching a standalone checkout.
+
+Maintainer export:
+
+```bash
+pnpm export:cursor
+```
+
 The export script uses `git subtree split --prefix=plugins/cursor` and pushes the result to the standalone repository branch `sync/from-build-with-wordpress`. Open or update a pull request from that branch into the standalone repository's `main` branch.
+
+Listing/submission checklist:
+
+1. Confirm `pnpm build` and `pnpm verify` pass in Build with WordPress.
+2. Confirm `pnpm export:cursor -- --dry-run` prints the expected `plugins/cursor` subtree split and `sync/from-build-with-wordpress` push target.
+3. Confirm the exported branch contains `.cursor-plugin/plugin.json`, `README.md`, `mcp.json`, `rules/wordpress-studio.mdc`, and every shared skill under `skills/`.
+4. Review Cursor listing metadata in `.cursor-plugin/plugin.json`: `name`, `displayName`, `version`, `description`, `author`, `homepage`, `repository`, `license`, `keywords`, `rules`, `skills`, and `mcpServers`.
+5. Open or update the standalone repository PR and wait for review before submitting or updating the Cursor listing.
+6. Submit to Cursor only from the accepted standalone repository state, not from unreviewed generated output.
 
 ## Maintenance checklist
 
@@ -201,7 +212,7 @@ Before opening a generated-output pull request:
 3. Run `pnpm build`.
 4. Run `pnpm verify`.
 5. Inspect generated package diffs for unexpected churn.
-6. If Cursor output changed, run the Cursor export flow when maintainers are ready to update the standalone plugin repository.
+6. If Cursor output changed, run the dry-run Cursor export flow for review and the non-dry-run export only when maintainers are ready to update the standalone plugin repository.
 
 ## Related documentation
 

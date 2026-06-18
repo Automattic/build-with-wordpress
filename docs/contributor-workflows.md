@@ -100,19 +100,30 @@ Expected MCP server names are:
 
 Cursor output has an additional publishing workflow because Cursor consumes a standalone plugin repository.
 
+Reviewable dry run:
+
 ```bash
 pnpm build
 pnpm verify
-pnpm export:cursor
-```
-
-Dry run:
-
-```bash
 pnpm export:cursor -- --dry-run
 ```
 
+The dry run prints the subtree split, push target, and cleanup command without creating a local split branch, pushing to the standalone repository, or touching a standalone checkout.
+
+Maintainer export:
+
+```bash
+pnpm export:cursor
+```
+
 The export script pushes a subtree split of `plugins/cursor` to `Automattic/wordpress-cursor-plugin` on `sync/from-build-with-wordpress`. Open or update a pull request from that branch to the standalone repository's `main` branch.
+
+Before submitting or updating the Cursor listing:
+
+1. Confirm the standalone branch contains `.cursor-plugin/plugin.json`, `README.md`, `mcp.json`, `rules/wordpress-studio.mdc`, and the generated `skills/` tree.
+2. Review `.cursor-plugin/plugin.json` for the listing-facing `name`, `displayName`, `version`, `description`, `author`, `homepage`, `repository`, `license`, `keywords`, `rules`, `skills`, and `mcpServers` fields.
+3. Confirm the standalone README describes the generated package, export source of truth, and MCP setup.
+4. Submit to Cursor only after the standalone repository PR is accepted.
 
 ## Manual smoke testing
 
@@ -165,7 +176,7 @@ Before requesting review:
 - [ ] `pnpm verify` passes locally or in CI.
 - [ ] Generated package diffs are expected and bounded.
 - [ ] Documentation is updated for public contracts, setup commands, generated files, or integration behavior.
-- [ ] Cursor export has been run or intentionally not run when `plugins/cursor/` changes.
+- [ ] Cursor export dry run has been run when `plugins/cursor/` changes, and non-dry-run export is intentionally run or intentionally deferred.
 
 ## Contributor design principles
 

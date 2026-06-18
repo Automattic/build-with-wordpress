@@ -19,6 +19,7 @@ const telemetryMcpServerDistPath = path.join(
   "dist",
   "wordpress-telemetry-mcp.mjs",
 );
+const vsCodeIconSourcePath = path.join(root, "assets", "vscode", "icon.png");
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
 const cursorPluginName = pluginName;
@@ -356,6 +357,15 @@ const vsCodeExtensionManifest = {
     url: "https://github.com/Automattic/build-with-wordpress.git",
   },
   license: "GPL-2.0-or-later",
+  icon: "images/icon.png",
+  files: [
+    "extension.js",
+    "mcp.json",
+    "README.md",
+    "LICENSE",
+    "images/icon.png",
+    "skills/**",
+  ],
   engines: {
     vscode: "^1.95.0",
   },
@@ -564,6 +574,16 @@ The manifest uses the Visual Studio Marketplace publisher \`automattic\`. This r
 ## Included skills
 
 ${skillList}
+`;
+}
+
+function buildVsCodeLicense() {
+  return `This VS Code extension package is part of Build with WordPress.
+
+The package is licensed under the GNU General Public License v2.0 or later.
+
+See the Build with WordPress source repository for the full project license and source:
+https://github.com/Automattic/build-with-wordpress
 `;
 }
 
@@ -2258,6 +2278,13 @@ Before submitting or updating the Cursor listing, confirm the exported standalon
         buildVsCodeReadme({ skillNames }),
         "utf8",
       );
+      await writeFile(
+        path.join(pluginDir, "LICENSE"),
+        buildVsCodeLicense(),
+        "utf8",
+      );
+      await mkdir(path.join(pluginDir, "images"), { recursive: true });
+      await cp(vsCodeIconSourcePath, path.join(pluginDir, "images", "icon.png"));
     },
   },
   {

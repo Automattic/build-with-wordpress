@@ -65,7 +65,7 @@ Repository-native names used across the source and generated outputs:
     ├── pi/
     ├── qodo/
     ├── roo-code/
-    ├── windsurf/
+    ├── devin-desktop/
     └── zed/
 ```
 

@@ -51,7 +51,7 @@ This bootstrap surface is grounded in the repository source inventory: `package.
 
 ## Current generated surfaces
 
-Build with WordPress currently generates outputs for Aider, Amp, Claude Code, Cline, Codex, Conductor, Continue, Cursor, Devin CLI, Factory Droid, Gemini, GitHub Copilot, Hermes, Junie, Kilo Code, OpenClaw, OpenCode, Pi, Qodo, Roo Code, Windsurf/Cascade, and Zed.
+Build with WordPress currently generates outputs for Aider, Amp, Claude Code, Cline, Codex, Conductor, Continue, Cursor, Devin CLI, Devin Desktop, Factory Droid, Gemini, GitHub Copilot, Hermes, Junie, Kilo Code, OpenClaw, OpenCode, Pi, Qodo, Roo Code, and Zed.
 
 See [Generated outputs](generated-outputs.md#generated-package-matrix) for each surface's output directory and native files.
 

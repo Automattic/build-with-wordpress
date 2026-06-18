@@ -715,20 +715,24 @@ ${skillList}
 `;
 }
 
-function buildWindsurfReadme({ skillNames }) {
+function buildDevinDesktopReadme({ skillNames }) {
   const skillList = skillNames
     .map((skillName) => `- \`${skillName}\``)
     .join("\n");
 
-  return `# WordPress.com for Windsurf Cascade
+  return `# WordPress.com for Devin Desktop
 
-This Windsurf/Cascade output packages the shared WordPress agent substrate from the \`build-with-wordpress\` source repo for WordPress.com work.
+This Devin Desktop output packages the shared WordPress agent substrate from the \`build-with-wordpress\` source repo for WordPress.com work.
 
-## What is Windsurf-specific
+## What is Devin Desktop-specific
 
 - Cascade rules live in \`.devin/rules/*.md\`, which the official docs list as the preferred workspace rule location.
 - \`mcp_config.json\` is shaped for Cascade's MCP configuration file at \`~/.codeium/windsurf/mcp_config.json\`.
 - The rules tell Cascade when to use WordPress.com MCP tools and how to route WordPress implementation work.
+
+## Migration from Windsurf
+
+Windsurf/Cascade is now part of the Devin Desktop lineage, so this generated package lives at \`plugins/devin-desktop/\`. Cascade's official MCP config path still uses \`~/.codeium/windsurf/mcp_config.json\`, so the setup instructions keep that destination path while the repository output uses the Devin Desktop name.
 
 ## What is shared
 
@@ -739,10 +743,10 @@ This Windsurf/Cascade output packages the shared WordPress agent substrate from 
 
 ## Setup
 
-1. Install Devin Desktop / Windsurf and complete onboarding.
+1. Install Devin Desktop and complete onboarding.
 2. Optionally install the \`windsurf\` command in \`PATH\` during onboarding.
 3. Build this repo with \`pnpm build\`.
-4. Copy the servers from \`plugins/windsurf/mcp_config.json\` into \`~/.codeium/windsurf/mcp_config.json\`.
+4. Copy the servers from \`plugins/devin-desktop/mcp_config.json\` into \`~/.codeium/windsurf/mcp_config.json\`.
 5. In Cascade MCP settings, confirm both servers are enabled:
    - \`wordpress-studio\`
    - \`wordpress-telemetry\`
@@ -2189,18 +2193,18 @@ const pluginTargets = [
     },
   },
   {
-    logName: "Windsurf",
-    buildRootDir: path.join(pluginsDir, "windsurf"),
-    pluginDir: path.join(pluginsDir, "windsurf"),
-    legacyCleanupPaths: [],
+    logName: "Devin Desktop",
+    buildRootDir: path.join(pluginsDir, "devin-desktop"),
+    pluginDir: path.join(pluginsDir, "devin-desktop"),
+    legacyCleanupPaths: [path.join(pluginsDir, "windsurf")],
     includeMcpConfig: true,
     mcpConfigPath: "mcp_config.json",
-    surface: "windsurf",
+    surface: "devin-desktop",
     rules: windsurfRules,
     writeExtraFiles: async ({ pluginDir, skillNames }) => {
       await writeFile(
         path.join(pluginDir, "README.md"),
-        buildWindsurfReadme({ skillNames }),
+        buildDevinDesktopReadme({ skillNames }),
         "utf8",
       );
     },

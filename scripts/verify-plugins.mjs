@@ -728,9 +728,18 @@ async function verifyDevinDesktopPlugin(skillNames) {
   await access(path.join(devinDesktopPluginDir, "README.md"));
   await access(path.join(devinDesktopPluginDir, ".devin", "rules", "wordpress-com.md"));
   await access(path.join(devinDesktopPluginDir, ".devin", "rules", "wordpress-com-mcp.md"));
-  await verifySharedSkillSet(devinDesktopPluginDir, skillNames);
+  await verifySharedSkillSet(path.join(devinDesktopPluginDir, ".devin"), skillNames);
   await verifyMcpConfig(devinDesktopPluginDir, "Devin Desktop plugin", "mcp_config.json");
   await verifyTelemetryScript(devinDesktopPluginDir, "Devin Desktop");
+
+  try {
+    await access(path.join(devinDesktopPluginDir, ".windsurf", "skills"));
+    throw new Error("Devin Desktop should use Devin-native .devin/skills, not legacy .windsurf/skills");
+  } catch (error) {
+    if (error.message?.includes("Devin-native .devin/skills")) {
+      throw error;
+    }
+  }
 
   const alwaysOnRule = await readFile(
     path.join(devinDesktopPluginDir, ".devin", "rules", "wordpress-com.md"),
@@ -754,6 +763,12 @@ async function verifyDevinDesktopPlugin(skillNames) {
   }
   if (!readme.includes("plugins/devin-desktop/mcp_config.json")) {
     throw new Error("Devin Desktop README is missing the generated output path");
+  }
+  if (!readme.includes(".devin/skills/wordpress-creator/SKILL.md")) {
+    throw new Error("Devin Desktop README is missing the Devin workspace skill path");
+  }
+  if (!readme.includes("cannot install extensions through any marketplace")) {
+    throw new Error("Devin Desktop README must document the marketplace extension limitation");
   }
 }
 

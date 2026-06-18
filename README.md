@@ -95,11 +95,11 @@ Each build packages the shared `skills/` directory into the surfaces that can co
 | Pi | `plugins/pi/` | `package.json` with `pi-package` metadata and `skills/` |
 | Qodo | `plugins/qodo/` | `AGENTS.md`, `skills/`, MCP setup documented for Qodo Agentic Tools |
 | Roo Code | `plugins/roo-code/` | `.roo/mcp.json`, `.roo/rules/`, `.roo/rules-code/`, `skills/` |
-| Devin Desktop | `plugins/devin-desktop/` | `.devin/rules/`, `mcp_config.json`, `skills/` |
+| Devin Desktop | `plugins/devin-desktop/` | `.devin/rules/`, `.devin/skills/`, `mcp_config.json` |
 | VS Code Marketplace extension scaffold | `plugins/vscode/` | `package.json`, `extension.js`, `mcp.json`, `skills/` |
 | Zed | `plugins/zed/` | `AGENTS.md`, `.agents/skills/`, `.zed/settings.json` |
 
-Some outputs intentionally stop at workspace files or setup guidance because that is what the official agent surface supports today. For example, Pi does not expose built-in MCP configuration, Qodo documents MCP through Agentic Tools or enterprise allow-lists, and Conductor keeps MCP setup in app/provider settings rather than a repository-local MCP file. Devin Desktop output lives under `plugins/devin-desktop/`; Cascade's official MCP config destination still uses `~/.codeium/windsurf/mcp_config.json`. The VS Code output is a generated extension scaffold with the Automattic Marketplace publisher and no Marketplace publishing automation.
+Some outputs intentionally stop at workspace files or setup guidance because that is what the official agent surface supports today. For example, Pi does not expose built-in MCP configuration, Qodo documents MCP through Agentic Tools or enterprise allow-lists, and Conductor keeps MCP setup in app/provider settings rather than a repository-local MCP file. Devin CLI uses `plugins/devin/` with `AGENTS.md`, `.devin/config.json`, and `.devin/skills/`. Devin Desktop uses `plugins/devin-desktop/` with Devin-native `.devin/rules/`, `.devin/skills/`, and `mcp_config.json`; Cascade's official MCP config destination still uses `~/.codeium/windsurf/mcp_config.json`, and Devin Desktop docs say marketplace extensions cannot be installed. The VS Code output is a generated extension scaffold with the Automattic Marketplace publisher and no Marketplace publishing automation.
 
 ## Testing
 

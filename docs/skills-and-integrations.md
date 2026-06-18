@@ -41,6 +41,7 @@ The same skill source may appear as:
 - `.agents/skills/<skill>/SKILL.md`
 - `.cline/skills/<skill>/SKILL.md`
 - `.devin/skills/<skill>/SKILL.md`
+- `.windsurf/skills/<skill>/SKILL.md`
 - `.kilo/skills/<skill>/SKILL.md`
 - `.junie/skills/<skill>/SKILL.md`
 - package-specific plugin skill directories such as the Codex `wordpress-studio` plugin.
@@ -64,7 +65,7 @@ The current generated surfaces are listed in the top-level README and [Generated
 | --- | --- | --- |
 | Plugin or marketplace packages | Codex, Claude Code, Cursor, Factory, Hermes, OpenClaw, Pi, VS Code | Generated manifests, package metadata, marketplace entries or extension scaffolds, and skills. |
 | Workspace instruction surfaces | Aider, Gemini, Qodo, Zed | Generated agent instructions plus skills or setup notes. |
-| MCP-configurable workspaces | Amp, Cline, Continue, Copilot, Devin, Junie, Kilo Code, OpenCode, Roo Code, Windsurf | Generated MCP config in the agent's native location plus skills/instructions. |
+| MCP-configurable workspaces | Amp, Cline, Continue, Copilot, Devin CLI, Devin Desktop, Junie, Kilo Code, OpenCode, Roo Code | Generated MCP config in the agent's native location plus skills/instructions. |
 | App/provider configured surfaces | Conductor and some Qodo use cases | Generated setup notes or settings where repository-local MCP config is not the supported path. |
 
 When adding a surface, first identify which group the agent belongs to, then implement the native output shape and verification checks for that group.

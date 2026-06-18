@@ -1,7 +1,13 @@
 import { access, cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { brotliCompressSync } from "node:zlib";
+import {
+  createLocalCommandArrayMcpConfig,
+  createMcpConfig,
+  createMcpServerEntries,
+  createVsCodeMcpConfig,
+  createZedMcpConfig,
+} from "./mcp-setup-contract.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,68 +66,6 @@ Cline's official plugin documentation says plugins currently apply to the Cline 
 
 This WordPress.com output does not ship a Cline SDK plugin because the current integration uses Cline-native workspace rules, Cline skills, and MCP configuration instead of a custom executable plugin hook.
 `;
-}
-
-function createZedMcpConfig({ surface, telemetrySource }) {
-  return {
-    context_servers: {
-      "wordpress-studio": {
-        command: "studio",
-        args: ["mcp"],
-      },
-      "wordpress-telemetry": {
-        command: "node",
-        args: createTelemetryBootstrapArgs({ surface, telemetrySource }),
-      },
-    },
-  };
-}
-
-function createTelemetryBootstrapArgs({ surface, telemetrySource }) {
-  const compressedSource = brotliCompressSync(Buffer.from(telemetrySource, "utf8"));
-  const sourcePayload = compressedSource.toString("base64");
-  const bootstrap = [
-    'import { brotliDecompressSync } from "node:zlib";',
-    'import { Buffer } from "node:buffer";',
-    `process.argv.push("--surface", ${JSON.stringify(surface)});`,
-    `const source = brotliDecompressSync(Buffer.from(${JSON.stringify(sourcePayload)}, "base64")).toString("utf8");`,
-    'await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));',
-  ].join("");
-
-  return ["--input-type=module", "--eval", bootstrap];
-}
-
-function createMcpConfig({ surface, telemetrySource }) {
-  return {
-    mcpServers: {
-      "wordpress-studio": {
-        command: "studio",
-        args: ["mcp"],
-      },
-      "wordpress-telemetry": {
-        command: "node",
-        args: createTelemetryBootstrapArgs({ surface, telemetrySource }),
-      },
-    },
-  };
-}
-
-function createOpenCodeMcpConfig({ surface, telemetrySource }) {
-  return {
-    "wordpress-studio": {
-      type: "local",
-      command: ["studio", "mcp"],
-      enabled: true,
-    },
-    "wordpress-telemetry": {
-      type: "local",
-      command: [
-        "node",
-        ...createTelemetryBootstrapArgs({ surface, telemetrySource }),
-      ],
-      enabled: true,
-    },
-  };
 }
 
 function buildRooWorkspaceRules() {
@@ -197,23 +141,6 @@ ${skillList}
 
 When a request involves WordPress implementation choices, start with \`skills/wordpress-creator/SKILL.md\` so the work routes to the right site, theme, block, plugin, or audit path.
 `;
-}
-
-function createVsCodeMcpConfig({ surface, telemetrySource }) {
-  return {
-    servers: {
-      "wordpress-studio": {
-        type: "stdio",
-        command: "studio",
-        args: ["mcp"],
-      },
-      "wordpress-telemetry": {
-        type: "stdio",
-        command: "node",
-        args: createTelemetryBootstrapArgs({ surface, telemetrySource }),
-      },
-    },
-  };
 }
 
 const codexMarketplaceManifest = {
@@ -373,7 +300,7 @@ function buildOpenCodeConfig({ telemetrySource }) {
   return {
     "$schema": "https://opencode.ai/config.json",
     instructions: ["AGENTS.md"],
-    mcp: createOpenCodeMcpConfig({
+    mcp: createLocalCommandArrayMcpConfig({
       surface: "opencode",
       telemetrySource,
     }),
@@ -1082,7 +1009,7 @@ function buildKiloConfig({ telemetrySource }) {
   return {
     "$schema": "https://app.kilo.ai/config.json",
     instructions: [".kilo/rules/wordpress-com.md"],
-    mcp: createOpenCodeMcpConfig({
+    mcp: createLocalCommandArrayMcpConfig({
       surface: "kilo-code",
       telemetrySource,
     }),
@@ -1403,19 +1330,10 @@ ${skillList}
 
 function buildAmpSettings({ telemetrySource }) {
   return {
-    "amp.mcpServers": {
-      "wordpress-studio": {
-        command: "studio",
-        args: ["mcp"],
-      },
-      "wordpress-telemetry": {
-        command: "node",
-        args: createTelemetryBootstrapArgs({
-          surface: "amp",
-          telemetrySource,
-        }),
-      },
-    },
+    "amp.mcpServers": createMcpServerEntries({
+      surface: "amp",
+      telemetrySource,
+    }),
   };
 }
 

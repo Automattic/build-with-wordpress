@@ -1,6 +1,15 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  getMcpServerEntries,
+  hasWordPressMcpServerEntries,
+  wordpressStudioMcpArgs,
+  wordpressStudioMcpCommand,
+  wordpressStudioMcpServerName,
+  wordpressTelemetryMcpCommand,
+  wordpressTelemetryMcpServerName,
+} from "./mcp-setup-contract.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -65,18 +74,37 @@ async function verifyMcpConfig(pluginDir, surfaceName, configPath = ".mcp.json")
 
   const mcpRaw = await readFile(path.join(pluginDir, configPath), "utf8");
   const mcp = JSON.parse(mcpRaw);
-  const servers = mcp.mcpServers ?? mcp.servers;
+  const servers = getMcpServerEntries(mcp);
 
   if (!servers || typeof servers !== "object") {
     throw new Error(`${surfaceName} MCP config is missing a server wrapper`);
   }
 
-  if (!servers["wordpress-studio"]) {
-    throw new Error(`${surfaceName} MCP config is missing the wordpress-studio entry`);
+  if (!hasWordPressMcpServerEntries(servers)) {
+    throw new Error(`${surfaceName} MCP config is missing WordPress MCP entries`);
+  }
+}
+
+function verifyLocalCommandArrayMcpConfig(mcp, surfaceName) {
+  if (!mcp || typeof mcp !== "object") {
+    throw new Error(`${surfaceName} config is missing the mcp wrapper`);
   }
 
-  if (!servers["wordpress-telemetry"]) {
-    throw new Error(`${surfaceName} MCP config is missing the wordpress-telemetry entry`);
+  const studioEntry = mcp[wordpressStudioMcpServerName];
+  if (studioEntry?.type !== "local") {
+    throw new Error(`${surfaceName} config is missing the local ${wordpressStudioMcpServerName} MCP entry`);
+  }
+
+  if (!Array.isArray(studioEntry?.command)) {
+    throw new Error(`${surfaceName} ${wordpressStudioMcpServerName} MCP entry must use command array syntax`);
+  }
+
+  if (studioEntry.command.join(" ") !== [wordpressStudioMcpCommand, ...wordpressStudioMcpArgs].join(" ")) {
+    throw new Error(`${surfaceName} ${wordpressStudioMcpServerName} MCP command should launch studio mcp`);
+  }
+
+  if (mcp[wordpressTelemetryMcpServerName]?.type !== "local") {
+    throw new Error(`${surfaceName} config is missing the local ${wordpressTelemetryMcpServerName} MCP entry`);
   }
 }
 
@@ -93,25 +121,7 @@ async function verifyOpenCodeMcpConfig() {
     throw new Error("OpenCode config is missing the OpenCode schema");
   }
 
-  if (!config.mcp || typeof config.mcp !== "object") {
-    throw new Error("OpenCode config is missing the mcp wrapper");
-  }
-
-  if (config.mcp["wordpress-studio"]?.type !== "local") {
-    throw new Error("OpenCode config is missing the local wordpress-studio MCP entry");
-  }
-
-  if (!Array.isArray(config.mcp["wordpress-studio"]?.command)) {
-    throw new Error("OpenCode wordpress-studio MCP entry must use command array syntax");
-  }
-
-  if (config.mcp["wordpress-studio"].command.join(" ") !== "studio mcp") {
-    throw new Error("OpenCode wordpress-studio MCP command should launch studio mcp");
-  }
-
-  if (config.mcp["wordpress-telemetry"]?.type !== "local") {
-    throw new Error("OpenCode config is missing the local wordpress-telemetry MCP entry");
-  }
+  verifyLocalCommandArrayMcpConfig(config.mcp, "OpenCode");
 }
 
 async function verifyTelemetryScript(pluginDir, surfaceName) {
@@ -375,25 +385,7 @@ async function verifyKiloCodePlugin(skillNames) {
     throw new Error("Kilo Code config should load the generated custom rule");
   }
 
-  if (!config.mcp || typeof config.mcp !== "object") {
-    throw new Error("Kilo Code config is missing the mcp wrapper");
-  }
-
-  if (config.mcp["wordpress-studio"]?.type !== "local") {
-    throw new Error("Kilo Code config is missing the local wordpress-studio MCP entry");
-  }
-
-  if (!Array.isArray(config.mcp["wordpress-studio"]?.command)) {
-    throw new Error("Kilo Code wordpress-studio MCP entry must use command array syntax");
-  }
-
-  if (config.mcp["wordpress-studio"].command.join(" ") !== "studio mcp") {
-    throw new Error("Kilo Code wordpress-studio MCP command should launch studio mcp");
-  }
-
-  if (config.mcp["wordpress-telemetry"]?.type !== "local") {
-    throw new Error("Kilo Code config is missing the local wordpress-telemetry MCP entry");
-  }
+  verifyLocalCommandArrayMcpConfig(config.mcp, "Kilo Code");
 
   const readme = await readFile(path.join(kiloCodePluginDir, "README.md"), "utf8");
   if (!readme.includes("https://kilocode.ai/docs/customize/custom-rules")) {
@@ -421,12 +413,8 @@ async function verifyRooPlugin(skillNames) {
   const mcpRaw = await readFile(mcpPath, "utf8");
   const mcp = JSON.parse(mcpRaw);
 
-  if (!mcp.mcpServers?.["wordpress-studio"]) {
-    throw new Error("Roo Code MCP config is missing the wordpress-studio entry");
-  }
-
-  if (!mcp.mcpServers?.["wordpress-telemetry"]) {
-    throw new Error("Roo Code MCP config is missing the wordpress-telemetry entry");
+  if (!hasWordPressMcpServerEntries(mcp.mcpServers)) {
+    throw new Error("Roo Code MCP config is missing WordPress MCP entries");
   }
 }
 
@@ -592,16 +580,12 @@ async function verifyZedPlugin(skillNames) {
   );
   const settings = JSON.parse(settingsRaw);
 
-  if (!settings.context_servers?.["wordpress-studio"]) {
-    throw new Error("Zed settings are missing the wordpress-studio context server");
+  if (!hasWordPressMcpServerEntries(settings.context_servers)) {
+    throw new Error("Zed settings are missing WordPress context servers");
   }
 
-  if (!settings.context_servers?.["wordpress-telemetry"]) {
-    throw new Error("Zed settings are missing the wordpress-telemetry context server");
-  }
-
-  if (settings.context_servers["wordpress-studio"].command !== "studio") {
-    throw new Error("Zed wordpress-studio context server should launch studio");
+  if (settings.context_servers[wordpressStudioMcpServerName].command !== wordpressStudioMcpCommand) {
+    throw new Error(`Zed ${wordpressStudioMcpServerName} context server should launch studio`);
   }
 
   const readme = await readFile(path.join(zedPluginDir, "README.md"), "utf8");
@@ -761,16 +745,12 @@ async function verifyDevinPlugin(skillNames) {
   );
   const config = JSON.parse(configRaw);
 
-  if (!config.mcpServers?.["wordpress-studio"]) {
-    throw new Error("Devin config is missing the wordpress-studio MCP entry");
+  if (!hasWordPressMcpServerEntries(config.mcpServers)) {
+    throw new Error("Devin config is missing WordPress MCP entries");
   }
 
-  if (!config.mcpServers?.["wordpress-telemetry"]) {
-    throw new Error("Devin config is missing the wordpress-telemetry MCP entry");
-  }
-
-  if (config.mcpServers["wordpress-studio"].command !== "studio") {
-    throw new Error("Devin wordpress-studio MCP command should launch studio");
+  if (config.mcpServers[wordpressStudioMcpServerName].command !== wordpressStudioMcpCommand) {
+    throw new Error(`Devin ${wordpressStudioMcpServerName} MCP command should launch studio`);
   }
 
   const readme = await readFile(path.join(devinPluginDir, "README.md"), "utf8");
@@ -803,19 +783,19 @@ async function verifyAmpPlugin(skillNames) {
     throw new Error("Amp settings are missing amp.mcpServers");
   }
 
-  if (servers["wordpress-studio"]?.command !== "studio") {
-    throw new Error("Amp settings must launch wordpress-studio with studio");
+  if (servers[wordpressStudioMcpServerName]?.command !== wordpressStudioMcpCommand) {
+    throw new Error(`Amp settings must launch ${wordpressStudioMcpServerName} with studio`);
   }
 
-  if (!Array.isArray(servers["wordpress-studio"]?.args)) {
-    throw new Error("Amp wordpress-studio MCP config is missing args");
+  if (!Array.isArray(servers[wordpressStudioMcpServerName]?.args)) {
+    throw new Error(`Amp ${wordpressStudioMcpServerName} MCP config is missing args`);
   }
 
-  if (servers["wordpress-studio"].args.join(" ") !== "mcp") {
-    throw new Error("Amp wordpress-studio MCP args should launch studio mcp");
+  if (servers[wordpressStudioMcpServerName].args.join(" ") !== wordpressStudioMcpArgs.join(" ")) {
+    throw new Error(`Amp ${wordpressStudioMcpServerName} MCP args should launch studio mcp`);
   }
 
-  if (servers["wordpress-telemetry"]?.command !== "node") {
+  if (servers[wordpressTelemetryMcpServerName]?.command !== wordpressTelemetryMcpCommand) {
     throw new Error("Amp settings are missing the bundled telemetry MCP server");
   }
 
@@ -909,11 +889,8 @@ async function verifyHermesPlugin(skillNames) {
     "utf8",
   );
   const config = JSON.parse(configRaw);
-  if (!config.mcp_servers?.["wordpress-studio"]) {
-    throw new Error("Hermes config is missing the wordpress-studio MCP entry");
-  }
-  if (!config.mcp_servers?.["wordpress-telemetry"]) {
-    throw new Error("Hermes config is missing the wordpress-telemetry MCP entry");
+  if (!hasWordPressMcpServerEntries(config.mcp_servers)) {
+    throw new Error("Hermes config is missing WordPress MCP entries");
   }
 
   const readme = await readFile(path.join(hermesPluginDir, "README.md"), "utf8");

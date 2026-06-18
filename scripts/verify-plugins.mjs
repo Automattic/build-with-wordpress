@@ -39,7 +39,7 @@ const copilotPluginDir = path.join(root, "plugins", "copilot");
 const kiloCodePluginDir = path.join(root, "plugins", "kilo-code");
 const qodoPluginDir = path.join(root, "plugins", "qodo");
 const zedPluginDir = path.join(root, "plugins", "zed");
-const windsurfPluginDir = path.join(root, "plugins", "windsurf");
+const devinDesktopPluginDir = path.join(root, "plugins", "devin-desktop");
 const clinePluginDir = path.join(root, "plugins", "cline");
 const aiderPluginDir = path.join(root, "plugins", "aider");
 const factoryOutputDir = path.join(root, "plugins", "factory");
@@ -611,33 +611,36 @@ async function verifyZedPlugin(skillNames) {
   }
 }
 
-async function verifyWindsurfPlugin(skillNames) {
-  await access(path.join(windsurfPluginDir, "README.md"));
-  await access(path.join(windsurfPluginDir, ".devin", "rules", "wordpress-com.md"));
-  await access(path.join(windsurfPluginDir, ".devin", "rules", "wordpress-com-mcp.md"));
-  await verifySharedSkillSet(windsurfPluginDir, skillNames);
-  await verifyMcpConfig(windsurfPluginDir, "Windsurf plugin", "mcp_config.json");
-  await verifyTelemetryScript(windsurfPluginDir, "Windsurf");
+async function verifyDevinDesktopPlugin(skillNames) {
+  await access(path.join(devinDesktopPluginDir, "README.md"));
+  await access(path.join(devinDesktopPluginDir, ".devin", "rules", "wordpress-com.md"));
+  await access(path.join(devinDesktopPluginDir, ".devin", "rules", "wordpress-com-mcp.md"));
+  await verifySharedSkillSet(devinDesktopPluginDir, skillNames);
+  await verifyMcpConfig(devinDesktopPluginDir, "Devin Desktop plugin", "mcp_config.json");
+  await verifyTelemetryScript(devinDesktopPluginDir, "Devin Desktop");
 
   const alwaysOnRule = await readFile(
-    path.join(windsurfPluginDir, ".devin", "rules", "wordpress-com.md"),
+    path.join(devinDesktopPluginDir, ".devin", "rules", "wordpress-com.md"),
     "utf8",
   );
   if (!alwaysOnRule.startsWith("---\ntrigger: always_on\n---")) {
-    throw new Error("Windsurf workspace rule is missing always_on trigger frontmatter");
+    throw new Error("Devin Desktop workspace rule is missing always_on trigger frontmatter");
   }
 
   const mcpRule = await readFile(
-    path.join(windsurfPluginDir, ".devin", "rules", "wordpress-com-mcp.md"),
+    path.join(devinDesktopPluginDir, ".devin", "rules", "wordpress-com-mcp.md"),
     "utf8",
   );
   if (!mcpRule.includes("trigger: model_decision")) {
-    throw new Error("Windsurf MCP rule is missing model_decision trigger frontmatter");
+    throw new Error("Devin Desktop MCP rule is missing model_decision trigger frontmatter");
   }
 
-  const readme = await readFile(path.join(windsurfPluginDir, "README.md"), "utf8");
+  const readme = await readFile(path.join(devinDesktopPluginDir, "README.md"), "utf8");
   if (!readme.includes("~/.codeium/windsurf/mcp_config.json")) {
-    throw new Error("Windsurf README is missing the Cascade MCP config path");
+    throw new Error("Devin Desktop README is missing the Cascade MCP config path");
+  }
+  if (!readme.includes("plugins/devin-desktop/mcp_config.json")) {
+    throw new Error("Devin Desktop README is missing the generated output path");
   }
 }
 
@@ -981,7 +984,7 @@ async function main() {
   await verifyCopilotPlugin(skillNames);
   await verifyQodoPlugin(skillNames);
   await verifyZedPlugin(skillNames);
-  await verifyWindsurfPlugin(skillNames);
+  await verifyDevinDesktopPlugin(skillNames);
   await verifyAiderPlugin(skillNames);
   await verifyFactoryPlugin(skillNames);
   await verifyDevinPlugin(skillNames);
@@ -990,7 +993,7 @@ async function main() {
   await verifyHermesPlugin(skillNames);
   await verifyOpenClawPlugin(skillNames);
 
-  console.log("Amp, Cline, Codex, Claude, Conductor, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Junie, Gemini, Copilot, Qodo, Zed, Windsurf, Aider, Factory Droid, Devin, Pi, Hermes, and OpenClaw verification passed");
+  console.log("Amp, Cline, Codex, Claude, Conductor, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Junie, Gemini, Copilot, Qodo, Zed, Devin Desktop, Aider, Factory Droid, Devin, Pi, Hermes, and OpenClaw verification passed");
 }
 
 main().catch((error) => {

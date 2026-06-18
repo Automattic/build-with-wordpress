@@ -42,7 +42,7 @@ Generated outputs are available for:
 - Pi
 - Qodo
 - Roo Code
-- Windsurf/Cascade
+- Devin Desktop
 - Zed
 
 The shared WordPress workflow:
@@ -94,10 +94,10 @@ Each build packages the shared `skills/` directory into the surfaces that can co
 | Pi | `plugins/pi/` | `package.json` with `pi-package` metadata and `skills/` |
 | Qodo | `plugins/qodo/` | `AGENTS.md`, `skills/`, MCP setup documented for Qodo Agentic Tools |
 | Roo Code | `plugins/roo-code/` | `.roo/mcp.json`, `.roo/rules/`, `.roo/rules-code/`, `skills/` |
-| Windsurf/Cascade | `plugins/windsurf/` | `.devin/rules/`, `mcp_config.json`, `skills/` |
+| Devin Desktop | `plugins/devin-desktop/` | `.devin/rules/`, `mcp_config.json`, `skills/` |
 | Zed | `plugins/zed/` | `AGENTS.md`, `.agents/skills/`, `.zed/settings.json` |
 
-Some outputs intentionally stop at workspace files or setup guidance because that is what the official agent surface supports today. For example, Pi does not expose built-in MCP configuration, Qodo documents MCP through Agentic Tools or enterprise allow-lists, and Conductor keeps MCP setup in app/provider settings rather than a repository-local MCP file.
+Some outputs intentionally stop at workspace files or setup guidance because that is what the official agent surface supports today. For example, Pi does not expose built-in MCP configuration, Qodo documents MCP through Agentic Tools or enterprise allow-lists, and Conductor keeps MCP setup in app/provider settings rather than a repository-local MCP file. Devin Desktop output lives under `plugins/devin-desktop/`; Cascade's official MCP config destination still uses `~/.codeium/windsurf/mcp_config.json`.
 
 ## Testing
 

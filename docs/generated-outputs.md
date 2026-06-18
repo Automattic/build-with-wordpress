@@ -49,7 +49,7 @@ pnpm build:telemetry-mcp
 | Pi | `plugins/pi/` | `package.json` with `pi-package` metadata and `skills/`. |
 | Qodo | `plugins/qodo/` | `AGENTS.md`, `skills/`, and MCP setup guidance for Qodo Agentic Tools. |
 | Roo Code | `plugins/roo-code/` | `.roo/mcp.json`, `.roo/rules/`, `.roo/rules-code/`, `skills/`. |
-| Windsurf/Cascade | `plugins/windsurf/` | `.devin/rules/`, `mcp_config.json`, `skills/`. |
+| Devin Desktop | `plugins/devin-desktop/` | `.devin/rules/`, `mcp_config.json`, `skills/`. The generated output uses the Devin Desktop name; Cascade's official MCP config destination still uses `~/.codeium/windsurf/mcp_config.json`. |
 | Zed | `plugins/zed/` | `AGENTS.md`, `.agents/skills/`, `.zed/settings.json`. |
 
 Some surfaces support a complete plugin/marketplace package. Others only support workspace instructions, local settings, or user-facing setup notes. The generator should use the best supported native integration point for each surface.

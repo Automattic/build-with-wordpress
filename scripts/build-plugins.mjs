@@ -356,6 +356,13 @@ const vsCodeExtensionManifest = {
     url: "https://github.com/Automattic/build-with-wordpress.git",
   },
   license: "GPL-2.0-or-later",
+  files: [
+    "extension.js",
+    "mcp.json",
+    "README.md",
+    "LICENSE",
+    "skills/**",
+  ],
   engines: {
     vscode: "^1.95.0",
   },
@@ -564,6 +571,16 @@ The manifest uses the Visual Studio Marketplace publisher \`automattic\`. This r
 ## Included skills
 
 ${skillList}
+`;
+}
+
+function buildVsCodeLicense() {
+  return `This VS Code extension package is part of Build with WordPress.
+
+The package is licensed under the GNU General Public License v2.0 or later.
+
+See the Build with WordPress source repository for the full project license and source:
+https://github.com/Automattic/build-with-wordpress
 `;
 }
 
@@ -2256,6 +2273,11 @@ Before submitting or updating the Cursor listing, confirm the exported standalon
       await writeFile(
         path.join(pluginDir, "README.md"),
         buildVsCodeReadme({ skillNames }),
+        "utf8",
+      );
+      await writeFile(
+        path.join(pluginDir, "LICENSE"),
+        buildVsCodeLicense(),
         "utf8",
       );
     },

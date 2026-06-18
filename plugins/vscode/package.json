@@ -13,6 +13,13 @@
     "url": "https://github.com/Automattic/build-with-wordpress.git"
   },
   "license": "GPL-2.0-or-later",
+  "files": [
+    "extension.js",
+    "mcp.json",
+    "README.md",
+    "LICENSE",
+    "skills/**"
+  ],
   "engines": {
     "vscode": "^1.95.0"
   },

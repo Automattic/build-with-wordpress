@@ -121,7 +121,7 @@ For manual smoke tests, open or copy the relevant folder from `plugins/` into th
 
 ## Cursor Publishing
 
-Cursor requires a standalone plugin repository. This repo remains the source of truth; the publishable Cursor repository lives at:
+Cursor requires a standalone native plugin repository. The generated Cursor package is not a VS Code extension, is not installed from a `.vsix`, and should not use VS Code Marketplace packaging or publishing tooling. This repo remains the source of truth; the publishable Cursor repository lives at:
 
 https://github.com/Automattic/wordpress-cursor-plugin
 
@@ -135,6 +135,16 @@ pnpm export:cursor -- --dry-run
 
 The dry run prints the exact subtree split and push commands without creating a split branch, pushing to the standalone repository, or mutating the standalone checkout.
 
+For local Cursor testing, install the generated package at Cursor's native local plugin path:
+
+```bash
+mkdir -p ~/.cursor/plugins/local
+rm -rf ~/.cursor/plugins/local/wordpress-studio
+cp -R plugins/cursor ~/.cursor/plugins/local/wordpress-studio
+```
+
+Reload Cursor and confirm the local plugin contains `.cursor-plugin/plugin.json`, `README.md`, `mcp.json`, `rules/wordpress-studio.mdc`, and the full `skills/` tree. In Cursor's MCP or tools settings, confirm `wordpress-studio` and `wordpress-telemetry` are visible and enabled. In Cursor's rules and skills surfaces, confirm `rules/wordpress-studio.mdc` and the bundled WordPress skills are visible before submitting marketplace changes.
+
 When maintainers are ready to update the standalone repository, run the non-dry-run export from a clean source worktree:
 
 ```bash
@@ -143,4 +153,4 @@ pnpm export:cursor
 
 The export command runs `git subtree split --prefix=plugins/cursor` and pushes the result to `Automattic/wordpress-cursor-plugin` on `sync/from-build-with-wordpress`. Open or update a PR from that branch into the standalone repo's `main` branch.
 
-Before submitting or updating the Cursor listing, confirm the standalone branch includes the expected generated files, review `.cursor-plugin/plugin.json` listing metadata, verify the README and MCP setup match the generated source, and submit to Cursor only after the standalone repository PR is accepted.
+Before submitting or updating the Cursor listing, confirm the standalone branch includes the expected generated files, review `.cursor-plugin/plugin.json` listing metadata including rules, skills, and MCP server paths, verify the README and MCP setup match the generated source, repeat the local native-plugin test flow from `~/.cursor/plugins/local/wordpress-studio`, and submit to Cursor only after the standalone repository PR is accepted.

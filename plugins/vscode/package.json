@@ -13,11 +13,13 @@
     "url": "https://github.com/Automattic/build-with-wordpress.git"
   },
   "license": "GPL-2.0-or-later",
+  "icon": "images/icon.png",
   "files": [
     "extension.js",
     "mcp.json",
     "README.md",
     "LICENSE",
+    "images/icon.png",
     "skills/**"
   ],
   "engines": {
@@ -34,6 +36,8 @@
   ],
   "activationEvents": [
     "onCommand:wordpressStudio.checkStudio",
+    "onCommand:wordpressStudio.configureWorkspaceMcp",
+    "onCommand:wordpressStudio.validateMcpConfig",
     "onCommand:wordpressStudio.showMcpConfig",
     "onCommand:wordpressStudio.copyMcpConfig"
   ],
@@ -43,6 +47,14 @@
       {
         "command": "wordpressStudio.checkStudio",
         "title": "WordPress Studio: Check Studio CLI"
+      },
+      {
+        "command": "wordpressStudio.configureWorkspaceMcp",
+        "title": "WordPress Studio: Configure Workspace MCP"
+      },
+      {
+        "command": "wordpressStudio.validateMcpConfig",
+        "title": "WordPress Studio: Validate MCP Config"
       },
       {
         "command": "wordpressStudio.showMcpConfig",

@@ -292,6 +292,28 @@ async function verifyCursorPlugin(skillNames) {
   if (!ruleRaw.includes("alwaysApply: true")) {
     throw new Error("Cursor rule is missing alwaysApply frontmatter");
   }
+
+  const readme = await readFile(path.join(cursorPluginDir, "README.md"), "utf8");
+  const requiredReadmePhrases = [
+    "Cursor-native plugin",
+    "not a VS Code extension",
+    "not installed from a `.vsix`",
+    "~/.cursor/plugins/local/wordpress-studio",
+    "Local Cursor install and test flow",
+    "MCP visibility checks",
+    "Rules and skills visibility checks",
+    "Marketplace checklist",
+    "wordpress-studio`, which launches `studio mcp`",
+    "wordpress-telemetry",
+    "Do not manually edit generated Cursor output",
+    "rules, skills, and MCP server paths",
+  ];
+
+  for (const phrase of requiredReadmePhrases) {
+    if (!readme.includes(phrase)) {
+      throw new Error(`Cursor README is missing required guidance: ${phrase}`);
+    }
+  }
 }
 
 async function verifyContinueOutput() {

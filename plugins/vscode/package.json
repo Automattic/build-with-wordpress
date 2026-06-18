@@ -1,0 +1,50 @@
+{
+  "name": "wordpress-studio-vscode",
+  "displayName": "WordPress Studio",
+  "publisher": "automattic",
+  "version": "0.1.0",
+  "description": "Use WordPress Studio MCP from VS Code and copy the Build with WordPress MCP configuration.",
+  "author": {
+    "name": "Automattic"
+  },
+  "homepage": "https://developer.wordpress.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Automattic/build-with-wordpress.git"
+  },
+  "license": "GPL-2.0-or-later",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "wordpress",
+    "studio",
+    "mcp",
+    "wp-cli"
+  ],
+  "activationEvents": [
+    "onCommand:wordpressStudio.checkStudio",
+    "onCommand:wordpressStudio.showMcpConfig",
+    "onCommand:wordpressStudio.copyMcpConfig"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "wordpressStudio.checkStudio",
+        "title": "WordPress Studio: Check Studio CLI"
+      },
+      {
+        "command": "wordpressStudio.showMcpConfig",
+        "title": "WordPress Studio: Show MCP Config"
+      },
+      {
+        "command": "wordpressStudio.copyMcpConfig",
+        "title": "WordPress Studio: Copy MCP Config"
+      }
+    ]
+  }
+}

@@ -65,6 +65,7 @@ const ampPluginDir = path.join(root, "plugins", "amp");
 const piPluginDir = path.join(root, "plugins", "pi");
 const hermesPluginDir = path.join(root, "plugins", "hermes");
 const openClawPluginDir = path.join(root, "plugins", "openclaw");
+const vsCodePluginDir = path.join(root, "plugins", "vscode");
 
 async function getSharedSkillNames() {
   const entries = await readdir(sharedSkillsDir, { withFileTypes: true });
@@ -574,6 +575,70 @@ async function verifyCopilotPlugin(skillNames) {
   }
 }
 
+async function verifyVsCodePlugin(skillNames) {
+  await access(path.join(vsCodePluginDir, "package.json"));
+  await access(path.join(vsCodePluginDir, "extension.js"));
+  await access(path.join(vsCodePluginDir, "README.md"));
+  await verifySharedSkillSet(vsCodePluginDir, skillNames);
+  await verifyMcpConfig(vsCodePluginDir, "VS Code plugin", "mcp.json");
+  await verifyTelemetryScript(vsCodePluginDir, "VS Code");
+
+  const manifestRaw = await readFile(
+    path.join(vsCodePluginDir, "package.json"),
+    "utf8",
+  );
+  const manifest = JSON.parse(manifestRaw);
+
+  if (manifest.name !== "wordpress-studio-vscode") {
+    throw new Error("VS Code extension manifest has the wrong name");
+  }
+
+  if (manifest.displayName !== pluginDisplayName) {
+    throw new Error("VS Code extension manifest has the wrong display name");
+  }
+
+  if (manifest.publisher !== "automattic") {
+    throw new Error("VS Code extension manifest should use the Automattic Marketplace publisher");
+  }
+
+  if (manifest.main !== "./extension.js") {
+    throw new Error("VS Code extension manifest is missing the runtime entrypoint");
+  }
+
+  if (!manifest.engines?.vscode) {
+    throw new Error("VS Code extension manifest is missing engines.vscode");
+  }
+
+  const commands = manifest.contributes?.commands?.map((entry) => entry.command) ?? [];
+  for (const command of [
+    "wordpressStudio.checkStudio",
+    "wordpressStudio.showMcpConfig",
+    "wordpressStudio.copyMcpConfig",
+  ]) {
+    if (!commands.includes(command)) {
+      throw new Error(`VS Code extension manifest is missing command ${command}`);
+    }
+  }
+
+  const extensionSource = await readFile(
+    path.join(vsCodePluginDir, "extension.js"),
+    "utf8",
+  );
+
+  if (!extensionSource.includes("execFile(\"studio\", [\"--version\"]")) {
+    throw new Error("VS Code extension runtime should check studio availability");
+  }
+
+  if (!extensionSource.includes("mcp.json")) {
+    throw new Error("VS Code extension runtime should read the bundled MCP config");
+  }
+
+  const readme = await readFile(path.join(vsCodePluginDir, "README.md"), "utf8");
+  if (!readme.includes("publisher `automattic`")) {
+    throw new Error("VS Code README must document the Marketplace publisher");
+  }
+}
+
 async function verifyQodoPlugin(skillNames) {
   await access(path.join(qodoPluginDir, "AGENTS.md"));
   await access(path.join(qodoPluginDir, "README.md"));
@@ -1010,31 +1075,44 @@ async function verifyOpenClawPlugin(skillNames) {
 
 async function main() {
   const skillNames = await getSharedSkillNames();
+  const verificationTasks = [
+    ["Codex", () => verifyCodexPlugin(skillNames)],
+    ["Claude", () => verifyClaudePlugin(skillNames)],
+    ["Cursor", () => verifyCursorPlugin(skillNames)],
+    ["Continue", verifyContinueOutput],
+    ["Conductor", verifyConductorOutput],
+    ["OpenCode", () => verifyOpenCodePlugin(skillNames)],
+    ["Kilo Code", () => verifyKiloCodePlugin(skillNames)],
+    ["Roo Code", () => verifyRooPlugin(skillNames)],
+    ["Cline", () => verifyClinePlugin(skillNames)],
+    ["Junie", () => verifyJuniePlugin(skillNames)],
+    ["Gemini", () => verifyGeminiPlugin(skillNames)],
+    ["Copilot", () => verifyCopilotPlugin(skillNames)],
+    ["VS Code", () => verifyVsCodePlugin(skillNames)],
+    ["Qodo", () => verifyQodoPlugin(skillNames)],
+    ["Zed", () => verifyZedPlugin(skillNames)],
+    ["Devin Desktop", () => verifyDevinDesktopPlugin(skillNames)],
+    ["Aider", () => verifyAiderPlugin(skillNames)],
+    ["Factory Droid", () => verifyFactoryPlugin(skillNames)],
+    ["Devin", () => verifyDevinPlugin(skillNames)],
+    ["Amp", () => verifyAmpPlugin(skillNames)],
+    ["Pi", () => verifyPiPlugin(skillNames)],
+    ["Hermes", () => verifyHermesPlugin(skillNames)],
+    ["OpenClaw", () => verifyOpenClawPlugin(skillNames)],
+  ];
+  const passedSurfaces = [];
 
-  await verifyCodexPlugin(skillNames);
-  await verifyClaudePlugin(skillNames);
-  await verifyCursorPlugin(skillNames);
-  await verifyContinueOutput();
-  await verifyConductorOutput();
-  await verifyOpenCodePlugin(skillNames);
-  await verifyKiloCodePlugin(skillNames);
-  await verifyRooPlugin(skillNames);
-  await verifyClinePlugin(skillNames);
-  await verifyJuniePlugin(skillNames);
-  await verifyGeminiPlugin(skillNames);
-  await verifyCopilotPlugin(skillNames);
-  await verifyQodoPlugin(skillNames);
-  await verifyZedPlugin(skillNames);
-  await verifyDevinDesktopPlugin(skillNames);
-  await verifyAiderPlugin(skillNames);
-  await verifyFactoryPlugin(skillNames);
-  await verifyDevinPlugin(skillNames);
-  await verifyAmpPlugin(skillNames);
-  await verifyPiPlugin(skillNames);
-  await verifyHermesPlugin(skillNames);
-  await verifyOpenClawPlugin(skillNames);
+  for (const [surfaceName, verifySurface] of verificationTasks) {
+    try {
+      await verifySurface();
+      passedSurfaces.push(surfaceName);
+    } catch (error) {
+      error.message = `${surfaceName} verification failed: ${error.message}`;
+      throw error;
+    }
+  }
 
-  console.log("Amp, Cline, Codex, Claude, Conductor, Cursor, Continue, OpenCode, Kilo Code, Roo Code, Junie, Gemini, Copilot, Qodo, Zed, Devin Desktop, Aider, Factory Droid, Devin, Pi, Hermes, and OpenClaw verification passed");
+  console.log(`${passedSurfaces.join(", ")} verification passed`);
 }
 
 main().catch((error) => {

@@ -580,6 +580,7 @@ async function verifyVsCodePlugin(skillNames) {
   await access(path.join(vsCodePluginDir, "extension.js"));
   await access(path.join(vsCodePluginDir, "README.md"));
   await access(path.join(vsCodePluginDir, "LICENSE"));
+  await access(path.join(vsCodePluginDir, "images", "icon.png"));
   await verifySharedSkillSet(vsCodePluginDir, skillNames);
   await verifyMcpConfig(vsCodePluginDir, "VS Code plugin", "mcp.json");
   await verifyTelemetryScript(vsCodePluginDir, "VS Code");
@@ -606,7 +607,11 @@ async function verifyVsCodePlugin(skillNames) {
     throw new Error("VS Code extension manifest is missing the runtime entrypoint");
   }
 
-  for (const packagedFile of ["extension.js", "mcp.json", "README.md", "LICENSE", "skills/**"]) {
+  if (manifest.icon !== "images/icon.png") {
+    throw new Error("VS Code extension manifest is missing the icon path");
+  }
+
+  for (const packagedFile of ["extension.js", "mcp.json", "README.md", "LICENSE", "images/icon.png", "skills/**"]) {
     if (!manifest.files?.includes(packagedFile)) {
       throw new Error(`VS Code extension manifest files list is missing ${packagedFile}`);
     }
@@ -619,6 +624,8 @@ async function verifyVsCodePlugin(skillNames) {
   const commands = manifest.contributes?.commands?.map((entry) => entry.command) ?? [];
   for (const command of [
     "wordpressStudio.checkStudio",
+    "wordpressStudio.configureWorkspaceMcp",
+    "wordpressStudio.validateMcpConfig",
     "wordpressStudio.showMcpConfig",
     "wordpressStudio.copyMcpConfig",
   ]) {
@@ -634,6 +641,14 @@ async function verifyVsCodePlugin(skillNames) {
 
   if (!extensionSource.includes("execFile(\"studio\", [\"--version\"]")) {
     throw new Error("VS Code extension runtime should check studio availability");
+  }
+
+  if (!extensionSource.includes("configureWorkspaceMcp")) {
+    throw new Error("VS Code extension runtime should configure workspace MCP");
+  }
+
+  if (!extensionSource.includes("servers[\"wordpress-studio\"]")) {
+    throw new Error("VS Code extension runtime should validate the VS Code MCP servers wrapper");
   }
 
   if (!extensionSource.includes("mcp.json")) {

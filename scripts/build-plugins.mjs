@@ -19,6 +19,7 @@ const telemetryMcpServerDistPath = path.join(
   "dist",
   "wordpress-telemetry-mcp.mjs",
 );
+const vsCodeIconSourcePath = path.join(root, "assets", "vscode", "icon.png");
 const pluginName = "wordpress-studio";
 const pluginDisplayName = "WordPress Studio";
 const cursorPluginName = pluginName;
@@ -356,11 +357,13 @@ const vsCodeExtensionManifest = {
     url: "https://github.com/Automattic/build-with-wordpress.git",
   },
   license: "GPL-2.0-or-later",
+  icon: "images/icon.png",
   files: [
     "extension.js",
     "mcp.json",
     "README.md",
     "LICENSE",
+    "images/icon.png",
     "skills/**",
   ],
   engines: {
@@ -370,6 +373,8 @@ const vsCodeExtensionManifest = {
   keywords: ["wordpress", "studio", "mcp", "wp-cli"],
   activationEvents: [
     "onCommand:wordpressStudio.checkStudio",
+    "onCommand:wordpressStudio.configureWorkspaceMcp",
+    "onCommand:wordpressStudio.validateMcpConfig",
     "onCommand:wordpressStudio.showMcpConfig",
     "onCommand:wordpressStudio.copyMcpConfig",
   ],
@@ -379,6 +384,14 @@ const vsCodeExtensionManifest = {
       {
         command: "wordpressStudio.checkStudio",
         title: "WordPress Studio: Check Studio CLI",
+      },
+      {
+        command: "wordpressStudio.configureWorkspaceMcp",
+        title: "WordPress Studio: Configure Workspace MCP",
+      },
+      {
+        command: "wordpressStudio.validateMcpConfig",
+        title: "WordPress Studio: Validate MCP Config",
       },
       {
         command: "wordpressStudio.showMcpConfig",
@@ -478,8 +491,10 @@ Use the shared WordPress Studio skills in this plugin for WordPress site buildin
 function buildVsCodeExtensionJs() {
   return `const vscode = require("vscode");
 const { execFile } = require("child_process");
-const { readFile } = require("fs/promises");
+const { mkdir, readFile, writeFile } = require("fs/promises");
 const path = require("path");
+
+const managedServerNames = ["wordpress-studio", "wordpress-telemetry"];
 
 function runStudioVersion() {
   return new Promise((resolve, reject) => {
@@ -497,6 +512,62 @@ async function readMcpConfig(context) {
   return readFile(path.join(context.extensionPath, "mcp.json"), "utf8");
 }
 
+async function readBundledMcpConfig(context) {
+  const raw = await readMcpConfig(context);
+  const config = JSON.parse(raw);
+
+  if (!config.servers || typeof config.servers !== "object") {
+    throw new Error("Bundled MCP config is missing the VS Code servers wrapper.");
+  }
+
+  if (!config.servers["wordpress-studio"]) {
+    throw new Error("Bundled MCP config is missing servers.wordpress-studio.");
+  }
+
+  return config;
+}
+
+function getWorkspaceFolder() {
+  const folders = vscode.workspace.workspaceFolders ?? [];
+
+  if (folders.length === 0) {
+    return null;
+  }
+
+  return folders[0];
+}
+
+function configsMatch(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+async function readWorkspaceMcpConfig(mcpPath) {
+  try {
+    const raw = await readFile(mcpPath, "utf8");
+    const config = JSON.parse(raw);
+
+    if (!config || typeof config !== "object" || Array.isArray(config)) {
+      throw new Error("Workspace MCP config must be a JSON object.");
+    }
+
+    if (config.servers === undefined) {
+      config.servers = {};
+    }
+
+    if (!config.servers || typeof config.servers !== "object" || Array.isArray(config.servers)) {
+      throw new Error("Workspace MCP config servers field must be a JSON object.");
+    }
+
+    return config;
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return { servers: {} };
+    }
+
+    throw error;
+  }
+}
+
 async function checkStudio() {
   try {
     const version = await runStudioVersion();
@@ -508,6 +579,90 @@ async function checkStudio() {
       "Studio CLI was not found. Install WordPress Studio and ensure the studio command is on PATH. " + error.message
     );
   }
+}
+
+async function configureWorkspaceMcp(context) {
+  const workspaceFolder = getWorkspaceFolder();
+
+  if (!workspaceFolder) {
+    vscode.window.showErrorMessage("Open a workspace folder before configuring WordPress Studio MCP.");
+    return;
+  }
+
+  let bundledConfig;
+  try {
+    bundledConfig = await readBundledMcpConfig(context);
+  } catch (error) {
+    vscode.window.showErrorMessage("Cannot configure WordPress Studio MCP. " + error.message);
+    return;
+  }
+
+  const workspaceMcpDir = path.join(workspaceFolder.uri.fsPath, ".vscode");
+  const workspaceMcpPath = path.join(workspaceMcpDir, "mcp.json");
+  let workspaceConfig;
+
+  try {
+    workspaceConfig = await readWorkspaceMcpConfig(workspaceMcpPath);
+  } catch (error) {
+    vscode.window.showErrorMessage("Cannot read workspace MCP config. " + error.message);
+    return;
+  }
+
+  for (const serverName of managedServerNames) {
+    const bundledServer = bundledConfig.servers[serverName];
+
+    if (!bundledServer) {
+      continue;
+    }
+
+    const existingServer = workspaceConfig.servers[serverName];
+    if (existingServer && !configsMatch(existingServer, bundledServer)) {
+      const choice = await vscode.window.showWarningMessage(
+        "Workspace MCP server " + serverName + " already exists and differs from the bundled WordPress Studio config.",
+        { modal: true },
+        "Replace",
+        "Cancel"
+      );
+
+      if (choice !== "Replace") {
+        vscode.window.showInformationMessage("WordPress Studio MCP config was not changed.");
+        return;
+      }
+    }
+
+    workspaceConfig.servers[serverName] = bundledServer;
+  }
+
+  try {
+    await mkdir(workspaceMcpDir, { recursive: true });
+    await writeFile(workspaceMcpPath, JSON.stringify(workspaceConfig, null, 2) + "\\n", "utf8");
+    vscode.window.showInformationMessage("Configured WordPress Studio MCP at " + workspaceMcpPath + ".");
+  } catch (error) {
+    vscode.window.showErrorMessage("Cannot write workspace MCP config. " + error.message);
+  }
+}
+
+async function validateMcpConfig(context) {
+  let version;
+  try {
+    version = await runStudioVersion();
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      "Studio CLI was not found. Install WordPress Studio and ensure the studio command is on PATH. " + error.message
+    );
+    return;
+  }
+
+  try {
+    await readBundledMcpConfig(context);
+  } catch (error) {
+    vscode.window.showErrorMessage("Bundled WordPress Studio MCP config is invalid. " + error.message);
+    return;
+  }
+
+  vscode.window.showInformationMessage(
+    "WordPress Studio MCP config is valid. Studio CLI: " + (version || "available") + "."
+  );
 }
 
 async function showMcpConfig(context) {
@@ -528,6 +683,8 @@ async function copyMcpConfig(context) {
 function activate(context) {
   context.subscriptions.push(
     vscode.commands.registerCommand("wordpressStudio.checkStudio", checkStudio),
+    vscode.commands.registerCommand("wordpressStudio.configureWorkspaceMcp", () => configureWorkspaceMcp(context)),
+    vscode.commands.registerCommand("wordpressStudio.validateMcpConfig", () => validateMcpConfig(context)),
     vscode.commands.registerCommand("wordpressStudio.showMcpConfig", () => showMcpConfig(context)),
     vscode.commands.registerCommand("wordpressStudio.copyMcpConfig", () => copyMcpConfig(context))
   );
@@ -549,14 +706,20 @@ function buildVsCodeReadme({ skillNames }) {
 
   return `# WordPress Studio for VS Code
 
-This is the smallest useful VS Code extension scaffold generated by Build with WordPress. It does not publish anything to the Marketplace from this repository.
+This VS Code extension integrates WordPress Studio MCP with the current workspace by writing VS Code's supported \`.vscode/mcp.json\` configuration shape. It does not publish anything to the Marketplace from this repository.
 
 ## What it includes
 
 - \`package.json\` with VS Code extension metadata and command contributions.
-- \`extension.js\` with thin commands to check whether \`studio\` is available and to show or copy the bundled MCP config.
+- \`extension.js\` with commands to validate Studio availability, show/copy the bundled MCP config, and merge the WordPress Studio MCP servers into the open workspace.
 - \`mcp.json\` with \`wordpress-studio\` and \`wordpress-telemetry\` server entries.
 - \`skills/\` as reference Build with WordPress playbooks for editor users and future extension behavior.
+
+## MCP integration
+
+VS Code supports workspace MCP configuration through \`.vscode/mcp.json\` with a top-level \`servers\` object. The \`WordPress Studio: Configure Workspace MCP\` command creates or updates that file in the open workspace, preserves unrelated server entries, and prompts before replacing an existing managed WordPress server that differs from the bundled configuration.
+
+The extension targets VS Code \`^1.95.0\`. The published \`@types/vscode@1.95.0\` API surface does not include \`contributes.mcpServerDefinitionProviders\` or \`vscode.lm.registerMcpServerDefinitionProvider\`, so this package does not register an extension-owned MCP provider yet. When this package raises its VS Code engine to a version with stable MCP provider APIs, the file-write command can be complemented with provider registration.
 
 ## Marketplace placeholder
 
@@ -565,6 +728,8 @@ The manifest uses the Visual Studio Marketplace publisher \`automattic\`. This r
 ## Commands
 
 - \`WordPress Studio: Check Studio CLI\` runs \`studio --version\` and reports whether the CLI is on \`PATH\`.
+- \`WordPress Studio: Configure Workspace MCP\` merges the bundled \`wordpress-studio\` server, and \`wordpress-telemetry\` when bundled, into the open workspace's \`.vscode/mcp.json\`.
+- \`WordPress Studio: Validate MCP Config\` runs \`studio --version\` and verifies the bundled VS Code MCP config contains \`servers.wordpress-studio\`.
 - \`WordPress Studio: Show MCP Config\` opens the bundled \`mcp.json\` in an untitled JSON editor.
 - \`WordPress Studio: Copy MCP Config\` copies the bundled \`mcp.json\` to the clipboard.
 
@@ -2280,6 +2445,8 @@ Before submitting or updating the Cursor listing, confirm the exported standalon
         buildVsCodeLicense(),
         "utf8",
       );
+      await mkdir(path.join(pluginDir, "images"), { recursive: true });
+      await cp(vsCodeIconSourcePath, path.join(pluginDir, "images", "icon.png"));
     },
   },
   {

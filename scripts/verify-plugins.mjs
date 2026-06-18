@@ -579,6 +579,7 @@ async function verifyVsCodePlugin(skillNames) {
   await access(path.join(vsCodePluginDir, "package.json"));
   await access(path.join(vsCodePluginDir, "extension.js"));
   await access(path.join(vsCodePluginDir, "README.md"));
+  await access(path.join(vsCodePluginDir, "LICENSE"));
   await verifySharedSkillSet(vsCodePluginDir, skillNames);
   await verifyMcpConfig(vsCodePluginDir, "VS Code plugin", "mcp.json");
   await verifyTelemetryScript(vsCodePluginDir, "VS Code");
@@ -603,6 +604,12 @@ async function verifyVsCodePlugin(skillNames) {
 
   if (manifest.main !== "./extension.js") {
     throw new Error("VS Code extension manifest is missing the runtime entrypoint");
+  }
+
+  for (const packagedFile of ["extension.js", "mcp.json", "README.md", "LICENSE", "skills/**"]) {
+    if (!manifest.files?.includes(packagedFile)) {
+      throw new Error(`VS Code extension manifest files list is missing ${packagedFile}`);
+    }
   }
 
   if (!manifest.engines?.vscode) {

@@ -13,12 +13,12 @@ permissions:
 jobs:
   skills-agent:
     name: Maintain Live Skills
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@migrate/public-codebox-workflow-boundary
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
     with:
       audience: skills
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-skills
-      docs_agent_ref: migrate/public-codebox-workflow-boundary
+      docs_agent_ref: main
       writable_paths: skills/**,plugins/**/skills/**,plugins/**/README.md
       context_repositories: |
         [

@@ -13,11 +13,12 @@ permissions:
 jobs:
   skills-agent:
     name: Maintain Live Skills
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@09fb2359aaadf695f8112aa473a8c8d70e2b6cab
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
     with:
       audience: skills
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-skills
+      docs_agent_ref: main
       writable_paths: skills/**,plugins/**/skills/**,plugins/**/README.md
       context_repositories: |
         [

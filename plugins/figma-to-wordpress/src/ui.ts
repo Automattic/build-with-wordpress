@@ -30,6 +30,20 @@ function openPlayground() {
   }
 }
 
+function countDesignScreens(selection: NormalizedSelection): number {
+  let count = 0;
+
+  for (const page of selection.root.children || []) {
+    for (const node of page.children || []) {
+      if (["FRAME", "COMPONENT", "INSTANCE", "SECTION"].indexOf(node.type) !== -1) {
+        count += 1;
+      }
+    }
+  }
+
+  return count || selection.root.children?.length || 1;
+}
+
 function renderSelection(selection: NormalizedSelection | null, artifact: GeneratedArtifact | null) {
   currentSelection = selection;
   currentArtifact = artifact;
@@ -37,9 +51,9 @@ function renderSelection(selection: NormalizedSelection | null, artifact: Genera
   if (!selection) {
     setStatus("Open the Figma document in WordPress Playground.");
   } else {
-    const pageCount = selection.root.children?.length || 0;
+    const screenCount = countDesignScreens(selection);
     const diagnosticCount = artifact?.diagnostics.length || 0;
-    setStatus(`Ready to import ${pageCount} page${pageCount === 1 ? "" : "s"} into WordPress${diagnosticCount ? ` (${diagnosticCount} note${diagnosticCount === 1 ? "" : "s"})` : ""}.`);
+    setStatus(`Ready to import ${screenCount} design screen${screenCount === 1 ? "" : "s"} into WordPress${diagnosticCount ? ` (${diagnosticCount} note${diagnosticCount === 1 ? "" : "s"})` : ""}.`);
   }
 
   updateActions();

@@ -1,3 +1,6 @@
+import type { WebsiteArtifact } from "./index";
+import type { NormalizedSelection } from "./types";
+
 export type GeneratedWebsiteFileRole = "html" | "css" | "js" | "asset" | "metadata";
 
 export interface GeneratedWebsiteFile {
@@ -149,10 +152,8 @@ export function buildRunnerUrl(payload: PlaygroundRunnerPayload, options: Runner
 
 export function buildPlaygroundPreviewUrl(payload: PlaygroundRunnerPayload): string {
   const websiteArtifact = toStaticSiteImporterArtifact(payload.artifact);
-  const artifactJson = JSON.stringify(websiteArtifact);
-  const artifactBase64 = base64EncodeUtf8(artifactJson);
   const siteSlug = slugify(payload.artifact.site.title || "figma-wordpress-export");
-  const importPhp = buildStaticSiteImporterPhp(artifactBase64, siteSlug);
+  const importPhp = buildStaticSiteImporterPhp(siteSlug);
   const blueprint = {
     $schema: "https://playground.wordpress.net/blueprint-schema.json",
     landingPage: "/wp-admin/",
@@ -186,7 +187,7 @@ export function buildPlaygroundPreviewUrl(payload: PlaygroundRunnerPayload): str
       {
         step: "writeFile",
         path: "/tmp/figma-to-wordpress-artifact.json",
-        data: JSON.stringify(websiteArtifact, null, 2),
+        data: JSON.stringify(websiteArtifact),
       },
       {
         step: "runPHP",
@@ -214,7 +215,7 @@ function toStaticSiteImporterArtifact(artifact: GeneratedWebsiteArtifact) {
   };
 }
 
-function buildStaticSiteImporterPhp(artifactBase64: string, siteSlug: string): string {
+function buildStaticSiteImporterPhp(siteSlug: string): string {
   return `require_once '/wordpress/wp-load.php';
 wp_set_current_user( 1 );
 if ( ! function_exists( 'wp_get_ability' ) ) {
@@ -224,7 +225,11 @@ $ability = wp_get_ability( 'static-site-importer/import-website-artifact' );
 if ( ! $ability ) {
 	throw new RuntimeException( 'Static Site Importer website artifact ability is not registered.' );
 }
-$artifact = json_decode( base64_decode( '${artifactBase64}' ), true );
+$artifact_path = '/tmp/figma-to-wordpress-artifact.json';
+if ( ! file_exists( $artifact_path ) ) {
+	throw new RuntimeException( 'Figma to WordPress artifact file is missing.' );
+}
+$artifact = json_decode( file_get_contents( $artifact_path ), true );
 if ( ! is_array( $artifact ) ) {
 	throw new RuntimeException( 'Static Site Importer website artifact payload is invalid.' );
 }
@@ -247,59 +252,6 @@ function slugify(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "figma-wordpress-export";
 }
 
-function base64EncodeUtf8(value: string): string {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  const bytes = utf8Bytes(value);
-  let output = "";
-
-  for (let index = 0; index < bytes.length; index += 3) {
-    const first = bytes[index];
-    const second = bytes[index + 1];
-    const third = bytes[index + 2];
-    const triplet = (first << 16) | ((second || 0) << 8) | (third || 0);
-
-    output += alphabet[(triplet >> 18) & 63];
-    output += alphabet[(triplet >> 12) & 63];
-    output += second === undefined ? "=" : alphabet[(triplet >> 6) & 63];
-    output += third === undefined ? "=" : alphabet[triplet & 63];
-  }
-
-  return output;
-}
-
-function utf8Bytes(value: string): number[] {
-  const bytes: number[] = [];
-
-  for (let index = 0; index < value.length; index += 1) {
-    let codePoint = value.charCodeAt(index);
-
-    if (codePoint >= 0xd800 && codePoint <= 0xdbff && index + 1 < value.length) {
-      const next = value.charCodeAt(index + 1);
-      if (next >= 0xdc00 && next <= 0xdfff) {
-        codePoint = 0x10000 + ((codePoint - 0xd800) << 10) + (next - 0xdc00);
-        index += 1;
-      }
-    }
-
-    if (codePoint < 0x80) {
-      bytes.push(codePoint);
-    } else if (codePoint < 0x800) {
-      bytes.push(0xc0 | (codePoint >> 6), 0x80 | (codePoint & 0x3f));
-    } else if (codePoint < 0x10000) {
-      bytes.push(0xe0 | (codePoint >> 12), 0x80 | ((codePoint >> 6) & 0x3f), 0x80 | (codePoint & 0x3f));
-    } else {
-      bytes.push(
-        0xf0 | (codePoint >> 18),
-        0x80 | ((codePoint >> 12) & 0x3f),
-        0x80 | ((codePoint >> 6) & 0x3f),
-        0x80 | (codePoint & 0x3f),
-      );
-    }
-  }
-
-  return bytes;
-}
-
 export function buildStandaloneRunnerPage(payload: PlaygroundRunnerPayload): string {
   const escapedPayload = JSON.stringify(encodeRunnerPayload(payload));
 
@@ -319,5 +271,3 @@ export function buildStandaloneRunnerPage(payload: PlaygroundRunnerPayload): str
 </body>
 </html>`;
 }
-import type { NormalizedSelection } from "./types";
-import type { WebsiteArtifact } from "./index";

@@ -18,12 +18,13 @@ concurrency:
 jobs:
   developer-docs-agent:
     name: Maintain Developer Docs
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@09fb2359aaadf695f8112aa473a8c8d70e2b6cab
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@migrate/public-codebox-workflow-boundary
     with:
       audience: technical
       run_kind: ${{ github.event_name == 'workflow_dispatch' && 'bootstrap' || 'maintenance' }}
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-developer-docs
+      docs_agent_ref: migrate/public-codebox-workflow-boundary
       writable_paths: README.md,docs/**,plugins/**/README.md
       bootstrap_contract: |
         {

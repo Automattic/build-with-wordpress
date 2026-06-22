@@ -1,6 +1,6 @@
-# Figma to WordPress Playground Prototype
+# Figma to WordPress
 
-This prototype models a client-side path from a Figma plugin UI to a WordPress Playground runner that hands a generated static website artifact to Static Site Importer and Blocks Engine.
+This plugin moves a Figma file into WordPress by generating static HTML/CSS internally and importing that artifact with Static Site Importer and Blocks Engine in WordPress Playground.
 
 It does not port Static Site Importer, Blocks Engine, WordPress, PHP, or Playground internals to TypeScript. The TypeScript code extracts Figma scene data, builds a static artifact, and creates a Playground blueprint that runs the WordPress/PHP import path.
 
@@ -16,9 +16,9 @@ Figma plugin controller + UI
   -> Static Site Importer installs and imports through Blocks Engine
 ```
 
-## Prototype Boundaries
+## Boundaries
 
-- Implemented: a Figma Desktop-loadable plugin shell with selected-node extraction.
+- Implemented: a Figma Desktop-loadable plugin shell with whole-file export.
 - Implemented: a reusable scene-to-HTML/CSS artifact generator with diagnostics and tests.
 - Implemented: a Playground blueprint URL that installs Static Site Importer from GitHub and calls `static-site-importer/import-website-artifact` with the generated artifact.
 - Implemented: a standalone runner page that decodes the payload and opens the same Playground import URL.
@@ -40,7 +40,7 @@ Figma plugin controller + UI
 
 1. Run `npm run build --prefix plugins/figma-to-wordpress`.
 2. In Figma Desktop, use Plugins -> Development -> Import plugin from manifest, then select `plugins/figma-to-wordpress/manifest.json`.
-3. Open the plugin and choose `Open Playground runner`.
+3. Open the plugin and choose `Open in WordPress Playground`.
 4. If Figma blocks embedding or navigation, copy the generated runner URL and open it in a normal browser tab.
 5. Confirm WordPress Playground boots, installs Static Site Importer, runs the import, and opens wp-admin.
 

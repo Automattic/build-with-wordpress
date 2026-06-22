@@ -2,7 +2,7 @@
   "name": "figma-to-wordpress",
   "version": "0.1.0",
   "private": true,
-  "description": "Figma Desktop plugin shell for exporting selected frames into a static WordPress artifact preview.",
+  "description": "Figma Desktop plugin for importing a Figma file into WordPress through WordPress Playground.",
   "license": "GPL-2.0-or-later",
   "scripts": {
     "build": "node scripts/build.mjs",

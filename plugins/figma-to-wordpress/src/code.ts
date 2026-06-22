@@ -1,13 +1,13 @@
 import { generateStaticArtifact } from "./exporter";
-import type { NormalizedAsset, NormalizedSceneNode, NormalizedSelection, PluginToUiMessage, UiToPluginMessage } from "./types";
+import type { NormalizedAsset, NormalizedDocument, NormalizedSceneNode, PluginToUiMessage, UiToPluginMessage } from "./types";
 
-figma.showUI(__html__, { width: 420, height: 640, themeColors: true });
+figma.showUI(__html__, { width: 420, height: 420, themeColors: true });
 
 function postToUi(message: PluginToUiMessage) {
   figma.ui.postMessage(message);
 }
 
-function clonePaints(node: SceneNode, property: "fills" | "strokes") {
+function clonePaints(node: SceneNode | PageNode, property: "fills" | "strokes") {
   if (property === "fills" && "fills" in node) {
     return node.fills === figma.mixed ? "mixed" : node.fills;
   }
@@ -46,19 +46,19 @@ function normalizeTextStyle(node: TextNode) {
   };
 }
 
-function normalizeNode(node: SceneNode): NormalizedSceneNode {
+function normalizeNode(node: SceneNode | PageNode, fallbackType?: string): NormalizedSceneNode {
   const bounds = "absoluteBoundingBox" in node ? node.absoluteBoundingBox : null;
   const normalized: NormalizedSceneNode = {
     id: node.id,
     name: node.name,
-    type: node.type,
-    visible: node.visible,
+    type: fallbackType || node.type,
+    visible: "visible" in node ? node.visible : true,
     x: bounds?.x,
     y: bounds?.y,
     width: bounds?.width,
     height: bounds?.height,
-    fills: normalizePaints(clonePaints(node, "fills")),
-    strokes: normalizePaints(clonePaints(node, "strokes")),
+    fills: "fills" in node ? normalizePaints(clonePaints(node, "fills")) : undefined,
+    strokes: "strokes" in node ? normalizePaints(clonePaints(node, "strokes")) : undefined,
   };
 
   if (node.type === "TEXT") {
@@ -105,42 +105,51 @@ async function exportAsset(node: SceneNode): Promise<NormalizedAsset | null> {
   }
 }
 
-async function getSelection(): Promise<NormalizedSelection | null> {
-  const [selectedNode] = figma.currentPage.selection;
-
-  if (!selectedNode) {
-    return null;
+async function getDocument(): Promise<NormalizedDocument> {
+  if ("loadAllPagesAsync" in figma) {
+    await figma.loadAllPagesAsync();
   }
 
-  const asset = await exportAsset(selectedNode);
-  const root = normalizeNode(selectedNode);
+  const pages = figma.root.children.map((page) => normalizeNode(page, "PAGE"));
+  const root: NormalizedSceneNode = {
+    id: figma.root.id,
+    name: figma.root.name || "Figma document",
+    type: "DOCUMENT",
+    visible: true,
+    children: pages,
+  };
 
   return {
-    id: selectedNode.id,
-    name: selectedNode.name,
-    type: selectedNode.type,
+    id: figma.root.id,
+    name: figma.root.name || "Figma document",
+    type: "DOCUMENT",
     exportedAt: new Date().toISOString(),
     root,
-    assets: asset ? [asset] : [],
+    assets: [],
   };
 }
 
-async function refreshSelection() {
+async function refreshDocument() {
   try {
-    const selection = await getSelection();
+    const selection = await getDocument();
     postToUi({
       type: "selection",
       selection,
-      artifact: selection ? generateStaticArtifact(selection) : null,
+      artifact: generateStaticArtifact(selection),
     });
   } catch (error) {
-    postToUi({ type: "error", message: error instanceof Error ? error.message : "Failed to read selection." });
+    postToUi({ type: "error", message: error instanceof Error ? error.message : "Failed to read the Figma document." });
   }
 }
 
 figma.ui.onmessage = async (message: UiToPluginMessage) => {
-  if (message.type === "refresh-selection") {
-    await refreshSelection();
+  if (message.type === "refresh-document") {
+    await refreshDocument();
+    return;
+  }
+
+  if (message.type === "open-playground") {
+    figma.openExternal(message.url);
     return;
   }
 
@@ -149,8 +158,4 @@ figma.ui.onmessage = async (message: UiToPluginMessage) => {
   }
 };
 
-figma.on("selectionchange", () => {
-  void refreshSelection();
-});
-
-void refreshSelection();
+void refreshDocument();

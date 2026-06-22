@@ -20,7 +20,7 @@ Start here before changing skills, generator code, verification contracts, or ge
 | [Generated outputs](generated-outputs.md) | Generated package matrix, build pipeline, generated-output contracts, MCP config shape, telemetry MCP tool reference, verifier expectations, and Cursor export contract. | Change or review generated files under `plugins/`, add a surface, or reason about package artifacts. |
 | [Skills and integrations](skills-and-integrations.md) | Skill inventory, Studio integration concepts, MCP contracts, relationship to WordPress agent skills packaging, and safe extension boundaries. | Update shared skills, Studio guidance, or agent integration behavior. |
 | [Contributor workflows](contributor-workflows.md) | Setup, commands, change recipes, manual smoke testing, CI automation contracts, and pull request checklist. | Prepare, verify, and review a repository change. |
-| [Figma Playground runner](figma-playground-runner.md) | Prototype Figma plugin handoff to a WordPress Playground runner for Static Site Importer and Blocks Engine. | Review or test the Figma-to-artifact-to-Playground integration path. |
+| [Figma to WordPress](figma-playground-runner.md) | Figma plugin handoff to a WordPress Playground runner for Static Site Importer and Blocks Engine. | Review or test the Figma-to-HTML-to-WordPress integration path. |
 
 ## Repository source inventory
 

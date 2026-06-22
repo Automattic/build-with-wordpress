@@ -1,6 +1,6 @@
 {
-  "name": "Figma to WordPress Playground Prototype",
-  "id": "figma-to-wordpress-playground-prototype",
+  "name": "Figma to WordPress",
+  "id": "figma-to-wordpress",
   "api": "1.0.0",
   "main": "dist/code.js",
   "ui": "dist/ui.html",

@@ -31,7 +31,7 @@ export interface PlaygroundRunnerPayload {
     runner: "wordpress-playground";
     importer: "static-site-importer";
     blockCompiler: "blocks-engine";
-    status: "prototype-handoff";
+    status: "playground-import";
     boundaries: string[];
   };
 }
@@ -49,7 +49,7 @@ export function createSampleArtifact(now = new Date()): GeneratedWebsiteArtifact
       exportedAt: now.toISOString(),
     },
     site: {
-      title: "Figma WordPress Prototype",
+      title: "Figma to WordPress",
       entrypoint: "index.html",
     },
     files: [
@@ -58,7 +58,7 @@ export function createSampleArtifact(now = new Date()): GeneratedWebsiteArtifact
         role: "html",
         mimeType: "text/html",
         contents:
-          "<!doctype html><html><head><meta charset=\"utf-8\"><title>Figma WordPress Prototype</title><link rel=\"stylesheet\" href=\"styles.css\"></head><body><main><h1>Figma to WordPress</h1><p>This static artifact is ready for a Playground runner handoff.</p></main></body></html>",
+          "<!doctype html><html><head><meta charset=\"utf-8\"><title>Figma to WordPress</title><link rel=\"stylesheet\" href=\"styles.css\"></head><body><main><h1>Figma to WordPress</h1><p>This static artifact is ready for WordPress import in Playground.</p></main></body></html>",
       },
       {
         path: "styles.css",
@@ -69,7 +69,7 @@ export function createSampleArtifact(now = new Date()): GeneratedWebsiteArtifact
       },
     ],
     notes: [
-      "Prototype artifact generated in the Figma plugin UI.",
+      "Artifact generated in the Figma plugin UI.",
       "Static Site Importer and Blocks Engine are expected to run inside WordPress Playground, not in the Figma plugin.",
     ],
   };
@@ -84,11 +84,11 @@ export function buildRunnerPayload(artifact: GeneratedWebsiteArtifact): Playgrou
       runner: "wordpress-playground",
       importer: "static-site-importer",
       blockCompiler: "blocks-engine",
-      status: "prototype-handoff",
+      status: "playground-import",
       boundaries: [
         "The Figma plugin creates or receives a generated static website artifact.",
         "The runner boots WordPress in Playground so PHP plugins run in the correct runtime.",
-        "Static Site Importer and Blocks Engine import execution is not implemented in this TypeScript prototype.",
+        "Static Site Importer and Blocks Engine import execution runs inside WordPress Playground.",
       ],
     },
   };
@@ -312,7 +312,7 @@ export function buildStandaloneRunnerPage(payload: PlaygroundRunnerPayload): str
 </head>
 <body>
   <h1>Figma to WordPress Playground Runner</h1>
-  <p>This generated page carries a prototype runner payload. Save or host it, then open it in a browser.</p>
+  <p>This generated page carries a Figma to WordPress runner payload. Save or host it, then open it in a browser.</p>
   <script>
     location.hash = "payload=" + ${escapedPayload};
   </script>

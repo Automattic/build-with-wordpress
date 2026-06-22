@@ -17,8 +17,8 @@
 
     .app {
       display: grid;
-      gap: 14px;
-      padding: 16px;
+      gap: 16px;
+      padding: 20px;
     }
 
     h1,
@@ -28,7 +28,8 @@
     }
 
     h1 {
-      font-size: 15px;
+      font-size: 20px;
+      letter-spacing: -0.03em;
     }
 
     h2 {
@@ -59,12 +60,6 @@
       opacity: 0.55;
     }
 
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
     .panel {
       display: grid;
       gap: 10px;
@@ -74,29 +69,14 @@
       background: var(--figma-color-bg-secondary, #f7f7f7);
     }
 
-    .preview {
-      min-height: 220px;
-      border: 1px solid var(--figma-color-border, #d9d9d9);
-      border-radius: 10px;
-      overflow: hidden;
-      background: #fff;
+    .actions {
+      display: grid;
+      gap: 10px;
     }
 
-    iframe {
-      display: block;
-      width: 100%;
-      min-height: 220px;
-      border: 0;
-      background: #fff;
-    }
-
-    pre {
-      max-height: 160px;
-      margin: 0;
-      overflow: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 11px;
+    #playground {
+      min-height: 44px;
+      font-weight: 700;
     }
   </style>
 </head>
@@ -104,24 +84,12 @@
   <main class="app">
     <header class="panel">
       <h1>Figma to WordPress</h1>
-      <p id="status">Select a frame or node to generate a preview.</p>
+      <p id="status">Preparing this Figma file for WordPress Playground.</p>
       <div class="actions">
-        <button id="refresh" class="primary" type="button">Refresh selection</button>
-        <button id="copy" type="button" disabled>Copy HTML</button>
-        <button id="export" type="button" disabled>Export HTML</button>
-        <button id="playground" type="button" disabled>Open Playground</button>
+        <button id="playground" class="primary" type="button" disabled>Open in WordPress Playground</button>
+        <button id="refresh" type="button">Refresh Figma file</button>
       </div>
     </header>
-
-    <section class="panel">
-      <h2>Preview</h2>
-      <div class="preview" id="preview"></div>
-    </section>
-
-    <section class="panel">
-      <h2>Scene Data</h2>
-      <pre id="scene">No selection loaded.</pre>
-    </section>
   </main>
   <!-- UI_SCRIPT -->
 </body>

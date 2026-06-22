@@ -89,7 +89,7 @@ interface RenderContext {
   nodeCount: number;
 }
 
-const containerTypes = new Set(["FRAME", "GROUP", "COMPONENT", "INSTANCE"]);
+const containerTypes = new Set(["DOCUMENT", "PAGE", "FRAME", "GROUP", "COMPONENT", "INSTANCE", "SECTION"]);
 const supportedTypes = new Set(Array.from(containerTypes).concat(["TEXT", "RECTANGLE", "IMAGE"]));
 
 export function generateWebsiteArtifact(

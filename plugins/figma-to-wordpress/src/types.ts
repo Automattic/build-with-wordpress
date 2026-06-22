@@ -56,6 +56,8 @@ export type NormalizedSelection = {
   assets: NormalizedAsset[];
 };
 
+export type NormalizedDocument = NormalizedSelection;
+
 export type GeneratedArtifact = {
   title: string;
   html: string;
@@ -84,7 +86,11 @@ export type PluginToUiMessage =
 
 export type UiToPluginMessage =
   | {
-      type: "refresh-selection";
+      type: "refresh-document";
+    }
+  | {
+      type: "open-playground";
+      url: string;
     }
   | {
       type: "notify";

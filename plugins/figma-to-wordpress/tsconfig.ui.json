@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
+    "types": []
+  },
+  "include": [
+    "src/playground-runner.ts",
+    "src/types.ts",
+    "src/ui.ts"
+  ]
+}

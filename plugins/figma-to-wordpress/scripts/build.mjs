@@ -13,7 +13,7 @@ await mkdir(distDir, { recursive: true });
 
 const commonOptions = {
   bundle: true,
-  target: "es2020",
+  target: "es2017",
   format: "iife",
   sourcemap: watch ? "inline" : false,
 };

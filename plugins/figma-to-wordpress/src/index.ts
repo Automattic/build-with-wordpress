@@ -90,7 +90,7 @@ interface RenderContext {
 }
 
 const containerTypes = new Set(["FRAME", "GROUP", "COMPONENT", "INSTANCE"]);
-const supportedTypes = new Set([...containerTypes, "TEXT", "RECTANGLE", "IMAGE"]);
+const supportedTypes = new Set(Array.from(containerTypes).concat(["TEXT", "RECTANGLE", "IMAGE"]));
 
 export function generateWebsiteArtifact(
   scene: FigmaSceneNode,
@@ -106,7 +106,7 @@ export function generateWebsiteArtifact(
   };
 
   const body = renderNode(scene, context, true);
-  const styles = [baseCss(), ...context.cssRules].join("\n\n");
+  const styles = [baseCss()].concat(context.cssRules).join("\n\n");
   const metadata: ArtifactMetadata = {
     title,
     generatedAt: options.generatedAt,
@@ -117,8 +117,11 @@ export function generateWebsiteArtifact(
   const files: Record<string, string> = {
     "index.html": renderDocument(title, body),
     "assets/styles.css": styles,
-    ...context.assets,
   };
+
+  for (const [assetPath, assetContent] of Object.entries(context.assets)) {
+    files[assetPath] = assetContent;
+  }
 
   if (options.includeMetadata) {
     files["metadata.json"] = `${JSON.stringify(metadata, null, 2)}\n`;
@@ -204,7 +207,7 @@ function renderChildren(node: FigmaSceneNode, context: RenderContext): string {
 }
 
 function addCssRule(node: FigmaSceneNode, context: RenderContext, parts: string[]): string {
-  const baseClass = toClassName([node.name, ...parts].join("-"));
+  const baseClass = toClassName([node.name].concat(parts).join("-"));
   const count = context.usedClasses.get(baseClass) || 0;
   context.usedClasses.set(baseClass, count + 1);
   const className = count === 0 ? baseClass : `${baseClass}-${count + 1}`;

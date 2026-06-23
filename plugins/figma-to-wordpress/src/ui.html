@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      color-scheme: light dark;
+      font: 12px/1.45 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--figma-color-text, #1e1e1e);
+      background: var(--figma-color-bg, #fff);
+    }
+
+    body {
+      margin: 0;
+    }
+
+    .app {
+      display: grid;
+      gap: 16px;
+      padding: 20px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 20px;
+      letter-spacing: -0.03em;
+    }
+
+    h2 {
+      font-size: 12px;
+      color: var(--figma-color-text-secondary, #6b6b6b);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    button {
+      border: 1px solid var(--figma-color-border, #d9d9d9);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--figma-color-text, #1e1e1e);
+      background: var(--figma-color-bg-secondary, #f7f7f7);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button.primary {
+      color: var(--figma-color-text-onbrand, #fff);
+      background: var(--figma-color-bg-brand, #18a0fb);
+      border-color: transparent;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    input {
+      box-sizing: border-box;
+      width: 100%;
+      border: 1px solid var(--figma-color-border, #d9d9d9);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--figma-color-text, #1e1e1e);
+      background: var(--figma-color-bg, #fff);
+      font: inherit;
+    }
+
+    .panel {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--figma-color-border, #d9d9d9);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--figma-color-bg-secondary, #f7f7f7);
+    }
+
+    .actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    #playground {
+      min-height: 44px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="panel">
+      <h1>Figma to WordPress</h1>
+      <p id="status">Preparing this Figma file for WordPress Playground.</p>
+      <label>
+        WordPress runner URL
+        <input id="runner-endpoint" type="url" spellcheck="false" autocomplete="off">
+      </label>
+      <div class="actions">
+        <button id="playground" class="primary" type="button" disabled>Open in WordPress Playground</button>
+        <button id="refresh" type="button">Refresh Figma file</button>
+      </div>
+    </header>
+  </main>
+  <!-- UI_SCRIPT -->
+</body>
+</html>

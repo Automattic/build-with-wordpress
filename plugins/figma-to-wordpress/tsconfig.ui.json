@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
+    "types": []
+  },
+  "include": [
+    "src/payload.ts",
+    "src/types.ts",
+    "src/ui.ts",
+    "src/wordpress-runner.ts"
+  ]
+}

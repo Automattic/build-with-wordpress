@@ -3,6 +3,8 @@ import type { NormalizedAsset, NormalizedDocument, NormalizedSceneNode, PluginTo
 
 figma.showUI(__html__, { width: 420, height: 420, themeColors: true });
 
+const runnerEndpointStorageKey = "figma-to-wordpress-runner-endpoint";
+
 function postToUi(message: PluginToUiMessage) {
   figma.ui.postMessage(message);
 }
@@ -193,6 +195,17 @@ async function refreshDocument() {
 figma.ui.onmessage = async (message: UiToPluginMessage) => {
   if (message.type === "refresh-document") {
     await refreshDocument();
+    return;
+  }
+
+  if (message.type === "get-runner-endpoint") {
+    const endpoint = await figma.clientStorage.getAsync(runnerEndpointStorageKey);
+    postToUi({ type: "runner-endpoint", endpoint: typeof endpoint === "string" ? endpoint : null });
+    return;
+  }
+
+  if (message.type === "set-runner-endpoint") {
+    await figma.clientStorage.setAsync(runnerEndpointStorageKey, message.endpoint);
     return;
   }
 

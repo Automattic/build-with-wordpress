@@ -81,6 +81,10 @@ export type PluginToUiMessage =
       artifact: GeneratedArtifact | null;
     }
   | {
+      type: "runner-endpoint";
+      endpoint: string | null;
+    }
+  | {
       type: "error";
       message: string;
     };
@@ -88,6 +92,13 @@ export type PluginToUiMessage =
 export type UiToPluginMessage =
   | {
       type: "refresh-document";
+    }
+  | {
+      type: "get-runner-endpoint";
+    }
+  | {
+      type: "set-runner-endpoint";
+      endpoint: string;
     }
   | {
       type: "open-wordpress";

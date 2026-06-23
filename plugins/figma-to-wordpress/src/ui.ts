@@ -10,7 +10,6 @@ const playgroundButton = document.querySelector<HTMLButtonElement>("#playground"
 const runnerEndpointInput = document.querySelector<HTMLInputElement>("#runner-endpoint");
 
 const defaultRunnerEndpoint = "http://localhost:8882/wp-json/static-site-importer/v1/import-figma";
-const runnerEndpointStorageKey = "figma-to-wordpress-runner-endpoint";
 
 function log(message: string, details?: unknown) {
   if (typeof details === "undefined") {
@@ -54,7 +53,7 @@ function runnerEndpoint(): string {
 function persistRunnerEndpoint() {
   const endpoint = runnerEndpoint();
 
-  localStorage.setItem(runnerEndpointStorageKey, endpoint);
+  sendToPlugin({ type: "set-runner-endpoint", endpoint });
 }
 
 async function openPlayground() {
@@ -134,6 +133,13 @@ window.onmessage = (event: MessageEvent<{ pluginMessage?: PluginToUiMessage }>) 
     return;
   }
 
+  if (message.type === "runner-endpoint") {
+    if (runnerEndpointInput && message.endpoint) {
+      runnerEndpointInput.value = message.endpoint;
+    }
+    return;
+  }
+
   if (message.type === "error") {
     setStatus(message.message);
   }
@@ -144,8 +150,9 @@ playgroundButton?.addEventListener("click", () => void openPlayground());
 runnerEndpointInput?.addEventListener("change", persistRunnerEndpoint);
 
 if (runnerEndpointInput) {
-  runnerEndpointInput.value = localStorage.getItem(runnerEndpointStorageKey) || defaultRunnerEndpoint;
+  runnerEndpointInput.value = defaultRunnerEndpoint;
 }
 
 log("UI loaded.", { endpoint: runnerEndpoint() });
+sendToPlugin({ type: "get-runner-endpoint" });
 sendToPlugin({ type: "refresh-document" });

@@ -134,7 +134,7 @@ export function generateWebsiteArtifact(
   };
 }
 
-function renderNode(node: FigmaSceneNode, context: RenderContext, isRoot = false): string {
+function renderNode(node: FigmaSceneNode, context: RenderContext, isRoot = false, parent?: FigmaSceneNode): string {
   context.nodeCount += 1;
 
   if (node.visible === false) {
@@ -152,22 +152,22 @@ function renderNode(node: FigmaSceneNode, context: RenderContext, isRoot = false
   }
 
   if (node.type === "TEXT") {
-    return renderText(node, context);
+    return renderText(node, context, parent);
   }
 
   if (node.type === "IMAGE") {
-    return renderImage(node, context);
+    return renderImage(node, context, parent);
   }
 
   if (node.type === "RECTANGLE" && !node.children?.length) {
-    return renderRectangle(node, context);
+    return renderRectangle(node, context, parent);
   }
 
-  return renderContainer(node, context, isRoot);
+  return renderContainer(node, context, isRoot, parent);
 }
 
-function renderContainer(node: FigmaSceneNode, context: RenderContext, isRoot: boolean): string {
-  const className = addCssRule(node, context, ["section"]);
+function renderContainer(node: FigmaSceneNode, context: RenderContext, isRoot: boolean, parent?: FigmaSceneNode): string {
+  const className = addCssRule(node, context, ["section"], isRoot, parent);
   const tagName = isRoot ? "main" : isButtonLike(node) ? "a" : "section";
   const attrs = [
     `class="${className}"`,
@@ -178,21 +178,21 @@ function renderContainer(node: FigmaSceneNode, context: RenderContext, isRoot: b
   return `<${tagName} ${attrs.join(" ")}>\n${children}\n</${tagName}>`;
 }
 
-function renderText(node: FigmaSceneNode, context: RenderContext): string {
-  const className = addCssRule(node, context, ["text"]);
+function renderText(node: FigmaSceneNode, context: RenderContext, parent?: FigmaSceneNode): string {
+  const className = addCssRule(node, context, ["text"], false, parent);
   const content = escapeHtml(node.characters || "");
   const tagName = textTagName(node);
 
   return `<${tagName} class="${className}">${content}</${tagName}>`;
 }
 
-function renderRectangle(node: FigmaSceneNode, context: RenderContext): string {
-  const className = addCssRule(node, context, ["shape"]);
+function renderRectangle(node: FigmaSceneNode, context: RenderContext, parent?: FigmaSceneNode): string {
+  const className = addCssRule(node, context, ["shape"], false, parent);
   return `<div class="${className}" aria-hidden="true"></div>`;
 }
 
-function renderImage(node: FigmaSceneNode, context: RenderContext): string {
-  const className = addCssRule(node, context, ["image"]);
+function renderImage(node: FigmaSceneNode, context: RenderContext, parent?: FigmaSceneNode): string {
+  const className = addCssRule(node, context, ["image"], false, parent);
   const src = resolveImageSource(node, context);
   const alt = escapeAttribute(node.image?.alt || node.name || "");
 
@@ -201,17 +201,17 @@ function renderImage(node: FigmaSceneNode, context: RenderContext): string {
 
 function renderChildren(node: FigmaSceneNode, context: RenderContext): string {
   return (node.children || [])
-    .map((child) => renderNode(child, context))
+    .map((child) => renderNode(child, context, false, node))
     .filter(Boolean)
     .join("\n");
 }
 
-function addCssRule(node: FigmaSceneNode, context: RenderContext, parts: string[]): string {
+function addCssRule(node: FigmaSceneNode, context: RenderContext, parts: string[], isRoot = false, parent?: FigmaSceneNode): string {
   const baseClass = toClassName([node.name].concat(parts).join("-"));
   const count = context.usedClasses.get(baseClass) || 0;
   context.usedClasses.set(baseClass, count + 1);
   const className = count === 0 ? baseClass : `${baseClass}-${count + 1}`;
-  const declarations = cssDeclarations(node);
+  const declarations = cssDeclarations(node, isRoot, parent);
 
   if (declarations.length) {
     context.cssRules.push(`.${className} {\n${declarations.map((rule) => `  ${rule}`).join("\n")}\n}`);
@@ -220,28 +220,43 @@ function addCssRule(node: FigmaSceneNode, context: RenderContext, parts: string[
   return className;
 }
 
-function cssDeclarations(node: FigmaSceneNode): string[] {
+function cssDeclarations(node: FigmaSceneNode, isRoot: boolean, parent?: FigmaSceneNode): string[] {
   const declarations: string[] = [];
   const fill = firstVisiblePaint(node.fills);
   const stroke = firstVisiblePaint(node.strokes);
+  const positioned = shouldAbsolutelyPosition(node, parent);
 
+  if (positioned) {
+    declarations.push("position: absolute;");
+    declarations.push(`left: ${formatPx((node.x || 0) - (parent?.x || 0))};`);
+    declarations.push(`top: ${formatPx((node.y || 0) - (parent?.y || 0))};`);
+  }
   if (node.width !== undefined) declarations.push(`width: ${formatPx(node.width)};`);
   if (node.height !== undefined && node.type !== "TEXT") declarations.push(`min-height: ${formatPx(node.height)};`);
   if (node.opacity !== undefined && node.opacity < 1) declarations.push(`opacity: ${node.opacity};`);
   if (node.cornerRadius !== undefined) declarations.push(`border-radius: ${formatPx(node.cornerRadius)};`);
-  if (fill) declarations.push(`background: ${paintToCss(fill)};`);
+  if (fill && node.type === "TEXT") declarations.push(`color: ${paintToCss(fill)};`);
+  if (fill && node.type !== "TEXT") declarations.push(`background: ${paintToCss(fill)};`);
   if (stroke) declarations.push(`border: 1px solid ${paintToCss(stroke)};`);
 
   if (containerTypes.has(node.type)) {
-    declarations.push("display: flex;");
-    declarations.push("flex-direction: column;");
-    declarations.push("gap: 1rem;");
+    if (!positioned) declarations.push("position: relative;");
+    if (!hasPositionedChildren(node)) {
+      declarations.push("display: flex;");
+      declarations.push("flex-direction: column;");
+      declarations.push("gap: 1rem;");
+    }
+    if (isRoot) {
+      declarations.push("margin: 0 auto;");
+      declarations.push("overflow: hidden;");
+    }
   }
 
   if (node.type === "TEXT") {
+    declarations.push("margin: 0;");
     if (node.style?.fontFamily) declarations.push(`font-family: ${quoteFontFamily(node.style.fontFamily)};`);
     if (node.style?.fontSize) declarations.push(`font-size: ${formatPx(node.style.fontSize)};`);
-    if (node.style?.fontWeight) declarations.push(`font-weight: ${node.style.fontWeight};`);
+    if (node.style?.fontWeight) declarations.push(`font-weight: ${formatFontWeight(node.style.fontWeight)};`);
     if (node.style?.lineHeight) declarations.push(`line-height: ${formatLineHeight(node.style.lineHeight)};`);
     if (node.style?.textAlignHorizontal) declarations.push(`text-align: ${textAlign(node.style.textAlignHorizontal)};`);
   }
@@ -258,6 +273,14 @@ function cssDeclarations(node: FigmaSceneNode): string[] {
   }
 
   return declarations;
+}
+
+function shouldAbsolutelyPosition(node: FigmaSceneNode, parent?: FigmaSceneNode): boolean {
+  return !!parent && node.x !== undefined && node.y !== undefined && hasPositionedChildren(parent);
+}
+
+function hasPositionedChildren(node: FigmaSceneNode): boolean {
+  return (node.children || []).some((child) => child.x !== undefined && child.y !== undefined);
 }
 
 function resolveImageSource(node: FigmaSceneNode, context: RenderContext): string {
@@ -375,6 +398,25 @@ function quoteFontFamily(value: string): string {
 
 function formatLineHeight(value: number | string): string {
   return typeof value === "number" ? formatPx(value) : value;
+}
+
+function formatFontWeight(value: number | string): string {
+  if (typeof value === "number") {
+    return String(value);
+  }
+
+  const normalized = value.toLowerCase();
+  if (normalized.includes("thin")) return "100";
+  if (normalized.includes("extra light") || normalized.includes("ultra light")) return "200";
+  if (normalized.includes("light")) return "300";
+  if (normalized.includes("regular") || normalized.includes("book")) return "400";
+  if (normalized.includes("medium")) return "500";
+  if (normalized.includes("semi bold") || normalized.includes("semibold") || normalized.includes("demi bold")) return "600";
+  if (normalized.includes("extra bold") || normalized.includes("ultra bold")) return "800";
+  if (normalized.includes("bold")) return "700";
+  if (normalized.includes("black") || normalized.includes("heavy")) return "900";
+
+  return value;
 }
 
 function textAlign(value: string): string {

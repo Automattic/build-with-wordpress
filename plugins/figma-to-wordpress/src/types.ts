@@ -39,6 +39,7 @@ export type NormalizedPaint = {
   type?: string;
   visible?: boolean;
   opacity?: number;
+  imageHash?: string;
   color?: {
     r: number;
     g: number;

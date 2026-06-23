@@ -7,8 +7,19 @@ let currentSelection: NormalizedSelection | null = null;
 const statusElement = document.querySelector<HTMLParagraphElement>("#status");
 const refreshButton = document.querySelector<HTMLButtonElement>("#refresh");
 const playgroundButton = document.querySelector<HTMLButtonElement>("#playground");
+const runnerEndpointInput = document.querySelector<HTMLInputElement>("#runner-endpoint");
 
 const defaultRunnerEndpoint = "http://localhost:8882/wp-json/static-site-importer/v1/import-figma";
+const runnerEndpointStorageKey = "figma-to-wordpress-runner-endpoint";
+
+function log(message: string, details?: unknown) {
+  if (typeof details === "undefined") {
+    console.info(`[Figma to WordPress] ${message}`);
+    return;
+  }
+
+  console.info(`[Figma to WordPress] ${message}`, details);
+}
 
 function sendToPlugin(message: UiToPluginMessage) {
   parent.postMessage({ pluginMessage: message }, "*");
@@ -20,14 +31,35 @@ function setStatus(message: string) {
   }
 }
 
+function artifactBundleSummary(artifact: GeneratedArtifact | null) {
+  const runnerRequest = artifact?.runnerRequest as { artifact_bundle?: { entrypoint?: string; files?: unknown[] } } | null;
+  const bundle = runnerRequest?.artifact_bundle;
+
+  return {
+    files: Array.isArray(bundle?.files) ? bundle.files.length : 0,
+    entrypoint: typeof bundle?.entrypoint === "string" ? bundle.entrypoint : "",
+  };
+}
+
 function updateActions() {
   const disabled = !currentArtifact;
 
   if (playgroundButton) playgroundButton.disabled = disabled;
 }
 
+function runnerEndpoint(): string {
+  return runnerEndpointInput?.value.trim() || defaultRunnerEndpoint;
+}
+
+function persistRunnerEndpoint() {
+  const endpoint = runnerEndpoint();
+
+  localStorage.setItem(runnerEndpointStorageKey, endpoint);
+}
+
 async function openPlayground() {
   if (!currentArtifact) {
+    log("Open requested before artifact was ready.");
     return;
   }
 
@@ -36,12 +68,20 @@ async function openPlayground() {
   }
 
   setStatus("Creating a WordPress Playground session...");
+  const endpoint = runnerEndpoint();
+  persistRunnerEndpoint();
+  log("Opening WordPress runner.", {
+    endpoint,
+    ...artifactBundleSummary(currentArtifact),
+  });
 
   try {
-    const response = await createWordPressPreview(defaultRunnerEndpoint, currentArtifact);
+    const response = await createWordPressPreview(endpoint, currentArtifact);
+    log("WordPress runner response received.", response);
     sendToPlugin({ type: "open-wordpress", url: response.open_url || "" });
     setStatus("WordPress Playground session created.");
   } catch (error) {
+    console.error("[Figma to WordPress] WordPress runner failed.", error);
     setStatus(error instanceof Error ? error.message : "Could not create the WordPress preview session.");
   } finally {
     updateActions();
@@ -71,6 +111,11 @@ function renderSelection(selection: NormalizedSelection | null, artifact: Genera
   } else {
     const screenCount = countDesignScreens(selection);
     const diagnosticCount = artifact?.diagnostics.length || 0;
+    log("Document artifact ready.", {
+      screens: screenCount,
+      diagnostics: diagnosticCount,
+      ...artifactBundleSummary(artifact),
+    });
     setStatus(`Ready to import ${screenCount} design screen${screenCount === 1 ? "" : "s"} into WordPress${diagnosticCount ? ` (${diagnosticCount} note${diagnosticCount === 1 ? "" : "s"})` : ""}.`);
   }
 
@@ -96,5 +141,11 @@ window.onmessage = (event: MessageEvent<{ pluginMessage?: PluginToUiMessage }>) 
 
 refreshButton?.addEventListener("click", () => sendToPlugin({ type: "refresh-document" }));
 playgroundButton?.addEventListener("click", () => void openPlayground());
+runnerEndpointInput?.addEventListener("change", persistRunnerEndpoint);
 
+if (runnerEndpointInput) {
+  runnerEndpointInput.value = localStorage.getItem(runnerEndpointStorageKey) || defaultRunnerEndpoint;
+}
+
+log("UI loaded.", { endpoint: runnerEndpoint() });
 sendToPlugin({ type: "refresh-document" });

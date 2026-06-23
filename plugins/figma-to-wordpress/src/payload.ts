@@ -1,11 +1,12 @@
 import type { WebsiteArtifact } from "./index";
-import type { NormalizedSelection } from "./types";
+import type { NormalizedAsset, NormalizedSceneNode, NormalizedSelection } from "./types";
 
 export type WebsiteArtifactFileRole = "html" | "css" | "js" | "asset" | "metadata";
 
 export interface WebsiteArtifactBundleFile {
   path: string;
-  content: string;
+  content?: string;
+  content_base64?: string;
   role?: WebsiteArtifactFileRole;
   mime_type?: string;
 }
@@ -27,7 +28,17 @@ export interface WordPressRunnerRequest {
     exportedAt: string;
   };
   goal: string;
+  figma: FigmaScenegraphPayload;
   artifact_bundle: WebsiteArtifactBundle;
+}
+
+export interface FigmaScenegraphPayload {
+  schema: "figma-to-wordpress/scenegraph/v1";
+  name: string;
+  exportedAt: string;
+  root: NormalizedSceneNode;
+  nodes: NormalizedSceneNode[];
+  assets: NormalizedAsset[];
 }
 
 export function toWebsiteArtifactBundle(artifact: WebsiteArtifact, selection: NormalizedSelection): WebsiteArtifactBundle {
@@ -35,13 +46,37 @@ export function toWebsiteArtifactBundle(artifact: WebsiteArtifact, selection: No
     schema: "figma-to-wordpress/website-artifact-bundle/v1",
     root: "website/",
     entrypoint: "website/index.html",
-    files: Object.entries(artifact.files).map(([filePath, content]) => ({
-      path: filePath.startsWith("website/") ? filePath : `website/${filePath}`,
-      content,
-      role: fileRole(filePath),
-      mime_type: mimeType(filePath),
-    })),
+    files: Object.entries(artifact.files).map(([filePath, content]) => toWebsiteArtifactBundleFile(filePath, content)),
     import_source: "figma-to-wordpress",
+  };
+}
+
+function toWebsiteArtifactBundleFile(filePath: string, content: string): WebsiteArtifactBundleFile {
+  const file: WebsiteArtifactBundleFile = {
+    path: filePath.startsWith("website/") ? filePath : `website/${filePath}`,
+    role: fileRole(filePath),
+    mime_type: mimeType(filePath),
+  };
+  const dataUri = parseDataUri(content);
+  if (dataUri) {
+    file.content_base64 = dataUri.contentBase64;
+    file.mime_type = dataUri.mimeType;
+  } else {
+    file.content = content;
+  }
+
+  return file;
+}
+
+function parseDataUri(content: string): { mimeType: string; contentBase64: string } | null {
+  const match = content.match(/^data:([^;,]+);base64,(.+)$/s);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    mimeType: match[1],
+    contentBase64: match[2],
   };
 }
 
@@ -54,7 +89,19 @@ export function buildWordPressRunnerRequest(bundle: WebsiteArtifactBundle, selec
       exportedAt: selection.exportedAt,
     },
     goal: `Import ${selection.name} into WordPress using Static Site Importer inside a browser Playground session.`,
+    figma: toFigmaScenegraphPayload(selection),
     artifact_bundle: bundle,
+  };
+}
+
+function toFigmaScenegraphPayload(selection: NormalizedSelection): FigmaScenegraphPayload {
+  return {
+    schema: "figma-to-wordpress/scenegraph/v1",
+    name: selection.name,
+    exportedAt: selection.exportedAt,
+    root: selection.root,
+    nodes: selection.root.children?.length ? selection.root.children : [selection.root],
+    assets: selection.assets,
   };
 }
 

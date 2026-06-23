@@ -11,9 +11,17 @@ const __dirname = path.dirname(__filename);
 const pluginDir = path.resolve(__dirname, "..");
 
 async function loadModule() {
+	return loadSourceModule("index.ts");
+}
+
+async function loadPayloadModule() {
+	return loadSourceModule("payload.ts");
+}
+
+async function loadSourceModule(sourceFile) {
   const outfile = path.join(tmpdir(), `figma-to-wordpress-${Date.now()}-${Math.random()}.mjs`);
   await esbuild.build({
-    entryPoints: [path.join(pluginDir, "src", "index.ts")],
+    entryPoints: [path.join(pluginDir, "src", sourceFile)],
     bundle: true,
     format: "esm",
     platform: "node",
@@ -80,6 +88,40 @@ test("emits data URI image assets and escapes text content", async () => {
   assert.equal(artifact.files["assets/logo-image.svg"], "data:image/svg+xml,%3Csvg%3E%3C/svg%3E");
 });
 
+test("serializes base64 data URI image assets as artifact file payloads", async () => {
+  const { generateWebsiteArtifact } = await loadModule();
+  const { toWebsiteArtifactBundle } = await loadPayloadModule();
+  const artifact = generateWebsiteArtifact({
+    id: "root",
+    name: "Image Bundle Demo",
+    type: "FRAME",
+    children: [
+      {
+        id: "image",
+        name: "Hero Photo",
+        type: "IMAGE",
+        image: {
+          dataUri: "data:image/png;base64,ZmFrZS1wbmc=",
+          alt: "Hero",
+        },
+      },
+    ],
+  });
+  const bundle = toWebsiteArtifactBundle(artifact, {
+    id: "root",
+    name: "Image Bundle Demo",
+    type: "DOCUMENT",
+    exportedAt: "2026-01-01T00:00:00.000Z",
+    root: { id: "root", name: "Image Bundle Demo", type: "FRAME", visible: true },
+    assets: [],
+  });
+  const imageFile = bundle.files.find((file) => file.path === "website/assets/hero-photo.png");
+
+  assert.equal(imageFile.content, undefined);
+  assert.equal(imageFile.content_base64, "ZmFrZS1wbmc=");
+  assert.equal(imageFile.mime_type, "image/png");
+});
+
 test("reports missing image sources with node identity", async () => {
   const { generateWebsiteArtifact } = await loadModule();
   const artifact = generateWebsiteArtifact({
@@ -92,4 +134,47 @@ test("reports missing image sources with node identity", async () => {
   assert.equal(artifact.diagnostics[0].nodeId, "missing-image");
   assert.equal(artifact.diagnostics[0].nodeName, "Missing Image");
   assert.equal(artifact.diagnostics[0].message, "Image node is missing image.src or image.dataUri");
+});
+
+test("preserves Figma bounding-box positions when available", async () => {
+  const { generateWebsiteArtifact } = await loadModule();
+  const artifact = generateWebsiteArtifact({
+    id: "root",
+    name: "Positioned Demo",
+    type: "FRAME",
+    x: 100,
+    y: 200,
+    width: 400,
+    height: 300,
+    children: [
+      {
+        id: "headline",
+        name: "Hero Title",
+        type: "TEXT",
+        x: 140,
+        y: 260,
+        width: 240,
+        height: 60,
+        characters: "Placed title",
+        fills: [
+          {
+            type: "SOLID",
+            color: { r: 0.1, g: 0.2, b: 0.3 },
+          },
+        ],
+        style: {
+          fontSize: 32,
+          fontWeight: "Bold",
+        },
+      },
+    ],
+  });
+
+  const css = artifact.files["assets/styles.css"];
+  assert.match(css, /\.hero-title-text \{/);
+  assert.match(css, /position: absolute;/);
+  assert.match(css, /left: 40px;/);
+  assert.match(css, /top: 60px;/);
+  assert.match(css, /color: rgb\(26, 51, 77\);/);
+  assert.match(css, /font-weight: 700;/);
 });

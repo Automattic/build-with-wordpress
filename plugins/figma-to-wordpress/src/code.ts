@@ -32,9 +32,16 @@ function normalizePaints(paints: unknown) {
         type: typedPaint.type,
         visible: typedPaint.visible,
         opacity: typedPaint.opacity,
+        imageHash: "imageHash" in typedPaint && typeof typedPaint.imageHash === "string" ? typedPaint.imageHash : undefined,
         color: "color" in typedPaint ? typedPaint.color : undefined,
       };
     });
+}
+
+function hasImagePaint(paints: unknown): boolean {
+  return Array.isArray(paints) && paints.some((paint) => {
+    return !!paint && typeof paint === "object" && "type" in paint && paint.type === "IMAGE" && (!("visible" in paint) || paint.visible !== false);
+  });
 }
 
 function normalizeTextStyle(node: TextNode) {
@@ -42,24 +49,63 @@ function normalizeTextStyle(node: TextNode) {
     fontFamily: typeof node.fontName === "object" ? node.fontName.family : undefined,
     fontSize: typeof node.fontSize === "number" ? node.fontSize : undefined,
     fontWeight: typeof node.fontName === "object" ? node.fontName.style : undefined,
+    lineHeight: typeof node.lineHeight === "object" && node.lineHeight.unit === "PIXELS" ? node.lineHeight.value : undefined,
     textAlignHorizontal: node.textAlignHorizontal,
   };
 }
 
-function normalizeNode(node: SceneNode | PageNode, fallbackType?: string): NormalizedSceneNode {
+function applyDerivedBounds(node: NormalizedSceneNode) {
+  const children = (node.children || []).filter(
+    (child) => child.x !== undefined && child.y !== undefined && child.width !== undefined && child.height !== undefined,
+  );
+
+  if (!children.length) {
+    return;
+  }
+
+  const minX = Math.min(...children.map((child) => child.x || 0));
+  const minY = Math.min(...children.map((child) => child.y || 0));
+  const maxX = Math.max(...children.map((child) => (child.x || 0) + (child.width || 0)));
+  const maxY = Math.max(...children.map((child) => (child.y || 0) + (child.height || 0)));
+
+  if (node.x === undefined) normalizedNumberAssign(node, "x", minX);
+  if (node.y === undefined) normalizedNumberAssign(node, "y", minY);
+  if (node.width === undefined) normalizedNumberAssign(node, "width", maxX - minX);
+  if (node.height === undefined) normalizedNumberAssign(node, "height", maxY - minY);
+}
+
+function normalizedNumberAssign(node: NormalizedSceneNode, key: "x" | "y" | "width" | "height", value: number) {
+  if (Number.isFinite(value)) {
+    node[key] = value;
+  }
+}
+
+async function normalizeNode(node: SceneNode | PageNode, fallbackType?: string): Promise<NormalizedSceneNode> {
   const bounds = "absoluteBoundingBox" in node ? node.absoluteBoundingBox : null;
+  const fills = "fills" in node ? clonePaints(node, "fills") : undefined;
+  const hasImageFill = hasImagePaint(fills);
   const normalized: NormalizedSceneNode = {
     id: node.id,
     name: node.name,
-    type: fallbackType || node.type,
+    type: fallbackType || (hasImageFill ? "IMAGE" : node.type),
     visible: "visible" in node ? node.visible : true,
     x: bounds?.x,
     y: bounds?.y,
     width: bounds?.width,
     height: bounds?.height,
-    fills: "fills" in node ? normalizePaints(clonePaints(node, "fills")) : undefined,
+    fills: normalizePaints(fills),
     strokes: "strokes" in node ? normalizePaints(clonePaints(node, "strokes")) : undefined,
   };
+
+  if (hasImageFill && "exportAsync" in node) {
+    const asset = await exportAsset(node as SceneNode);
+    if (asset) {
+      normalized.image = {
+        dataUri: asset.dataUrl,
+        alt: node.name,
+      };
+    }
+  }
 
   if (node.type === "TEXT") {
     normalized.characters = node.characters;
@@ -75,7 +121,8 @@ function normalizeNode(node: SceneNode | PageNode, fallbackType?: string): Norma
   }
 
   if ("children" in node) {
-    normalized.children = node.children.map((child) => normalizeNode(child));
+    normalized.children = await Promise.all(node.children.map((child) => normalizeNode(child)));
+    applyDerivedBounds(normalized);
   }
 
   return normalized;
@@ -110,7 +157,7 @@ async function getDocument(): Promise<NormalizedDocument> {
     await figma.loadAllPagesAsync();
   }
 
-  const pages = figma.root.children.map((page) => normalizeNode(page, "PAGE"));
+  const pages = await Promise.all(figma.root.children.map((page) => normalizeNode(page, "PAGE")));
   const root: NormalizedSceneNode = {
     id: figma.root.id,
     name: figma.root.name || "Figma document",
@@ -118,6 +165,7 @@ async function getDocument(): Promise<NormalizedDocument> {
     visible: true,
     children: pages,
   };
+  applyDerivedBounds(root);
 
   return {
     id: figma.root.id,

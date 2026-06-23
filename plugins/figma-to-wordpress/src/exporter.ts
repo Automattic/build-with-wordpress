@@ -1,5 +1,5 @@
 import type { GeneratedArtifact, NormalizedSelection } from "./types";
-import { buildPlaygroundPreviewUrl, buildRunnerPayload, toRunnerArtifact } from "./payload";
+import { buildWordPressRunnerRequest, toWebsiteArtifactBundle } from "./payload";
 import { generateWebsiteArtifact } from "./index";
 
 export function generateStaticArtifact(selection: NormalizedSelection): GeneratedArtifact {
@@ -10,13 +10,13 @@ export function generateStaticArtifact(selection: NormalizedSelection): Generate
   });
   const html = websiteArtifact.files["index.html"] || "";
   const css = websiteArtifact.files["assets/styles.css"] || "";
-  const runnerPayload = buildRunnerPayload(toRunnerArtifact(websiteArtifact, selection));
+  const runnerRequest = buildWordPressRunnerRequest(toWebsiteArtifactBundle(websiteArtifact, selection), selection);
 
   return {
     title: selection.name,
     html,
     css,
-    playgroundUrl: buildPlaygroundPreviewUrl(runnerPayload),
+    runnerRequest,
     files: websiteArtifact.files,
     diagnostics: websiteArtifact.diagnostics,
     metadata: websiteArtifact.metadata,

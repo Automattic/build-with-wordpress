@@ -62,7 +62,7 @@ export type GeneratedArtifact = {
   title: string;
   html: string;
   css: string;
-  playgroundUrl: string;
+  runnerRequest: unknown;
   files: Record<string, string>;
   diagnostics: Array<{
     level: "warning" | "error";
@@ -89,7 +89,7 @@ export type UiToPluginMessage =
       type: "refresh-document";
     }
   | {
-      type: "open-playground";
+      type: "open-wordpress";
       url: string;
     }
   | {

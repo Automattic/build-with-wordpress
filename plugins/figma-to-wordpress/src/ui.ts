@@ -1,4 +1,4 @@
-import { getPlaygroundUrl } from "./playground-runner";
+import { createWordPressPreview } from "./wordpress-runner";
 import type { GeneratedArtifact, NormalizedSelection, PluginToUiMessage, UiToPluginMessage } from "./types";
 
 let currentArtifact: GeneratedArtifact | null = null;
@@ -7,6 +7,8 @@ let currentSelection: NormalizedSelection | null = null;
 const statusElement = document.querySelector<HTMLParagraphElement>("#status");
 const refreshButton = document.querySelector<HTMLButtonElement>("#refresh");
 const playgroundButton = document.querySelector<HTMLButtonElement>("#playground");
+
+const defaultRunnerEndpoint = "http://localhost:8882/wp-json/static-site-importer/v1/import-figma";
 
 function sendToPlugin(message: UiToPluginMessage) {
   parent.postMessage({ pluginMessage: message }, "*");
@@ -24,9 +26,25 @@ function updateActions() {
   if (playgroundButton) playgroundButton.disabled = disabled;
 }
 
-function openPlayground() {
-  if (currentArtifact) {
-    sendToPlugin({ type: "open-playground", url: getPlaygroundUrl(currentArtifact) });
+async function openPlayground() {
+  if (!currentArtifact) {
+    return;
+  }
+
+  if (playgroundButton) {
+    playgroundButton.disabled = true;
+  }
+
+  setStatus("Creating a WordPress Playground session...");
+
+  try {
+    const response = await createWordPressPreview(defaultRunnerEndpoint, currentArtifact);
+    sendToPlugin({ type: "open-wordpress", url: response.open_url || "" });
+    setStatus("WordPress Playground session created.");
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "Could not create the WordPress preview session.");
+  } finally {
+    updateActions();
   }
 }
 
@@ -49,7 +67,7 @@ function renderSelection(selection: NormalizedSelection | null, artifact: Genera
   currentArtifact = artifact;
 
   if (!selection) {
-    setStatus("Open the Figma document in WordPress Playground.");
+    setStatus("Open this Figma file in WordPress Playground.");
   } else {
     const screenCount = countDesignScreens(selection);
     const diagnosticCount = artifact?.diagnostics.length || 0;
@@ -77,6 +95,6 @@ window.onmessage = (event: MessageEvent<{ pluginMessage?: PluginToUiMessage }>) 
 };
 
 refreshButton?.addEventListener("click", () => sendToPlugin({ type: "refresh-document" }));
-playgroundButton?.addEventListener("click", openPlayground);
+playgroundButton?.addEventListener("click", () => void openPlayground());
 
 sendToPlugin({ type: "refresh-document" });

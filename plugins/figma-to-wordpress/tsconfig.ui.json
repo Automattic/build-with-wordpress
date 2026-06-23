@@ -8,8 +8,9 @@
     "types": []
   },
   "include": [
-    "src/playground-runner.ts",
+    "src/payload.ts",
     "src/types.ts",
-    "src/ui.ts"
+    "src/ui.ts",
+    "src/wordpress-runner.ts"
   ]
 }

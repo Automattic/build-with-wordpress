@@ -148,7 +148,7 @@ figma.ui.onmessage = async (message: UiToPluginMessage) => {
     return;
   }
 
-  if (message.type === "open-playground") {
+  if (message.type === "open-wordpress") {
     figma.openExternal(message.url);
     return;
   }

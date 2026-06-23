@@ -17,6 +17,7 @@ export interface WordPressRunnerResponse {
   preview_session?: Record<string, unknown>;
   materialization?: Record<string, unknown>;
   error?: WordPressRunnerError;
+  message?: string;
 }
 
 const runnerTimeoutMs = 15000;
@@ -48,11 +49,11 @@ export async function createWordPressPreview(endpoint: string, artifact: Generat
   const data = await response.json().catch(() => null) as WordPressRunnerResponse | null;
 
   if (!response.ok) {
-    throw new Error(data?.error?.message || `WordPress runner failed with HTTP ${response.status}.`);
+    throw new Error(data?.error?.message || data?.message || `WordPress runner failed with HTTP ${response.status}.`);
   }
 
   if (!data?.success || !data.open_url) {
-    throw new Error(data?.error?.message || "WordPress runner did not return a Playground URL.");
+    throw new Error(data?.error?.message || data?.message || "WordPress runner did not return a Playground URL.");
   }
 
   return data;

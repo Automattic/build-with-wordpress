@@ -29,7 +29,6 @@ export interface WordPressRunnerRequest {
   };
   goal: string;
   figma: FigmaScenegraphPayload;
-  artifact_bundle: WebsiteArtifactBundle;
 }
 
 export interface FigmaScenegraphPayload {
@@ -80,7 +79,7 @@ function parseDataUri(content: string): { mimeType: string; contentBase64: strin
   };
 }
 
-export function buildWordPressRunnerRequest(bundle: WebsiteArtifactBundle, selection: NormalizedSelection): WordPressRunnerRequest {
+export function buildWordPressRunnerRequest(_bundle: WebsiteArtifactBundle, selection: NormalizedSelection): WordPressRunnerRequest {
   return {
     schema: "figma-to-wordpress/runner-request/v1",
     source: {
@@ -90,7 +89,6 @@ export function buildWordPressRunnerRequest(bundle: WebsiteArtifactBundle, selec
     },
     goal: `Import ${selection.name} into WordPress using Static Site Importer inside a browser Playground session.`,
     figma: toFigmaScenegraphPayload(selection),
-    artifact_bundle: bundle,
   };
 }
 

@@ -24,6 +24,7 @@ export interface FigmaSceneNode {
   visible?: boolean;
   style?: FigmaTextStyle;
   image?: FigmaImageSource;
+  asset_id?: string;
   href?: string;
 }
 
@@ -32,6 +33,9 @@ export interface FigmaPaint {
   visible?: boolean;
   color?: string | FigmaRgbColor;
   opacity?: number;
+  imageHash?: string;
+  imageRef?: string;
+  asset_id?: string;
 }
 
 export interface FigmaRgbColor {
@@ -50,6 +54,8 @@ export interface FigmaTextStyle {
 }
 
 export interface FigmaImageSource {
+  asset_id?: string;
+  imageHash?: string;
   src?: string;
   dataUri?: string;
   alt?: string;

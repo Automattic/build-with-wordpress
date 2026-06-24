@@ -1,8 +1,13 @@
 export type NormalizedAsset = {
   id: string;
   name: string;
-  format: "PNG";
+  format: "PNG" | "SVG";
   dataUrl: string;
+  mime_type?: string;
+  content_base64?: string;
+  path?: string;
+  node_id?: string;
+  imageHash?: string;
 };
 
 export type NormalizedSceneNode = {
@@ -14,6 +19,12 @@ export type NormalizedSceneNode = {
   y?: number;
   width?: number;
   height?: number;
+  absoluteBoundingBox?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
   fills?: NormalizedPaint[];
   strokes?: NormalizedPaint[];
   characters?: string;
@@ -27,10 +38,13 @@ export type NormalizedSceneNode = {
     textAlignHorizontal?: string;
   };
   image?: {
+    asset_id?: string;
+    imageHash?: string;
     src?: string;
     dataUri?: string;
     alt?: string;
   };
+  asset_id?: string;
   href?: string;
   children?: NormalizedSceneNode[];
 };
@@ -40,6 +54,8 @@ export type NormalizedPaint = {
   visible?: boolean;
   opacity?: number;
   imageHash?: string;
+  imageRef?: string;
+  asset_id?: string;
   color?: {
     r: number;
     g: number;

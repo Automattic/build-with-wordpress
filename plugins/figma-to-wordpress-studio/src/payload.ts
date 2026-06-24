@@ -12,15 +12,15 @@ export interface WebsiteArtifactBundleFile {
 }
 
 export interface WebsiteArtifactBundle {
-  schema: "figma-to-wordpress/website-artifact-bundle/v1";
+  schema: "figma-to-wordpress-studio/website-artifact-bundle/v1";
   root: "website/";
   entrypoint: "website/index.html";
   files: WebsiteArtifactBundleFile[];
-  import_source: "figma-to-wordpress";
+  import_source: "figma-to-wordpress-studio";
 }
 
 export interface WordPressRunnerRequest {
-  schema: "figma-to-wordpress/runner-request/v1";
+  schema: "figma-to-wordpress-studio/runner-request/v1";
   source: {
     tool: "figma";
     fileKey?: string;
@@ -32,7 +32,7 @@ export interface WordPressRunnerRequest {
 }
 
 export interface FigmaScenegraphPayload {
-  schema: "figma-to-wordpress/scenegraph/v1";
+  schema: "figma-to-wordpress-studio/scenegraph/v1";
   name: string;
   exportedAt: string;
   root: NormalizedSceneNode;
@@ -42,11 +42,11 @@ export interface FigmaScenegraphPayload {
 
 export function toWebsiteArtifactBundle(artifact: WebsiteArtifact, selection: NormalizedSelection): WebsiteArtifactBundle {
   return {
-    schema: "figma-to-wordpress/website-artifact-bundle/v1",
+    schema: "figma-to-wordpress-studio/website-artifact-bundle/v1",
     root: "website/",
     entrypoint: "website/index.html",
     files: Object.entries(artifact.files).map(([filePath, content]) => toWebsiteArtifactBundleFile(filePath, content)),
-    import_source: "figma-to-wordpress",
+    import_source: "figma-to-wordpress-studio",
   };
 }
 
@@ -81,20 +81,20 @@ function parseDataUri(content: string): { mimeType: string; contentBase64: strin
 
 export function buildWordPressRunnerRequest(_bundle: WebsiteArtifactBundle, selection: NormalizedSelection): WordPressRunnerRequest {
   return {
-    schema: "figma-to-wordpress/runner-request/v1",
+    schema: "figma-to-wordpress-studio/runner-request/v1",
     source: {
       tool: "figma",
       nodeIds: [selection.id],
       exportedAt: selection.exportedAt,
     },
-    goal: `Import ${selection.name} into WordPress using Static Site Importer inside a browser Playground session.`,
+    goal: `Import ${selection.name} into WordPress using Static Site Importer inside a browser Studio session.`,
     figma: toFigmaScenegraphPayload(selection),
   };
 }
 
 function toFigmaScenegraphPayload(selection: NormalizedSelection): FigmaScenegraphPayload {
   return {
-    schema: "figma-to-wordpress/scenegraph/v1",
+    schema: "figma-to-wordpress-studio/scenegraph/v1",
     name: selection.name,
     exportedAt: selection.exportedAt,
     root: selection.root,

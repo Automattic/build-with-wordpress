@@ -1,8 +1,8 @@
 {
-  "name": "figma-to-wordpress",
+  "name": "figma-to-wordpress-studio",
   "version": "0.1.0",
   "private": true,
-  "description": "Figma Desktop plugin for importing a Figma file into WordPress through WordPress Playground.",
+  "description": "Figma Desktop plugin for importing a Figma file into WordPress through WordPress Studio.",
   "license": "GPL-2.0-or-later",
   "scripts": {
     "build": "node scripts/build.mjs",

@@ -1,6 +1,6 @@
-# Figma to WordPress
+# Figma to WordPress Studio
 
-`plugins/figma-to-wordpress` moves a Figma file into WordPress. It hands the design to a WordPress runner service that creates a Playground session and imports the result with Static Site Importer and Blocks Engine.
+`plugins/figma-to-wordpress-studio` moves a Figma file into WordPress. It hands the design to a WordPress runner service that creates a Studio session and imports the result with Static Site Importer and Blocks Engine.
 
 ## Architecture
 
@@ -9,11 +9,11 @@ Figma plugin UI
   -> Figma document scene data
   -> runner request
   -> WordPress runner service
-  -> WordPress Playground session URL
+  -> WordPress Studio session URL
   -> Static Site Importer / Blocks Engine inside WordPress
 ```
 
-The TypeScript boundary stops at request construction and opening the returned Playground URL. WordPress, PHP, Static Site Importer, Blocks Engine, and Playground session orchestration remain WordPress-side runtime concerns.
+The TypeScript boundary stops at request construction and opening the returned Studio URL. WordPress, PHP, Static Site Importer, Blocks Engine, and Studio session orchestration remain WordPress-side runtime concerns.
 
 ## Figma Iframe Limits
 
@@ -29,9 +29,9 @@ Practical constraints for this browser-based flow:
 
 Because of those constraints, the primary integration shape is a service handoff: the plugin posts a runner request and opens the returned URL in a browser tab. If in-plugin embedding works later, it can consume the same runner response interface.
 
-## Playground And PHP Role
+## Studio And PHP Role
 
-WordPress Playground is the correct place to run WordPress and PHP plugin logic. It provides a browser-hosted WordPress runtime backed by WebAssembly PHP and a virtual filesystem.
+WordPress Studio is the correct place to run WordPress and PHP plugin logic. It provides a browser-hosted WordPress runtime backed by WebAssembly PHP and a virtual filesystem.
 
 Static Site Importer and Blocks Engine should run in that WordPress runtime because they are WordPress/PHP import systems. The Figma plugin should not reimplement them in TypeScript. The plugin's job is to hand off design data with enough metadata for the WordPress runner to transform, install, activate, and import with those plugins.
 
@@ -40,12 +40,12 @@ Static Site Importer and Blocks Engine should run in that WordPress runtime beca
 Implemented now:
 
 - `GeneratedWebsiteArtifact` for static generated files from Figma.
-- `figma-to-wordpress/runner-request/v1` for the runner handoff plan.
-- A Figma UI client that posts the runner request and opens the returned Playground URL.
+- `figma-to-wordpress-studio/runner-request/v1` for the runner handoff plan.
+- A Figma UI client that posts the runner request and opens the returned Studio URL.
 
 Not implemented yet:
 
-- The hosted WordPress runner endpoint that creates the Playground session.
+- The hosted WordPress runner endpoint that creates the Studio session.
 - Post-import block validation and visual parity checks.
 
 ## Local Testing
@@ -53,19 +53,19 @@ Not implemented yet:
 From the repository root, run the plugin checks:
 
 ```bash
-npm run check --prefix plugins/figma-to-wordpress
-npm run build --prefix plugins/figma-to-wordpress
-npm test --prefix plugins/figma-to-wordpress
+npm run check --prefix plugins/figma-to-wordpress-studio
+npm run build --prefix plugins/figma-to-wordpress-studio
+npm test --prefix plugins/figma-to-wordpress-studio
 ```
 
 Figma development test:
 
-1. Run `npm run build --prefix plugins/figma-to-wordpress`.
-2. Load `plugins/figma-to-wordpress/manifest.json` as a Figma development plugin.
+1. Run `npm run build --prefix plugins/figma-to-wordpress-studio`.
+2. Load `plugins/figma-to-wordpress-studio/manifest.json` as a Figma development plugin.
 3. Run the plugin.
-4. Use `Open in WordPress Playground`.
-5. Confirm the runner service returns a Playground URL that opens in a normal browser tab.
+4. Use `Open in WordPress Studio`.
+5. Confirm the runner service returns a Studio URL that opens in a normal browser tab.
 
 ## Next Integration Step
 
-The next meaningful step is a hosted WordPress runner endpoint with progress/error reporting around the Playground import and post-import block/visual validation. That should remain in the WordPress/Playground runner layer, not by porting PHP importer behavior into the Figma plugin.
+The next meaningful step is a hosted WordPress runner endpoint with progress/error reporting around the Studio import and post-import block/visual validation. That should remain in the WordPress/Studio runner layer, not by porting PHP importer behavior into the Figma plugin.

@@ -7,7 +7,7 @@ export interface WordPressRunnerError {
 }
 
 export interface WordPressRunnerResponse {
-  schema: "figma-to-wordpress/runner-response/v1";
+  schema: "figma-to-wordpress-studio/runner-response/v1";
   success: boolean;
   status: "created" | "opened" | "queued" | "blocked" | "failed";
   open_url?: string;
@@ -38,7 +38,7 @@ export async function createWordPressPreview(endpoint: string, artifact: Generat
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error("WordPress Playground session creation timed out. Start a compatible WP Codebox runner or try again.");
+      throw new Error("WordPress Studio session creation timed out. Start a compatible WP Codebox runner or try again.");
     }
 
     throw error;
@@ -53,7 +53,7 @@ export async function createWordPressPreview(endpoint: string, artifact: Generat
   }
 
   if (!data?.success || !data.open_url) {
-    throw new Error(data?.error?.message || data?.message || "WordPress runner did not return a Playground URL.");
+    throw new Error(data?.error?.message || data?.message || "WordPress runner did not return a Studio URL.");
   }
 
   return data;

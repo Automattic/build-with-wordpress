@@ -6,18 +6,18 @@ let currentSelection: NormalizedSelection | null = null;
 
 const statusElement = document.querySelector<HTMLParagraphElement>("#status");
 const refreshButton = document.querySelector<HTMLButtonElement>("#refresh");
-const playgroundButton = document.querySelector<HTMLButtonElement>("#playground");
+const studioButton = document.querySelector<HTMLButtonElement>("#studio");
 const runnerEndpointInput = document.querySelector<HTMLInputElement>("#runner-endpoint");
 
 const defaultRunnerEndpoint = "http://localhost:8882/wp-json/static-site-importer/v1/import-figma";
 
 function log(message: string, details?: unknown) {
   if (typeof details === "undefined") {
-    console.info(`[Figma to WordPress] ${message}`);
+    console.info(`[Figma to WordPress Studio] ${message}`);
     return;
   }
 
-  console.info(`[Figma to WordPress] ${message}`, details);
+  console.info(`[Figma to WordPress Studio] ${message}`, details);
 }
 
 function sendToPlugin(message: UiToPluginMessage) {
@@ -43,7 +43,7 @@ function artifactBundleSummary(artifact: GeneratedArtifact | null) {
 function updateActions() {
   const disabled = !currentArtifact;
 
-  if (playgroundButton) playgroundButton.disabled = disabled;
+  if (studioButton) studioButton.disabled = disabled;
 }
 
 function runnerEndpoint(): string {
@@ -56,17 +56,17 @@ function persistRunnerEndpoint() {
   sendToPlugin({ type: "set-runner-endpoint", endpoint });
 }
 
-async function openPlayground() {
+async function openStudio() {
   if (!currentArtifact) {
     log("Open requested before artifact was ready.");
     return;
   }
 
-  if (playgroundButton) {
-    playgroundButton.disabled = true;
+  if (studioButton) {
+    studioButton.disabled = true;
   }
 
-  setStatus("Creating a WordPress Playground session...");
+  setStatus("Creating a WordPress Studio session...");
   const endpoint = runnerEndpoint();
   persistRunnerEndpoint();
   log("Opening WordPress runner.", {
@@ -78,9 +78,9 @@ async function openPlayground() {
     const response = await createWordPressPreview(endpoint, currentArtifact);
     log("WordPress runner response received.", response);
     sendToPlugin({ type: "open-wordpress", url: response.open_url || "" });
-    setStatus("WordPress Playground session created.");
+    setStatus("WordPress Studio session created.");
   } catch (error) {
-    console.error("[Figma to WordPress] WordPress runner failed.", error);
+    console.error("[Figma to WordPress Studio] WordPress runner failed.", error);
     setStatus(error instanceof Error ? error.message : "Could not create the WordPress preview session.");
   } finally {
     updateActions();
@@ -106,7 +106,7 @@ function renderSelection(selection: NormalizedSelection | null, artifact: Genera
   currentArtifact = artifact;
 
   if (!selection) {
-    setStatus("Open this Figma file in WordPress Playground.");
+    setStatus("Open this Figma file in WordPress Studio.");
   } else {
     const screenCount = countDesignScreens(selection);
     const diagnosticCount = artifact?.diagnostics.length || 0;
@@ -146,7 +146,7 @@ window.onmessage = (event: MessageEvent<{ pluginMessage?: PluginToUiMessage }>) 
 };
 
 refreshButton?.addEventListener("click", () => sendToPlugin({ type: "refresh-document" }));
-playgroundButton?.addEventListener("click", () => void openPlayground());
+studioButton?.addEventListener("click", () => void openStudio());
 runnerEndpointInput?.addEventListener("change", persistRunnerEndpoint);
 
 if (runnerEndpointInput) {

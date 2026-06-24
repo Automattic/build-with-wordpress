@@ -1,6 +1,6 @@
 {
-  "name": "Figma to WordPress",
-  "id": "figma-to-wordpress",
+  "name": "Figma to WordPress Studio",
+  "id": "figma-to-wordpress-studio",
   "api": "1.0.0",
   "main": "dist/code.js",
   "ui": "dist/ui.html",

@@ -45,7 +45,7 @@ if (watch) {
   await controllerContext.watch();
   await uiContext.watch();
   await writeUiHtml();
-  console.log("Watching Figma to WordPress plugin sources.");
+  console.log("Watching Figma to WordPress Studio plugin sources.");
 } else {
   await Promise.all([
     esbuild.build({

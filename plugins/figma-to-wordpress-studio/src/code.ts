@@ -3,7 +3,7 @@ import type { NormalizedAsset, NormalizedDocument, NormalizedSceneNode, PluginTo
 
 figma.showUI(__html__, { width: 420, height: 420, themeColors: true });
 
-const runnerEndpointStorageKey = "figma-to-wordpress-runner-endpoint";
+const runnerEndpointStorageKey = "figma-to-wordpress-studio-runner-endpoint";
 
 function postToUi(message: PluginToUiMessage) {
   figma.ui.postMessage(message);

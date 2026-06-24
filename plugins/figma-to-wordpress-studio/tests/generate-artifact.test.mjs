@@ -19,7 +19,7 @@ async function loadPayloadModule() {
 }
 
 async function loadSourceModule(sourceFile) {
-  const outfile = path.join(tmpdir(), `figma-to-wordpress-${Date.now()}-${Math.random()}.mjs`);
+  const outfile = path.join(tmpdir(), `figma-to-wordpress-studio-${Date.now()}-${Math.random()}.mjs`);
   await esbuild.build({
     entryPoints: [path.join(pluginDir, "src", sourceFile)],
     bundle: true,

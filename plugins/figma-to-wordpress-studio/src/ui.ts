@@ -6,8 +6,6 @@ let currentSelection: NormalizedSelection | null = null;
 const statusElement = document.querySelector<HTMLParagraphElement>("#status");
 const refreshButton = document.querySelector<HTMLButtonElement>("#refresh");
 const studioButton = document.querySelector<HTMLButtonElement>("#studio");
-const copyCommandButton = document.querySelector<HTMLButtonElement>("#copy-command");
-const commandElement = document.querySelector<HTMLTextAreaElement>("#studio-command");
 const studioHandoffEndpoint = "http://127.0.0.1:48732/figma-to-wordpress/import";
 
 function log(message: string, details?: unknown) {
@@ -42,8 +40,6 @@ function updateActions() {
   const disabled = !currentArtifact;
 
   if (studioButton) studioButton.disabled = disabled;
-  if (copyCommandButton) copyCommandButton.disabled = disabled;
-  if (commandElement) commandElement.value = currentArtifact ? studioCreateCommand(currentArtifact) : "";
 }
 
 function artifactFileName(artifact: GeneratedArtifact): string {
@@ -126,7 +122,7 @@ async function openInStudio() {
       throw new Error(data?.error || `Studio handoff failed with HTTP ${response.status}.`);
     }
 
-    setStatus("Studio is opening the import. Confirm the new site details in WordPress Studio.");
+    setStatus("Studio created the WordPress site and is opening it in your browser.");
     sendToPlugin({ type: "notify", message: "Sent to WordPress Studio." });
     log("Studio import handoff accepted.", {
       endpoint: studioHandoffEndpoint,
@@ -194,7 +190,6 @@ window.onmessage = (event: MessageEvent<{ pluginMessage?: PluginToUiMessage }>) 
 
 refreshButton?.addEventListener("click", () => sendToPlugin({ type: "refresh-document" }));
 studioButton?.addEventListener("click", () => void openInStudio());
-copyCommandButton?.addEventListener("click", () => void copyStudioCommand());
 
 log("UI loaded.");
 sendToPlugin({ type: "refresh-document" });

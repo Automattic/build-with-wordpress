@@ -38,7 +38,7 @@ Figma plugin controller + UI
 2. In Figma Desktop, use Plugins -> Development -> Import plugin from manifest, then select `plugins/figma-to-wordpress-studio/manifest.json`.
 3. Start a compatible WordPress Studio build.
 4. Open the plugin and choose `Open in WordPress Studio`.
-5. Confirm the new site details in Studio. If Studio is not reachable, run the copied `studio create --from ./<artifact>.studio-import.json` fallback command from a terminal, adjusting the path to the saved artifact if needed.
+5. Studio creates the site and opens the local site URL in your browser. If Studio is not reachable, run the copied `studio create --from ./<artifact>.studio-import.json` fallback command from a terminal, adjusting the path to the saved artifact if needed.
 
 For quick syntax verification without a full Figma build pipeline:
 

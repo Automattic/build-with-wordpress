@@ -64,7 +64,7 @@ Figma development test:
 3. Run the plugin.
 4. Start a compatible WordPress Studio build.
 5. Use `Open in WordPress Studio`.
-6. Confirm the new site details in Studio. If Studio is not reachable, run the copied `studio create --from ./<artifact>.studio-import.json` fallback command from a terminal, adjusting the path to the saved artifact if needed.
+6. Studio creates the site and opens the local site URL in your browser. If Studio is not reachable, run the copied `studio create --from ./<artifact>.studio-import.json` fallback command from a terminal, adjusting the path to the saved artifact if needed.
 
 ## Next Integration Step
 

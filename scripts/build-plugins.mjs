@@ -372,6 +372,7 @@ const vsCodeExtensionManifest = {
   categories: ["Other"],
   keywords: ["wordpress", "studio", "mcp", "wp-cli"],
   activationEvents: [
+    "onStartupFinished",
     "onCommand:wordpressStudio.checkStudio",
     "onCommand:wordpressStudio.configureWorkspaceMcp",
     "onCommand:wordpressStudio.validateMcpConfig",
@@ -495,6 +496,7 @@ const { mkdir, readFile, writeFile } = require("fs/promises");
 const path = require("path");
 
 const managedServerNames = ["wordpress-studio", "wordpress-telemetry"];
+const workspacePromptStateKey = "wordpressStudio.configureMcpPrompted";
 
 function runStudioVersion() {
   return new Promise((resolve, reject) => {
@@ -581,6 +583,18 @@ async function checkStudio() {
   }
 }
 
+function workspaceMcpMatchesBundled(workspaceConfig, bundledConfig) {
+  for (const serverName of managedServerNames) {
+    const bundledServer = bundledConfig.servers[serverName];
+
+    if (bundledServer && !configsMatch(workspaceConfig.servers[serverName], bundledServer)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 async function configureWorkspaceMcp(context) {
   const workspaceFolder = getWorkspaceFolder();
 
@@ -642,6 +656,46 @@ async function configureWorkspaceMcp(context) {
   }
 }
 
+async function promptConfigureWorkspaceMcp(context) {
+  const workspaceFolder = getWorkspaceFolder();
+
+  if (!workspaceFolder || context.workspaceState.get(workspacePromptStateKey)) {
+    return;
+  }
+
+  let bundledConfig;
+  try {
+    bundledConfig = await readBundledMcpConfig(context);
+  } catch (error) {
+    return;
+  }
+
+  const workspaceMcpPath = path.join(workspaceFolder.uri.fsPath, ".vscode", "mcp.json");
+  let workspaceConfig;
+  try {
+    workspaceConfig = await readWorkspaceMcpConfig(workspaceMcpPath);
+  } catch (error) {
+    return;
+  }
+
+  if (workspaceMcpMatchesBundled(workspaceConfig, bundledConfig)) {
+    await context.workspaceState.update(workspacePromptStateKey, true);
+    return;
+  }
+
+  const choice = await vscode.window.showInformationMessage(
+    "Configure WordPress Studio MCP for this workspace so Copilot Agent can use WordPress Studio tools?",
+    "Configure",
+    "Not now"
+  );
+
+  await context.workspaceState.update(workspacePromptStateKey, true);
+
+  if (choice === "Configure") {
+    await configureWorkspaceMcp(context);
+  }
+}
+
 async function validateMcpConfig(context) {
   let version;
   try {
@@ -681,6 +735,8 @@ async function copyMcpConfig(context) {
 }
 
 function activate(context) {
+  promptConfigureWorkspaceMcp(context);
+
   context.subscriptions.push(
     vscode.commands.registerCommand("wordpressStudio.checkStudio", checkStudio),
     vscode.commands.registerCommand("wordpressStudio.configureWorkspaceMcp", () => configureWorkspaceMcp(context)),
@@ -706,16 +762,16 @@ function buildVsCodeReadme({ skillNames }) {
 
   return `# WordPress Studio for VS Code
 
-Use WordPress Studio from VS Code Copilot Agent by connecting the current workspace to Studio's MCP tools. The extension writes VS Code's supported \`.vscode/mcp.json\` configuration so Copilot Agent can use Studio for local WordPress site management, WP-CLI, screenshots, block validation, and audits.
+Use WordPress Studio from VS Code Copilot Agent by connecting the current workspace to Studio's MCP tools. The extension can write VS Code's supported \`.vscode/mcp.json\` configuration so Copilot Agent can use Studio for local WordPress site management, WP-CLI, screenshots, block validation, and audits.
 
 ## Quick start
 
 1. Install WordPress Studio and make sure the \`studio\` command is available on your \`PATH\`.
 2. Open a workspace folder in VS Code.
-3. Open the Command Palette with \`Cmd+Shift+P\`.
-4. Run \`WordPress Studio: Check Studio CLI\`.
-5. Run \`WordPress Studio: Configure Workspace MCP\`.
-6. Open Copilot Chat in Agent mode and ask it to use the \`wordpress-studio\` tools.
+3. When prompted, choose \`Configure\` to add WordPress Studio MCP to this workspace.
+4. Open Copilot Chat in Agent mode and ask it to use the \`wordpress-studio\` tools.
+
+The prompt appears once per workspace. To configure manually, open the Command Palette with \`Cmd+Shift+P\` and run \`WordPress Studio: Configure Workspace MCP\`.
 
 Example prompts:
 
@@ -727,7 +783,7 @@ If Copilot does not see the tools immediately, reload the VS Code window and try
 
 ## What it includes
 
-- commands to validate Studio availability, show/copy the bundled MCP config, and merge the WordPress Studio MCP servers into the open workspace.
+- a first-run workspace prompt plus commands to validate Studio availability, show/copy the bundled MCP config, and merge the WordPress Studio MCP servers into the open workspace.
 - \`mcp.json\` with \`wordpress-studio\` and \`wordpress-telemetry\` server entries.
 - \`skills/\` as reference Build with WordPress playbooks for editor users and future extension behavior.
 

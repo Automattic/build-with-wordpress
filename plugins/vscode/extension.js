@@ -4,6 +4,7 @@ const { mkdir, readFile, writeFile } = require("fs/promises");
 const path = require("path");
 
 const managedServerNames = ["wordpress-studio", "wordpress-telemetry"];
+const workspacePromptStateKey = "wordpressStudio.configureMcpPrompted";
 
 function runStudioVersion() {
   return new Promise((resolve, reject) => {
@@ -90,6 +91,18 @@ async function checkStudio() {
   }
 }
 
+function workspaceMcpMatchesBundled(workspaceConfig, bundledConfig) {
+  for (const serverName of managedServerNames) {
+    const bundledServer = bundledConfig.servers[serverName];
+
+    if (bundledServer && !configsMatch(workspaceConfig.servers[serverName], bundledServer)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 async function configureWorkspaceMcp(context) {
   const workspaceFolder = getWorkspaceFolder();
 
@@ -151,6 +164,46 @@ async function configureWorkspaceMcp(context) {
   }
 }
 
+async function promptConfigureWorkspaceMcp(context) {
+  const workspaceFolder = getWorkspaceFolder();
+
+  if (!workspaceFolder || context.workspaceState.get(workspacePromptStateKey)) {
+    return;
+  }
+
+  let bundledConfig;
+  try {
+    bundledConfig = await readBundledMcpConfig(context);
+  } catch (error) {
+    return;
+  }
+
+  const workspaceMcpPath = path.join(workspaceFolder.uri.fsPath, ".vscode", "mcp.json");
+  let workspaceConfig;
+  try {
+    workspaceConfig = await readWorkspaceMcpConfig(workspaceMcpPath);
+  } catch (error) {
+    return;
+  }
+
+  if (workspaceMcpMatchesBundled(workspaceConfig, bundledConfig)) {
+    await context.workspaceState.update(workspacePromptStateKey, true);
+    return;
+  }
+
+  const choice = await vscode.window.showInformationMessage(
+    "Configure WordPress Studio MCP for this workspace so Copilot Agent can use WordPress Studio tools?",
+    "Configure",
+    "Not now"
+  );
+
+  await context.workspaceState.update(workspacePromptStateKey, true);
+
+  if (choice === "Configure") {
+    await configureWorkspaceMcp(context);
+  }
+}
+
 async function validateMcpConfig(context) {
   let version;
   try {
@@ -190,6 +243,8 @@ async function copyMcpConfig(context) {
 }
 
 function activate(context) {
+  promptConfigureWorkspaceMcp(context);
+
   context.subscriptions.push(
     vscode.commands.registerCommand("wordpressStudio.checkStudio", checkStudio),
     vscode.commands.registerCommand("wordpressStudio.configureWorkspaceMcp", () => configureWorkspaceMcp(context)),

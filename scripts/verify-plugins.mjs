@@ -656,6 +656,10 @@ async function verifyVsCodePlugin(skillNames) {
     }
   }
 
+  if (!manifest.activationEvents?.includes("onStartupFinished")) {
+    throw new Error("VS Code extension manifest should activate after startup for the workspace MCP prompt");
+  }
+
   const extensionSource = await readFile(
     path.join(vsCodePluginDir, "extension.js"),
     "utf8",
@@ -667,6 +671,14 @@ async function verifyVsCodePlugin(skillNames) {
 
   if (!extensionSource.includes("configureWorkspaceMcp")) {
     throw new Error("VS Code extension runtime should configure workspace MCP");
+  }
+
+  if (!extensionSource.includes("promptConfigureWorkspaceMcp(context)")) {
+    throw new Error("VS Code extension runtime should prompt for workspace MCP setup on activation");
+  }
+
+  if (!extensionSource.includes("context.workspaceState.update(workspacePromptStateKey, true)")) {
+    throw new Error("VS Code extension runtime should remember the workspace MCP prompt state");
   }
 
   if (!extensionSource.includes("servers[\"wordpress-studio\"]")) {
@@ -684,6 +696,10 @@ async function verifyVsCodePlugin(skillNames) {
 
   if (!readme.includes("WordPress Studio: Configure Workspace MCP")) {
     throw new Error("VS Code README must explain workspace MCP setup");
+  }
+
+  if (!readme.includes("The prompt appears once per workspace.")) {
+    throw new Error("VS Code README must explain the first-run workspace MCP prompt");
   }
 
   if (!readme.includes("Use the wordpress-studio MCP tools to list my Studio sites.")) {

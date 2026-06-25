@@ -112,7 +112,7 @@ function renderSelection(selection: NormalizedSelection | null, artifact: Genera
       diagnostics: diagnosticCount,
       ...artifactBundleSummary(artifact),
     });
-    setStatus(`Ready to import ${screenCount} design screen${screenCount === 1 ? "" : "s"} into WordPress${diagnosticCount ? ` (${diagnosticCount} note${diagnosticCount === 1 ? "" : "s"})` : ""}.`);
+    setStatus(`Ready to import ${selection.name} into WordPress${diagnosticCount ? ` (${diagnosticCount} note${diagnosticCount === 1 ? "" : "s"})` : ""}.`);
   }
 
   updateActions();

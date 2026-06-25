@@ -1,6 +1,6 @@
 # Figma to WordPress Studio
 
-This plugin moves a Figma file into WordPress by sending a Studio import payload to the local WordPress Studio app.
+This plugin moves a selected Figma frame, selected nodes, or the current Figma page into WordPress by sending a Studio import payload to the local WordPress Studio app.
 
 It does not port Static Site Importer, Blocks Engine, WordPress, PHP, or Studio internals to TypeScript. The TypeScript code extracts Figma scene data, prepares an artifact JSON source, and posts it to Studio's local handoff endpoint. Studio owns site creation, import through Static Site Importer, and cleanup after a successful import. If Studio is not running, the plugin surfaces the connection error.
 
@@ -8,7 +8,7 @@ It does not port Static Site Importer, Blocks Engine, WordPress, PHP, or Studio 
 
 ```text
 Figma plugin controller + UI
-  -> whole Figma document scene data
+  -> selected Figma scene data, or current page when nothing is selected
   -> Studio import artifact JSON
   -> local WordPress Studio handoff endpoint
   -> WordPress Studio site
@@ -17,7 +17,7 @@ Figma plugin controller + UI
 
 ## Boundaries
 
-- Implemented: a Figma Desktop-loadable plugin shell with whole-file export.
+- Implemented: a Figma Desktop-loadable plugin shell with selected-frame/current-page export.
 - Implemented: a reusable scene-to-HTML/CSS artifact generator with diagnostics and tests for the current local handoff.
 - Implemented: a Studio local handoff request.
 - Not implemented: running Static Site Importer from TypeScript.
@@ -37,7 +37,7 @@ Figma plugin controller + UI
 1. Run `npm run build --prefix plugins/figma-to-wordpress-studio`.
 2. In Figma Desktop, use Plugins -> Development -> Import plugin from manifest, then select `plugins/figma-to-wordpress-studio/manifest.json`.
 3. Start a compatible WordPress Studio build.
-4. Open the plugin and choose `Open in WordPress Studio`.
+4. Select the frame or website nodes to import, then open the plugin and choose `Open in WordPress Studio`. If nothing is selected, the plugin imports the current page.
 5. Studio creates the site and opens the local site URL in your browser. If Studio is not reachable, the plugin reports the connection error.
 
 For quick syntax verification without a full Figma build pipeline:

@@ -1,12 +1,12 @@
 # Figma to WordPress Studio
 
-`plugins/figma-to-wordpress-studio` moves a Figma file into WordPress by posting a Studio import source to the local WordPress Studio app. Studio creates the site and imports the result with Static Site Importer and Blocks Engine.
+`plugins/figma-to-wordpress-studio` moves selected Figma scene data into WordPress by posting a Studio import source to the local WordPress Studio app. Studio creates the site and imports the result with Static Site Importer and Blocks Engine.
 
 ## Architecture
 
 ```text
 Figma plugin UI
-  -> Figma document scene data
+  -> selected Figma scene data, or current page when nothing is selected
   -> Studio import artifact JSON
   -> local WordPress Studio handoff endpoint
   -> WordPress Studio site
@@ -41,7 +41,7 @@ Implemented now:
 
 - `GeneratedWebsiteArtifact` for static generated files from Figma.
 - `blocks-engine/php-transformer/site-artifact/v1` for the Studio CLI artifact handoff.
-- A Figma UI client that posts the artifact JSON to local Studio.
+- A Figma UI client that posts the selected-frame/current-page artifact JSON to local Studio.
 
 Not implemented yet:
 
@@ -61,7 +61,7 @@ Figma development test:
 
 1. Run `npm run build --prefix plugins/figma-to-wordpress-studio`.
 2. Load `plugins/figma-to-wordpress-studio/manifest.json` as a Figma development plugin.
-3. Run the plugin.
+3. Select the frame or website nodes to import, then run the plugin. If nothing is selected, the plugin imports the current page.
 4. Start a compatible WordPress Studio build.
 5. Use `Open in WordPress Studio`.
 6. Studio creates the site and opens the local site URL in your browser. If Studio is not reachable, the plugin reports the connection error.

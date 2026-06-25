@@ -229,25 +229,32 @@ async function exportAsset(node: SceneNode, format: AssetExportFormat, imageHash
 }
 
 async function getDocument(): Promise<NormalizedDocument> {
-  if ("loadAllPagesAsync" in figma) {
-    await figma.loadAllPagesAsync();
+  const context: NormalizeContext = { assets: new Map() };
+  const selectedNodes = figma.currentPage.selection.filter((node) => node.visible !== false);
+  let name = figma.currentPage.name || figma.root.name || "Figma import";
+  let root: NormalizedSceneNode;
+
+  if (selectedNodes.length === 1) {
+    root = await normalizeNode(selectedNodes[0], context);
+    name = selectedNodes[0].name || name;
+  } else {
+    const nodes = selectedNodes.length ? selectedNodes : figma.currentPage.children.filter((node) => node.visible !== false);
+    name = selectedNodes.length ? `${name} selection` : name;
+    root = {
+      id: selectedNodes.length ? `${figma.currentPage.id}:selection` : figma.currentPage.id,
+      name,
+      type: selectedNodes.length ? "SELECTION" : "PAGE",
+      visible: true,
+      children: await Promise.all(nodes.map((node) => normalizeNode(node, context))),
+    };
   }
 
-  const context: NormalizeContext = { assets: new Map() };
-  const pages = await Promise.all(figma.root.children.map((page) => normalizeNode(page, context, "PAGE")));
-  const root: NormalizedSceneNode = {
-    id: figma.root.id,
-    name: figma.root.name || "Figma document",
-    type: "DOCUMENT",
-    visible: true,
-    children: pages,
-  };
   applyDerivedBounds(root);
 
   return {
-    id: figma.root.id,
-    name: figma.root.name || "Figma document",
-    type: "DOCUMENT",
+    id: root.id,
+    name,
+    type: root.type,
     exportedAt: new Date().toISOString(),
     root,
     assets: Array.from(context.assets.values()),

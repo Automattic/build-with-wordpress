@@ -66,7 +66,7 @@
       font-weight: 600;
     }
 
-    input {
+    textarea {
       box-sizing: border-box;
       width: 100%;
       border: 1px solid var(--figma-color-border, #d9d9d9);
@@ -75,6 +75,8 @@
       color: var(--figma-color-text, #1e1e1e);
       background: var(--figma-color-bg, #fff);
       font: inherit;
+      min-height: 54px;
+      resize: vertical;
     }
 
     .panel {
@@ -103,11 +105,12 @@
       <h1>Figma to WordPress Studio</h1>
       <p id="status">Preparing this Figma file for WordPress Studio.</p>
       <label>
-        WordPress runner URL
-        <input id="runner-endpoint" type="url" spellcheck="false" autocomplete="off">
+        Studio CLI command
+        <textarea id="studio-command" readonly spellcheck="false" aria-label="Studio CLI command"></textarea>
       </label>
       <div class="actions">
-        <button id="studio" class="primary" type="button" disabled>Open in WordPress Studio</button>
+        <button id="studio" class="primary" type="button" disabled>Save Studio import payload</button>
+        <button id="copy-command" type="button" disabled>Copy Studio command</button>
         <button id="refresh" type="button">Refresh Figma file</button>
       </div>
     </header>

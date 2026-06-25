@@ -79,7 +79,7 @@ export type GeneratedArtifact = {
   title: string;
   html: string;
   css: string;
-  runnerRequest: unknown;
+  studioImportPayload: unknown;
   files: Record<string, string>;
   diagnostics: Array<{
     level: "warning" | "error";
@@ -97,10 +97,6 @@ export type PluginToUiMessage =
       artifact: GeneratedArtifact | null;
     }
   | {
-      type: "runner-endpoint";
-      endpoint: string | null;
-    }
-  | {
       type: "error";
       message: string;
     };
@@ -108,17 +104,6 @@ export type PluginToUiMessage =
 export type UiToPluginMessage =
   | {
       type: "refresh-document";
-    }
-  | {
-      type: "get-runner-endpoint";
-    }
-  | {
-      type: "set-runner-endpoint";
-      endpoint: string;
-    }
-  | {
-      type: "open-wordpress";
-      url: string;
     }
   | {
       type: "notify";

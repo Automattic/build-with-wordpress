@@ -1,4 +1,3 @@
-import { createWordPressPreview } from "./wordpress-runner";
 import type { GeneratedArtifact, NormalizedSelection, PluginToUiMessage, UiToPluginMessage } from "./types";
 
 let currentArtifact: GeneratedArtifact | null = null;
@@ -7,9 +6,8 @@ let currentSelection: NormalizedSelection | null = null;
 const statusElement = document.querySelector<HTMLParagraphElement>("#status");
 const refreshButton = document.querySelector<HTMLButtonElement>("#refresh");
 const studioButton = document.querySelector<HTMLButtonElement>("#studio");
-const runnerEndpointInput = document.querySelector<HTMLInputElement>("#runner-endpoint");
-
-const defaultRunnerEndpoint = "http://localhost:8882/wp-json/static-site-importer/v1/import-figma";
+const copyCommandButton = document.querySelector<HTMLButtonElement>("#copy-command");
+const commandElement = document.querySelector<HTMLTextAreaElement>("#studio-command");
 
 function log(message: string, details?: unknown) {
   if (typeof details === "undefined") {
@@ -31,8 +29,7 @@ function setStatus(message: string) {
 }
 
 function artifactBundleSummary(artifact: GeneratedArtifact | null) {
-  const runnerRequest = artifact?.runnerRequest as { artifact_bundle?: { entrypoint?: string; files?: unknown[] } } | null;
-  const bundle = runnerRequest?.artifact_bundle;
+  const bundle = artifact?.studioImportPayload as { entrypoint?: string; files?: unknown[] } | null;
 
   return {
     files: Array.isArray(bundle?.files) ? bundle.files.length : 0,
@@ -44,47 +41,60 @@ function updateActions() {
   const disabled = !currentArtifact;
 
   if (studioButton) studioButton.disabled = disabled;
+  if (copyCommandButton) copyCommandButton.disabled = disabled;
+  if (commandElement) commandElement.value = currentArtifact ? studioCreateCommand(currentArtifact) : "";
 }
 
-function runnerEndpoint(): string {
-  return runnerEndpointInput?.value.trim() || defaultRunnerEndpoint;
+function artifactFileName(artifact: GeneratedArtifact): string {
+  const slug = artifact.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "figma-wordpress-import";
+
+  return `${slug}.studio-import.json`;
 }
 
-function persistRunnerEndpoint() {
-  const endpoint = runnerEndpoint();
-
-  sendToPlugin({ type: "set-runner-endpoint", endpoint });
+function studioCreateCommand(artifact: GeneratedArtifact): string {
+  return `studio create --from ./${artifactFileName(artifact)}`;
 }
 
-async function openStudio() {
+async function copyStudioCommand() {
   if (!currentArtifact) {
-    log("Open requested before artifact was ready.");
     return;
   }
 
-  if (studioButton) {
-    studioButton.disabled = true;
-  }
-
-  setStatus("Creating a WordPress Studio session...");
-  const endpoint = runnerEndpoint();
-  persistRunnerEndpoint();
-  log("Opening WordPress runner.", {
-    endpoint,
-    ...artifactBundleSummary(currentArtifact),
-  });
+  const command = studioCreateCommand(currentArtifact);
 
   try {
-    const response = await createWordPressPreview(endpoint, currentArtifact);
-    log("WordPress runner response received.", response);
-    sendToPlugin({ type: "open-wordpress", url: response.open_url || "" });
-    setStatus("WordPress Studio session created.");
+    await navigator.clipboard.writeText(command);
+    setStatus("Studio command copied. Save the import payload beside the path in the command, then run it in a terminal.");
+    sendToPlugin({ type: "notify", message: "Studio command copied." });
   } catch (error) {
-    console.error("[Figma to WordPress Studio] WordPress runner failed.", error);
-    setStatus(error instanceof Error ? error.message : "Could not create the WordPress preview session.");
-  } finally {
-    updateActions();
+    console.error("[Figma to WordPress Studio] Could not copy Studio command.", error);
+    setStatus("Copy failed. Select the command text and copy it manually.");
   }
+}
+
+function downloadStudioPayload() {
+  if (!currentArtifact) {
+    log("Studio import payload requested before artifact was ready.");
+    return;
+  }
+
+  const fileName = artifactFileName(currentArtifact);
+  const blob = new Blob([JSON.stringify(currentArtifact.studioImportPayload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+
+  setStatus(`Saved ${fileName}. Run the Studio command with the file path to create the WordPress site.`);
+  log("Studio import payload prepared.", {
+    fileName,
+    command: studioCreateCommand(currentArtifact),
+    ...artifactBundleSummary(currentArtifact),
+  });
+  void copyStudioCommand();
 }
 
 function countDesignScreens(selection: NormalizedSelection): number {
@@ -133,26 +143,14 @@ window.onmessage = (event: MessageEvent<{ pluginMessage?: PluginToUiMessage }>) 
     return;
   }
 
-  if (message.type === "runner-endpoint") {
-    if (runnerEndpointInput && message.endpoint) {
-      runnerEndpointInput.value = message.endpoint;
-    }
-    return;
-  }
-
   if (message.type === "error") {
     setStatus(message.message);
   }
 };
 
 refreshButton?.addEventListener("click", () => sendToPlugin({ type: "refresh-document" }));
-studioButton?.addEventListener("click", () => void openStudio());
-runnerEndpointInput?.addEventListener("change", persistRunnerEndpoint);
+studioButton?.addEventListener("click", downloadStudioPayload);
+copyCommandButton?.addEventListener("click", () => void copyStudioCommand());
 
-if (runnerEndpointInput) {
-  runnerEndpointInput.value = defaultRunnerEndpoint;
-}
-
-log("UI loaded.", { endpoint: runnerEndpoint() });
-sendToPlugin({ type: "get-runner-endpoint" });
+log("UI loaded.");
 sendToPlugin({ type: "refresh-document" });

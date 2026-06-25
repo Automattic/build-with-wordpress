@@ -1,17 +1,17 @@
 # Figma to WordPress Studio
 
-This plugin moves a Figma file into WordPress by handing the design to a WordPress runner service that imports it with Static Site Importer and Blocks Engine in WordPress Studio.
+This plugin moves a Figma file into WordPress by preparing a Studio CLI import payload for `studio create --from <source>`.
 
-It does not port Static Site Importer, Blocks Engine, WordPress, PHP, or Studio internals to TypeScript. The TypeScript code extracts Figma scene data, prepares the runner request, and opens the Studio session URL returned by the WordPress-side runner.
+It does not port Static Site Importer, Blocks Engine, WordPress, PHP, or Studio internals to TypeScript. The TypeScript code extracts Figma scene data, prepares an artifact JSON source, and gives the user the `studio create --from ...` command. Studio owns site creation, import through Static Site Importer, and cleanup after a successful import.
 
 ## Flow
 
 ```text
 Figma plugin controller + UI
   -> whole Figma document scene data
-  -> runner request
-  -> WordPress runner service
-  -> WordPress Studio session
+  -> Studio import artifact JSON
+  -> studio create --from <artifact-json>
+  -> WordPress Studio site
   -> Static Site Importer imports through Blocks Engine
 ```
 
@@ -19,9 +19,8 @@ Figma plugin controller + UI
 
 - Implemented: a Figma Desktop-loadable plugin shell with whole-file export.
 - Implemented: a reusable scene-to-HTML/CSS artifact generator with diagnostics and tests for the current local handoff.
-- Implemented: a product-neutral runner request that can be posted to a WordPress-side Studio session service.
+- Implemented: a Studio CLI import payload and copyable `studio create --from ...` command.
 - Not implemented: running Static Site Importer from TypeScript.
-- Not implemented: the hosted WordPress runner endpoint that creates the Studio session and returns its URL.
 - Not implemented: automated visual parity/block validation after import.
 
 ## Files
@@ -30,16 +29,15 @@ Figma plugin controller + UI
 - `src/code.ts` is the Figma plugin main thread entry.
 - `src/ui.ts` is the Figma UI-side handoff logic.
 - `src/index.ts` contains the reusable Figma-scene-to-website-artifact generator.
-- `src/payload.ts` contains the reusable TypeScript interfaces for the runner handoff.
-- `src/wordpress-runner.ts` posts the runner request and expects an `open_url` response.
+- `src/payload.ts` contains the reusable TypeScript interfaces for the Studio CLI artifact handoff.
 - `src/ui.html` is the Figma UI shell bundled into `dist/ui.html`.
 
 ## Local Test
 
 1. Run `npm run build --prefix plugins/figma-to-wordpress-studio`.
 2. In Figma Desktop, use Plugins -> Development -> Import plugin from manifest, then select `plugins/figma-to-wordpress-studio/manifest.json`.
-3. Open the plugin and choose `Open in WordPress Studio`.
-4. Confirm the WordPress runner service returns a Studio URL and the plugin opens it in a browser tab.
+3. Open the plugin and choose `Save Studio import payload`.
+4. Run the copied `studio create --from ./<artifact>.studio-import.json` command from a terminal, adjusting the path to the saved artifact if needed.
 
 For quick syntax verification without a full Figma build pipeline:
 
@@ -49,8 +47,8 @@ npm run build --prefix plugins/figma-to-wordpress-studio
 npm test --prefix plugins/figma-to-wordpress-studio
 ```
 
-## Runner Boundary
+## Studio CLI Boundary
 
-Figma plugin UIs run in a constrained iframe-like environment. Cross-origin iframes, WASM boot, popup behavior, and navigation can be restricted depending on host context and plugin permissions. The supported boundary is a WordPress-side runner service: the plugin posts a runner request, the service creates the Studio session, and the plugin opens the returned URL.
+Figma plugin UIs run in a constrained iframe-like environment and cannot spawn local shell commands. The supported boundary is a CLI handoff: the plugin saves the import artifact and presents/copies `studio create --from <source>`. Studio accepts the artifact source, creates the site, runs Static Site Importer, and removes SSI after a successful import.
 
 See [`../../docs/figma-studio-runner.md`](../../docs/figma-studio-runner.md) for the integration notes.

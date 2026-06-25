@@ -2,7 +2,7 @@
 
 This plugin moves a Figma file into WordPress by sending a Studio import payload to the local WordPress Studio app.
 
-It does not port Static Site Importer, Blocks Engine, WordPress, PHP, or Studio internals to TypeScript. The TypeScript code extracts Figma scene data, prepares an artifact JSON source, and posts it to Studio's local handoff endpoint. Studio owns site creation, import through Static Site Importer, and cleanup after a successful import. If Studio is not running, the plugin saves the same payload and copies a `studio create --from ...` fallback command.
+It does not port Static Site Importer, Blocks Engine, WordPress, PHP, or Studio internals to TypeScript. The TypeScript code extracts Figma scene data, prepares an artifact JSON source, and posts it to Studio's local handoff endpoint. Studio owns site creation, import through Static Site Importer, and cleanup after a successful import. If Studio is not running, the plugin surfaces the connection error.
 
 ## Flow
 
@@ -19,7 +19,7 @@ Figma plugin controller + UI
 
 - Implemented: a Figma Desktop-loadable plugin shell with whole-file export.
 - Implemented: a reusable scene-to-HTML/CSS artifact generator with diagnostics and tests for the current local handoff.
-- Implemented: a Studio local handoff request with a `studio create --from ...` fallback command.
+- Implemented: a Studio local handoff request.
 - Not implemented: running Static Site Importer from TypeScript.
 - Not implemented: automated visual parity/block validation after import.
 
@@ -38,7 +38,7 @@ Figma plugin controller + UI
 2. In Figma Desktop, use Plugins -> Development -> Import plugin from manifest, then select `plugins/figma-to-wordpress-studio/manifest.json`.
 3. Start a compatible WordPress Studio build.
 4. Open the plugin and choose `Open in WordPress Studio`.
-5. Studio creates the site and opens the local site URL in your browser. If Studio is not reachable, run the copied `studio create --from ./<artifact>.studio-import.json` fallback command from a terminal, adjusting the path to the saved artifact if needed.
+5. Studio creates the site and opens the local site URL in your browser. If Studio is not reachable, the plugin reports the connection error.
 
 For quick syntax verification without a full Figma build pipeline:
 
@@ -50,6 +50,6 @@ npm test --prefix plugins/figma-to-wordpress-studio
 
 ## Studio Handoff Boundary
 
-Figma plugin UIs run in a constrained iframe-like environment and cannot spawn local shell commands. The supported boundary is a local Studio handoff: the plugin posts the import artifact to Studio's loopback endpoint. Studio accepts the artifact source, creates the site, runs Static Site Importer, and removes SSI after a successful import. The CLI payload remains as an operator fallback and regression-friendly artifact.
+Figma plugin UIs run in a constrained iframe-like environment and cannot spawn local shell commands. The supported boundary is a local Studio handoff: the plugin posts the import artifact to Studio's loopback endpoint. Studio accepts the artifact source, creates the site, runs Static Site Importer, and removes SSI after a successful import.
 
 See [`../../docs/figma-studio-runner.md`](../../docs/figma-studio-runner.md) for the integration notes.

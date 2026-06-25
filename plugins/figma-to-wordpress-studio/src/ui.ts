@@ -42,58 +42,6 @@ function updateActions() {
   if (studioButton) studioButton.disabled = disabled;
 }
 
-function artifactFileName(artifact: GeneratedArtifact): string {
-  const slug = artifact.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "figma-wordpress-import";
-
-  return `${slug}.studio-import.json`;
-}
-
-function studioCreateCommand(artifact: GeneratedArtifact): string {
-  return `studio create --from ./${artifactFileName(artifact)}`;
-}
-
-async function copyStudioCommand() {
-  if (!currentArtifact) {
-    return;
-  }
-
-  const command = studioCreateCommand(currentArtifact);
-
-  try {
-    await navigator.clipboard.writeText(command);
-    setStatus("Studio command copied. Save the import payload beside the path in the command, then run it in a terminal.");
-    sendToPlugin({ type: "notify", message: "Studio command copied." });
-  } catch (error) {
-    console.error("[Figma to WordPress Studio] Could not copy Studio command.", error);
-    setStatus("Copy failed. Select the command text and copy it manually.");
-  }
-}
-
-function downloadStudioPayload() {
-  if (!currentArtifact) {
-    log("Studio import payload requested before artifact was ready.");
-    return;
-  }
-
-  const fileName = artifactFileName(currentArtifact);
-  const blob = new Blob([JSON.stringify(currentArtifact.studioImportPayload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = fileName;
-  link.click();
-  URL.revokeObjectURL(url);
-
-  setStatus(`Saved ${fileName}. Run the Studio command with the file path to create the WordPress site.`);
-  log("Studio import payload prepared.", {
-    fileName,
-    command: studioCreateCommand(currentArtifact),
-    ...artifactBundleSummary(currentArtifact),
-  });
-  void copyStudioCommand();
-}
-
 async function openInStudio() {
   if (!currentArtifact) {
     log("Studio import requested before artifact was ready.");
@@ -130,8 +78,7 @@ async function openInStudio() {
     });
   } catch (error) {
     console.error("[Figma to WordPress Studio] Studio handoff failed.", error);
-    setStatus("Could not reach WordPress Studio. Saved the import payload and copied the CLI fallback command.");
-    downloadStudioPayload();
+    setStatus(error instanceof Error ? error.message : "Could not reach WordPress Studio.");
   } finally {
     updateActions();
   }

@@ -27,7 +27,7 @@ Practical constraints for this browser-based flow:
 - Clipboard access can require user activation.
 - Local file URLs can behave differently between desktop Figma, browser Figma, and development builds.
 
-Because of those constraints, the primary integration shape is a local Studio handoff: the plugin posts an artifact JSON source to Studio's loopback endpoint. If Studio is not running, the plugin saves the same artifact JSON source and presents/copies `studio create --from <source>` as a fallback.
+Because of those constraints, the integration shape is a local Studio handoff: the plugin posts an artifact JSON source to Studio's loopback endpoint. If Studio is not running, the plugin surfaces the connection error.
 
 ## Studio And PHP Role
 
@@ -41,7 +41,7 @@ Implemented now:
 
 - `GeneratedWebsiteArtifact` for static generated files from Figma.
 - `blocks-engine/php-transformer/site-artifact/v1` for the Studio CLI artifact handoff.
-- A Figma UI client that posts the artifact JSON to local Studio and falls back to `studio create --from ./<artifact>.studio-import.json`.
+- A Figma UI client that posts the artifact JSON to local Studio.
 
 Not implemented yet:
 
@@ -64,7 +64,7 @@ Figma development test:
 3. Run the plugin.
 4. Start a compatible WordPress Studio build.
 5. Use `Open in WordPress Studio`.
-6. Studio creates the site and opens the local site URL in your browser. If Studio is not reachable, run the copied `studio create --from ./<artifact>.studio-import.json` fallback command from a terminal, adjusting the path to the saved artifact if needed.
+6. Studio creates the site and opens the local site URL in your browser. If Studio is not reachable, the plugin reports the connection error.
 
 ## Next Integration Step
 

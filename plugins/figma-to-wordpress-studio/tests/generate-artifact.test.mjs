@@ -18,6 +18,10 @@ async function loadPayloadModule() {
 	return loadSourceModule("payload.ts");
 }
 
+async function loadExporterModule() {
+  return loadSourceModule("exporter.ts");
+}
+
 async function loadSourceModule(sourceFile) {
   const outfile = path.join(tmpdir(), `figma-to-wordpress-studio-${Date.now()}-${Math.random()}.mjs`);
   await esbuild.build({
@@ -120,6 +124,36 @@ test("serializes base64 data URI image assets as artifact file payloads", async 
   assert.equal(imageFile.content, undefined);
   assert.equal(imageFile.content_base64, "ZmFrZS1wbmc=");
   assert.equal(imageFile.mime_type, "image/png");
+});
+
+test("generates a Studio CLI import payload for the Figma handoff", async () => {
+  const { generateStaticArtifact } = await loadExporterModule();
+  const artifact = generateStaticArtifact({
+    id: "root",
+    name: "Studio CLI Demo",
+    type: "DOCUMENT",
+    exportedAt: "2026-01-01T00:00:00.000Z",
+    root: {
+      id: "frame",
+      name: "Landing Page",
+      type: "FRAME",
+      visible: true,
+      children: [
+        {
+          id: "headline",
+          name: "Headline",
+          type: "TEXT",
+          visible: true,
+          characters: "Import with Studio CLI",
+        },
+      ],
+    },
+    assets: [],
+  });
+
+  assert.equal(artifact.studioImportPayload.schema, "blocks-engine/php-transformer/site-artifact/v1");
+  assert.equal(artifact.studioImportPayload.entrypoint, "website/index.html");
+  assert.ok(artifact.studioImportPayload.files.some((file) => file.path === "website/index.html"));
 });
 
 test("reports missing image sources with node identity", async () => {

@@ -1,5 +1,5 @@
 import type { WebsiteArtifact } from "./index";
-import type { NormalizedAsset, NormalizedSceneNode, NormalizedSelection } from "./types";
+import type { NormalizedSelection } from "./types";
 
 export type WebsiteArtifactFileRole = "html" | "css" | "js" | "asset" | "metadata";
 
@@ -12,37 +12,16 @@ export interface WebsiteArtifactBundleFile {
 }
 
 export interface WebsiteArtifactBundle {
-  schema: "figma-to-wordpress-studio/website-artifact-bundle/v1";
+  schema: "blocks-engine/php-transformer/site-artifact/v1";
   root: "website/";
   entrypoint: "website/index.html";
   files: WebsiteArtifactBundleFile[];
   import_source: "figma-to-wordpress-studio";
 }
 
-export interface WordPressRunnerRequest {
-  schema: "figma-to-wordpress-studio/runner-request/v1";
-  source: {
-    tool: "figma";
-    fileKey?: string;
-    nodeIds?: string[];
-    exportedAt: string;
-  };
-  goal: string;
-  figma: FigmaScenegraphPayload;
-}
-
-export interface FigmaScenegraphPayload {
-  schema: "figma-to-wordpress-studio/scenegraph/v1";
-  name: string;
-  exportedAt: string;
-  root: NormalizedSceneNode;
-  nodes: NormalizedSceneNode[];
-  assets: NormalizedAsset[];
-}
-
-export function toWebsiteArtifactBundle(artifact: WebsiteArtifact, selection: NormalizedSelection): WebsiteArtifactBundle {
+export function toWebsiteArtifactBundle(artifact: WebsiteArtifact, _selection: NormalizedSelection): WebsiteArtifactBundle {
   return {
-    schema: "figma-to-wordpress-studio/website-artifact-bundle/v1",
+    schema: "blocks-engine/php-transformer/site-artifact/v1",
     root: "website/",
     entrypoint: "website/index.html",
     files: Object.entries(artifact.files).map(([filePath, content]) => toWebsiteArtifactBundleFile(filePath, content)),
@@ -76,30 +55,6 @@ function parseDataUri(content: string): { mimeType: string; contentBase64: strin
   return {
     mimeType: match[1],
     contentBase64: match[2],
-  };
-}
-
-export function buildWordPressRunnerRequest(_bundle: WebsiteArtifactBundle, selection: NormalizedSelection): WordPressRunnerRequest {
-  return {
-    schema: "figma-to-wordpress-studio/runner-request/v1",
-    source: {
-      tool: "figma",
-      nodeIds: [selection.id],
-      exportedAt: selection.exportedAt,
-    },
-    goal: `Import ${selection.name} into WordPress using Static Site Importer inside a browser Studio session.`,
-    figma: toFigmaScenegraphPayload(selection),
-  };
-}
-
-function toFigmaScenegraphPayload(selection: NormalizedSelection): FigmaScenegraphPayload {
-  return {
-    schema: "figma-to-wordpress-studio/scenegraph/v1",
-    name: selection.name,
-    exportedAt: selection.exportedAt,
-    root: selection.root,
-    nodes: selection.root.children?.length ? selection.root.children : [selection.root],
-    assets: selection.assets,
   };
 }
 

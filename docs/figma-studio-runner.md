@@ -1,6 +1,6 @@
 # Figma to WordPress Studio
 
-`plugins/figma-to-wordpress-studio` moves a Figma file into WordPress by preparing a Studio CLI source for `studio create --from <source>`. Studio creates the site and imports the result with Static Site Importer and Blocks Engine.
+`plugins/figma-to-wordpress-studio` moves a Figma file into WordPress by posting a Studio import source to the local WordPress Studio app. Studio creates the site and imports the result with Static Site Importer and Blocks Engine.
 
 ## Architecture
 
@@ -8,12 +8,12 @@
 Figma plugin UI
   -> Figma document scene data
   -> Studio import artifact JSON
-  -> studio create --from <artifact-json>
+  -> local WordPress Studio handoff endpoint
   -> WordPress Studio site
   -> Static Site Importer / Blocks Engine inside WordPress
 ```
 
-The TypeScript boundary stops at artifact construction and a user-facing CLI command. WordPress, PHP, Static Site Importer, Blocks Engine, and Studio site orchestration remain Studio runtime concerns.
+The TypeScript boundary stops at artifact construction and a local handoff request. WordPress, PHP, Static Site Importer, Blocks Engine, and Studio site orchestration remain Studio runtime concerns.
 
 ## Figma Iframe Limits
 
@@ -27,7 +27,7 @@ Practical constraints for this browser-based flow:
 - Clipboard access can require user activation.
 - Local file URLs can behave differently between desktop Figma, browser Figma, and development builds.
 
-Because of those constraints, the primary integration shape is a CLI handoff: the plugin saves an artifact JSON source and presents/copies `studio create --from <source>`. If a native bridge or deeper Studio integration exists later, it can consume the same artifact source.
+Because of those constraints, the integration shape is a local Studio handoff: the plugin posts an artifact JSON source to Studio's loopback endpoint. If Studio is not running, the plugin surfaces the connection error.
 
 ## Studio And PHP Role
 
@@ -41,7 +41,7 @@ Implemented now:
 
 - `GeneratedWebsiteArtifact` for static generated files from Figma.
 - `blocks-engine/php-transformer/site-artifact/v1` for the Studio CLI artifact handoff.
-- A Figma UI client that downloads the artifact JSON and copies `studio create --from ./<artifact>.studio-import.json`.
+- A Figma UI client that posts the artifact JSON to local Studio.
 
 Not implemented yet:
 
@@ -62,8 +62,9 @@ Figma development test:
 1. Run `npm run build --prefix plugins/figma-to-wordpress-studio`.
 2. Load `plugins/figma-to-wordpress-studio/manifest.json` as a Figma development plugin.
 3. Run the plugin.
-4. Use `Save Studio import payload`.
-5. Run the copied `studio create --from ./<artifact>.studio-import.json` command from a terminal, adjusting the path to the saved artifact if needed.
+4. Start a compatible WordPress Studio build.
+5. Use `Open in WordPress Studio`.
+6. Studio creates the site and opens the local site URL in your browser. If Studio is not reachable, the plugin reports the connection error.
 
 ## Next Integration Step
 

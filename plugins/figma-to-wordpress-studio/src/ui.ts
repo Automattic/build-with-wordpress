@@ -8,6 +8,7 @@ const refreshButton = document.querySelector<HTMLButtonElement>("#refresh");
 const studioButton = document.querySelector<HTMLButtonElement>("#studio");
 const copyCommandButton = document.querySelector<HTMLButtonElement>("#copy-command");
 const commandElement = document.querySelector<HTMLTextAreaElement>("#studio-command");
+const studioHandoffEndpoint = "http://127.0.0.1:48732/figma-to-wordpress/import";
 
 function log(message: string, details?: unknown) {
   if (typeof details === "undefined") {
@@ -97,6 +98,49 @@ function downloadStudioPayload() {
   void copyStudioCommand();
 }
 
+async function openInStudio() {
+  if (!currentArtifact) {
+    log("Studio import requested before artifact was ready.");
+    return;
+  }
+
+  if (studioButton) {
+    studioButton.disabled = true;
+  }
+  setStatus("Sending this Figma file to WordPress Studio...");
+
+  try {
+    const response = await fetch(studioHandoffEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        artifact: currentArtifact.studioImportPayload,
+        siteName: currentArtifact.title,
+      }),
+    });
+    const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error || `Studio handoff failed with HTTP ${response.status}.`);
+    }
+
+    setStatus("Studio is opening the import. Confirm the new site details in WordPress Studio.");
+    sendToPlugin({ type: "notify", message: "Sent to WordPress Studio." });
+    log("Studio import handoff accepted.", {
+      endpoint: studioHandoffEndpoint,
+      ...artifactBundleSummary(currentArtifact),
+    });
+  } catch (error) {
+    console.error("[Figma to WordPress Studio] Studio handoff failed.", error);
+    setStatus("Could not reach WordPress Studio. Saved the import payload and copied the CLI fallback command.");
+    downloadStudioPayload();
+  } finally {
+    updateActions();
+  }
+}
+
 function countDesignScreens(selection: NormalizedSelection): number {
   let count = 0;
 
@@ -149,7 +193,7 @@ window.onmessage = (event: MessageEvent<{ pluginMessage?: PluginToUiMessage }>) 
 };
 
 refreshButton?.addEventListener("click", () => sendToPlugin({ type: "refresh-document" }));
-studioButton?.addEventListener("click", downloadStudioPayload);
+studioButton?.addEventListener("click", () => void openInStudio());
 copyCommandButton?.addEventListener("click", () => void copyStudioCommand());
 
 log("UI loaded.");

@@ -1,5 +1,5 @@
 import type { WebsiteArtifact } from "./index";
-import type { NormalizedSelection } from "./types";
+import type { GeneratedArtifact, NormalizedSelection } from "./types";
 
 export type WebsiteArtifactFileRole = "html" | "css" | "js" | "asset" | "metadata";
 
@@ -17,6 +17,70 @@ export interface WebsiteArtifactBundle {
   entrypoint: "website/index.html";
   files: WebsiteArtifactBundleFile[];
   import_source: "figma-to-wordpress-studio";
+}
+
+export interface FigmaSourcePayload {
+  schema: "wordpress-studio/figma-source/v1";
+  source: {
+    type: "figma";
+    metadata: NormalizedSelection["source"];
+    exportedAt: string;
+  };
+  intent: NormalizedSelection["selectionIntent"];
+  scenegraph: {
+    currentPage: NormalizedSelection["currentPage"];
+    selectedNodes: NormalizedSelection["selectedNodes"];
+  };
+  assets: NormalizedSelection["assets"];
+  transform: {
+    target: "wordpress";
+    route: "static-site-importer/figma";
+    options: {
+      selectionScope: NormalizedSelection["selectionIntent"]["scope"];
+      pageId: string;
+      selectedNodeIds: string[];
+      preserveSourceScenegraph: true;
+      importAssets: true;
+    };
+  };
+  debug?: {
+    generatedArtifact?: GeneratedArtifact["studioImportPayload"];
+    diagnostics: GeneratedArtifact["diagnostics"];
+    metadata?: GeneratedArtifact["metadata"];
+  };
+}
+
+export function toFigmaSourcePayload(selection: NormalizedSelection, artifact?: GeneratedArtifact | null): FigmaSourcePayload {
+  return {
+    schema: "wordpress-studio/figma-source/v1",
+    source: {
+      type: "figma",
+      metadata: selection.source,
+      exportedAt: selection.exportedAt,
+    },
+    intent: selection.selectionIntent,
+    scenegraph: {
+      currentPage: selection.currentPage,
+      selectedNodes: selection.selectedNodes,
+    },
+    assets: selection.assets,
+    transform: {
+      target: "wordpress",
+      route: "static-site-importer/figma",
+      options: {
+        selectionScope: selection.selectionIntent.scope,
+        pageId: selection.selectionIntent.pageId,
+        selectedNodeIds: selection.selectionIntent.selectedNodeIds,
+        preserveSourceScenegraph: true,
+        importAssets: true,
+      },
+    },
+    debug: artifact ? {
+      generatedArtifact: artifact.studioImportPayload,
+      diagnostics: artifact.diagnostics,
+      metadata: artifact.metadata,
+    } : undefined,
+  };
 }
 
 export function toWebsiteArtifactBundle(artifact: WebsiteArtifact, _selection: NormalizedSelection): WebsiteArtifactBundle {

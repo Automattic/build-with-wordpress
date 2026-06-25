@@ -1,19 +1,19 @@
 # Figma to WordPress Studio
 
-`plugins/figma-to-wordpress-studio` moves a Figma file into WordPress by posting a Studio import source to the local WordPress Studio app. Studio creates the site and imports the result with Static Site Importer and Blocks Engine.
+`plugins/figma-to-wordpress-studio` moves a Figma file into WordPress by posting a Figma source payload to the local WordPress Studio app. Studio creates the site and imports the result with Static Site Importer and Blocks Engine.
 
 ## Architecture
 
 ```text
 Figma plugin UI
-  -> Figma document scene data
-  -> Studio import artifact JSON
+  -> current-page scenegraph + selected-node intent
+  -> Studio Figma source payload
   -> local WordPress Studio handoff endpoint
   -> WordPress Studio site
   -> Static Site Importer / Blocks Engine inside WordPress
 ```
 
-The TypeScript boundary stops at artifact construction and a local handoff request. WordPress, PHP, Static Site Importer, Blocks Engine, and Studio site orchestration remain Studio runtime concerns.
+The TypeScript boundary stops at source capture and a local handoff request. WordPress, PHP, Static Site Importer, Blocks Engine, and Studio site orchestration remain Studio runtime concerns.
 
 ## Figma Iframe Limits
 
@@ -27,11 +27,11 @@ Practical constraints for this browser-based flow:
 - Clipboard access can require user activation.
 - Local file URLs can behave differently between desktop Figma, browser Figma, and development builds.
 
-Because of those constraints, the integration shape is a local Studio handoff: the plugin posts an artifact JSON source to Studio's loopback endpoint. If Studio is not running, the plugin surfaces the connection error.
+Because of those constraints, the integration shape is a local Studio handoff: the plugin posts Figma source data to Studio's loopback endpoint. If Studio is not running, the plugin surfaces the connection error.
 
 ## Studio And PHP Role
 
-WordPress Studio is the correct place to run WordPress and PHP plugin logic. It provides the WordPress runtime and accepts flexible `studio create --from <source>` inputs, including artifact JSON, `.fig`, file, directory, zip, and URL shapes.
+WordPress Studio is the correct place to run WordPress and PHP plugin logic. It provides the WordPress runtime and accepts flexible `studio create --from <source>` inputs, including Figma source, artifact JSON, `.fig`, file, directory, zip, and URL shapes.
 
 Static Site Importer and Blocks Engine should run in that WordPress runtime because they are WordPress/PHP import systems. The Figma plugin should not reimplement them in TypeScript. The plugin's job is to hand off design data with enough metadata for Studio to route through Static Site Importer and clean up importer dependencies after a successful import.
 
@@ -40,8 +40,9 @@ Static Site Importer and Blocks Engine should run in that WordPress runtime beca
 Implemented now:
 
 - `GeneratedWebsiteArtifact` for static generated files from Figma.
-- `blocks-engine/php-transformer/site-artifact/v1` for the Studio CLI artifact handoff.
-- A Figma UI client that posts the artifact JSON to local Studio.
+- `wordpress-studio/figma-source/v1` for the primary Studio Figma handoff.
+- `blocks-engine/php-transformer/site-artifact/v1` retained as debug/diagnostic context.
+- A Figma UI client that posts the source payload to local Studio.
 
 Not implemented yet:
 
@@ -68,4 +69,4 @@ Figma development test:
 
 ## Next Integration Step
 
-The next meaningful step is richer Studio-side progress/error reporting around CLI imports and post-import block/visual validation. That should remain in the Studio layer, not by porting PHP importer behavior into the Figma plugin.
+The next meaningful step is Studio-side routing for `wordpress-studio/figma-source/v1`, plus richer progress/error reporting around imports and post-import block/visual validation. That should remain in the Studio layer, not by porting PHP importer behavior into the Figma plugin.

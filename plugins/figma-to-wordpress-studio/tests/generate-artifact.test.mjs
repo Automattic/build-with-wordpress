@@ -156,6 +156,58 @@ test("generates a Studio CLI import payload for the Figma handoff", async () => 
   assert.ok(artifact.studioImportPayload.files.some((file) => file.path === "website/index.html"));
 });
 
+test("generates a Studio Figma source payload for the primary handoff", async () => {
+  const { toFigmaSourcePayload } = await loadPayloadModule();
+  const selection = {
+    id: "root",
+    name: "Studio Figma Source Demo",
+    type: "DOCUMENT",
+    exportedAt: "2026-01-01T00:00:00.000Z",
+    root: { id: "doc", name: "Document", type: "DOCUMENT", visible: true },
+    source: {
+      provider: "figma",
+      plugin: "figma-to-wordpress-studio",
+      fileKey: "abc123",
+      fileName: "Studio Figma Source Demo",
+      editorType: "figma",
+      currentPage: { id: "page", name: "Landing" },
+    },
+    selectionIntent: {
+      scope: "selected-nodes",
+      pageId: "page",
+      pageName: "Landing",
+      selectedNodeIds: ["frame"],
+      rootNodeIds: ["frame"],
+    },
+    currentPage: {
+      id: "page",
+      name: "Landing",
+      type: "PAGE",
+      visible: true,
+      children: [{ id: "frame", name: "Hero", type: "FRAME", visible: true }],
+    },
+    selectedNodes: [{ id: "frame", name: "Hero", type: "FRAME", visible: true }],
+    assets: [],
+  };
+  const sourcePayload = toFigmaSourcePayload(selection, {
+    title: selection.name,
+    html: "",
+    css: "",
+    studioImportPayload: { schema: "blocks-engine/php-transformer/site-artifact/v1" },
+    files: {},
+    diagnostics: [],
+  });
+
+  assert.equal(sourcePayload.schema, "wordpress-studio/figma-source/v1");
+  assert.equal(sourcePayload.source.metadata.fileKey, "abc123");
+  assert.equal(sourcePayload.intent.scope, "selected-nodes");
+  assert.equal(sourcePayload.scenegraph.currentPage.id, "page");
+  assert.equal(sourcePayload.scenegraph.selectedNodes[0].id, "frame");
+  assert.equal(sourcePayload.transform.route, "static-site-importer/figma");
+  assert.equal(sourcePayload.transform.options.preserveSourceScenegraph, true);
+  assert.equal(sourcePayload.debug.generatedArtifact.schema, "blocks-engine/php-transformer/site-artifact/v1");
+});
+
 test("reports missing image sources with node identity", async () => {
   const { generateWebsiteArtifact } = await loadModule();
   const artifact = generateWebsiteArtifact({

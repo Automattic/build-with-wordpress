@@ -229,20 +229,22 @@ async function exportAsset(node: SceneNode, format: AssetExportFormat, imageHash
 }
 
 async function getDocument(): Promise<NormalizedDocument> {
-  if ("loadAllPagesAsync" in figma) {
-    await figma.loadAllPagesAsync();
+  if ("loadAsync" in figma.currentPage) {
+    await figma.currentPage.loadAsync();
   }
 
   const context: NormalizeContext = { assets: new Map() };
-  const pages = await Promise.all(figma.root.children.map((page) => normalizeNode(page, context, "PAGE")));
+  const currentPage = await normalizeNode(figma.currentPage, context, "PAGE");
+  const selectedNodes = await Promise.all(figma.currentPage.selection.map((node) => normalizeNode(node, context)));
   const root: NormalizedSceneNode = {
     id: figma.root.id,
     name: figma.root.name || "Figma document",
     type: "DOCUMENT",
     visible: true,
-    children: pages,
+    children: [currentPage],
   };
   applyDerivedBounds(root);
+  const selectedNodeIds = selectedNodes.map((node) => node.id);
 
   return {
     id: figma.root.id,
@@ -250,6 +252,26 @@ async function getDocument(): Promise<NormalizedDocument> {
     type: "DOCUMENT",
     exportedAt: new Date().toISOString(),
     root,
+    source: {
+      provider: "figma",
+      plugin: "figma-to-wordpress-studio",
+      fileKey: figma.fileKey,
+      fileName: figma.root.name || "Figma document",
+      editorType: figma.editorType,
+      currentPage: {
+        id: figma.currentPage.id,
+        name: figma.currentPage.name,
+      },
+    },
+    selectionIntent: {
+      scope: selectedNodes.length ? "selected-nodes" : "current-page",
+      pageId: figma.currentPage.id,
+      pageName: figma.currentPage.name,
+      selectedNodeIds,
+      rootNodeIds: selectedNodes.length ? selectedNodeIds : [figma.currentPage.id],
+    },
+    currentPage,
+    selectedNodes,
     assets: Array.from(context.assets.values()),
   };
 }

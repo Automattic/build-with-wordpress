@@ -1,11 +1,27 @@
 # WordPress Studio for VS Code
 
-This VS Code extension integrates WordPress Studio MCP with the current workspace by writing VS Code's supported `.vscode/mcp.json` configuration shape. It does not publish anything to the Marketplace from this repository.
+Use WordPress Studio from VS Code Copilot Agent by connecting the current workspace to Studio's MCP tools. The extension writes VS Code's supported `.vscode/mcp.json` configuration so Copilot Agent can use Studio for local WordPress site management, WP-CLI, screenshots, block validation, and audits.
+
+## Quick start
+
+1. Install WordPress Studio and make sure the `studio` command is available on your `PATH`.
+2. Open a workspace folder in VS Code.
+3. Open the Command Palette with `Cmd+Shift+P`.
+4. Run `WordPress Studio: Check Studio CLI`.
+5. Run `WordPress Studio: Configure Workspace MCP`.
+6. Open Copilot Chat in Agent mode and ask it to use the `wordpress-studio` tools.
+
+Example prompts:
+
+- `Use the wordpress-studio MCP tools to list my Studio sites.`
+- `Use WordPress Studio to inspect the current site and tell me what tools are available.`
+- `Use wp_cli through WordPress Studio to check the active theme.`
+
+If Copilot does not see the tools immediately, reload the VS Code window and try again.
 
 ## What it includes
 
-- `package.json` with VS Code extension metadata and command contributions.
-- `extension.js` with commands to validate Studio availability, show/copy the bundled MCP config, and merge the WordPress Studio MCP servers into the open workspace.
+- commands to validate Studio availability, show/copy the bundled MCP config, and merge the WordPress Studio MCP servers into the open workspace.
 - `mcp.json` with `wordpress-studio` and `wordpress-telemetry` server entries.
 - `skills/` as reference Build with WordPress playbooks for editor users and future extension behavior.
 
@@ -13,11 +29,7 @@ This VS Code extension integrates WordPress Studio MCP with the current workspac
 
 VS Code supports workspace MCP configuration through `.vscode/mcp.json` with a top-level `servers` object. The `WordPress Studio: Configure Workspace MCP` command creates or updates that file in the open workspace, preserves unrelated server entries, and prompts before replacing an existing managed WordPress server that differs from the bundled configuration.
 
-The extension targets VS Code `^1.95.0`. The published `@types/vscode@1.95.0` API surface does not include `contributes.mcpServerDefinitionProviders` or `vscode.lm.registerMcpServerDefinitionProvider`, so this package does not register an extension-owned MCP provider yet. When this package raises its VS Code engine to a version with stable MCP provider APIs, the file-write command can be complemented with provider registration.
-
-## Marketplace placeholder
-
-The manifest uses the Visual Studio Marketplace publisher `automattic`. This repo intentionally does not include publish automation or Marketplace credentials.
+This extension writes workspace MCP config rather than registering an extension-owned MCP provider. That keeps the integration explicit and reviewable in the workspace.
 
 ## Commands
 

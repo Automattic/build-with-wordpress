@@ -678,8 +678,16 @@ async function verifyVsCodePlugin(skillNames) {
   }
 
   const readme = await readFile(path.join(vsCodePluginDir, "README.md"), "utf8");
-  if (!readme.includes("publisher `automattic`")) {
-    throw new Error("VS Code README must document the Marketplace publisher");
+  if (!readme.includes("Copilot Chat in Agent mode")) {
+    throw new Error("VS Code README must explain Copilot Agent usage");
+  }
+
+  if (!readme.includes("WordPress Studio: Configure Workspace MCP")) {
+    throw new Error("VS Code README must explain workspace MCP setup");
+  }
+
+  if (!readme.includes("Use the wordpress-studio MCP tools to list my Studio sites.")) {
+    throw new Error("VS Code README must include a WordPress Studio MCP example prompt");
   }
 }
 

@@ -1,4 +1,5 @@
 import type { GeneratedArtifact, NormalizedSelection, PluginToUiMessage, UiToPluginMessage } from "./types";
+import { toFigmaSourcePayload } from "./payload";
 
 let currentArtifact: GeneratedArtifact | null = null;
 let currentSelection: NormalizedSelection | null = null;
@@ -37,14 +38,14 @@ function artifactBundleSummary(artifact: GeneratedArtifact | null) {
 }
 
 function updateActions() {
-  const disabled = !currentArtifact;
+  const disabled = !currentSelection;
 
   if (studioButton) studioButton.disabled = disabled;
 }
 
 async function openInStudio() {
-  if (!currentArtifact) {
-    log("Studio import requested before artifact was ready.");
+  if (!currentSelection) {
+    log("Studio import requested before Figma source data was ready.");
     return;
   }
 
@@ -54,14 +55,15 @@ async function openInStudio() {
   setStatus("Sending this Figma file to WordPress Studio...");
 
   try {
+    const sourcePayload = toFigmaSourcePayload(currentSelection, currentArtifact);
     const response = await fetch(studioHandoffEndpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        artifact: currentArtifact.studioImportPayload,
-        siteName: currentArtifact.title,
+        source: sourcePayload,
+        siteName: currentSelection.name,
       }),
     });
     const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
@@ -74,7 +76,11 @@ async function openInStudio() {
     sendToPlugin({ type: "notify", message: "Sent to WordPress Studio." });
     log("Studio import handoff accepted.", {
       endpoint: studioHandoffEndpoint,
-      ...artifactBundleSummary(currentArtifact),
+      schema: sourcePayload.schema,
+      selectionScope: sourcePayload.intent.scope,
+      pageId: sourcePayload.intent.pageId,
+      selectedNodes: sourcePayload.intent.selectedNodeIds.length,
+      debugArtifact: artifactBundleSummary(currentArtifact),
     });
   } catch (error) {
     console.error("[Figma to WordPress Studio] Studio handoff failed.", error);

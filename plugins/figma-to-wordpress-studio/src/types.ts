@@ -70,10 +70,34 @@ export type NormalizedSelection = {
   type: string;
   exportedAt: string;
   root: NormalizedSceneNode;
+  source: FigmaSourceMetadata;
+  selectionIntent: FigmaSelectionIntent;
+  currentPage: NormalizedSceneNode;
+  selectedNodes: NormalizedSceneNode[];
   assets: NormalizedAsset[];
 };
 
 export type NormalizedDocument = NormalizedSelection;
+
+export type FigmaSourceMetadata = {
+  provider: "figma";
+  plugin: "figma-to-wordpress-studio";
+  fileKey?: string;
+  fileName: string;
+  editorType: string;
+  currentPage: {
+    id: string;
+    name: string;
+  };
+};
+
+export type FigmaSelectionIntent = {
+  scope: "selected-nodes" | "current-page";
+  pageId: string;
+  pageName: string;
+  selectedNodeIds: string[];
+  rootNodeIds: string[];
+};
 
 export type GeneratedArtifact = {
   title: string;

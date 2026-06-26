@@ -156,56 +156,127 @@ test("generates a Studio CLI import payload for the Figma handoff", async () => 
   assert.ok(artifact.studioImportPayload.files.some((file) => file.path === "website/index.html"));
 });
 
-test("generates a Studio Figma source payload for the primary handoff", async () => {
+test("generates a source-first Figma handoff payload with debug summary", async () => {
   const { toFigmaSourcePayload } = await loadPayloadModule();
   const selection = {
     id: "root",
     name: "Studio Figma Source Demo",
     type: "DOCUMENT",
     exportedAt: "2026-01-01T00:00:00.000Z",
-    root: { id: "doc", name: "Document", type: "DOCUMENT", visible: true },
+    root: {
+      id: "doc",
+      name: "Document",
+      type: "DOCUMENT",
+      visible: true,
+      children: [
+        {
+          id: "page-1",
+          name: "Landing",
+          type: "PAGE",
+          visible: true,
+          children: [
+            {
+              id: "frame-1",
+              name: "Hero",
+              type: "FRAME",
+              visible: true,
+              children: [
+                {
+                  id: "headline",
+                  name: "Headline",
+                  type: "TEXT",
+                  visible: true,
+                  characters: "Import with Studio",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
     source: {
       provider: "figma",
       plugin: "figma-to-wordpress-studio",
       fileKey: "abc123",
       fileName: "Studio Figma Source Demo",
       editorType: "figma",
-      currentPage: { id: "page", name: "Landing" },
+      currentPage: { id: "page-1", name: "Landing" },
     },
     selectionIntent: {
       scope: "selected-nodes",
-      pageId: "page",
+      pageId: "page-1",
       pageName: "Landing",
-      selectedNodeIds: ["frame"],
-      rootNodeIds: ["frame"],
+      selectedNodeIds: ["frame-1"],
+      rootNodeIds: ["frame-1"],
     },
     currentPage: {
-      id: "page",
+      id: "page-1",
       name: "Landing",
       type: "PAGE",
       visible: true,
-      children: [{ id: "frame", name: "Hero", type: "FRAME", visible: true }],
+      children: [
+        {
+          id: "frame-1",
+          name: "Hero",
+          type: "FRAME",
+          visible: true,
+          children: [
+            {
+              id: "headline",
+              name: "Headline",
+              type: "TEXT",
+              visible: true,
+              characters: "Import with Studio",
+            },
+          ],
+        },
+      ],
     },
-    selectedNodes: [{ id: "frame", name: "Hero", type: "FRAME", visible: true }],
-    assets: [],
+    selectedNodes: [
+      {
+        id: "frame-1",
+        name: "Hero",
+        type: "FRAME",
+        visible: true,
+        children: [
+          {
+            id: "headline",
+            name: "Headline",
+            type: "TEXT",
+            visible: true,
+            characters: "Import with Studio",
+          },
+        ],
+      },
+    ],
+    assets: [{ id: "asset-1", name: "Hero.png", format: "PNG", dataUrl: "data:image/png;base64,YQ==" }],
   };
-  const sourcePayload = toFigmaSourcePayload(selection, {
+  const artifact = {
     title: selection.name,
     html: "",
     css: "",
     studioImportPayload: { schema: "blocks-engine/php-transformer/site-artifact/v1" },
     files: {},
-    diagnostics: [],
-  });
+    diagnostics: [{ level: "warning", nodeId: "frame-1", nodeName: "Hero", message: "Review layout" }],
+  };
+  const source = toFigmaSourcePayload(selection, artifact, "handoff-123");
 
-  assert.equal(sourcePayload.schema, "wordpress-studio/figma-source/v1");
-  assert.equal(sourcePayload.source.metadata.fileKey, "abc123");
-  assert.equal(sourcePayload.intent.scope, "selected-nodes");
-  assert.equal(sourcePayload.scenegraph.currentPage.id, "page");
-  assert.equal(sourcePayload.scenegraph.selectedNodes[0].id, "frame");
-  assert.equal(sourcePayload.transform.route, "static-site-importer/figma");
-  assert.equal(sourcePayload.transform.options.preserveSourceScenegraph, true);
-  assert.equal(sourcePayload.debug.generatedArtifact.schema, "blocks-engine/php-transformer/site-artifact/v1");
+  assert.equal(source.schema, "wordpress-studio/figma-source/v1");
+  assert.equal(source.source.metadata.fileKey, "abc123");
+  assert.equal(source.intent.scope, "selected-nodes");
+  assert.deepEqual(source.intent.selectedNodeIds, ["frame-1"]);
+  assert.equal(source.scenegraph.currentPage.id, "page-1");
+  assert.equal(source.scenegraph.selectedNodes[0].id, "frame-1");
+  assert.equal(source.transform.route, "static-site-importer/figma");
+  assert.equal(source.transform.options.preserveSourceScenegraph, true);
+  assert.equal(source.debug.handoffId, "handoff-123");
+  assert.equal(source.debug.generatedArtifact.schema, "blocks-engine/php-transformer/site-artifact/v1");
+  assert.equal(source.debug.summary.scope, "selected-nodes");
+  assert.equal(source.debug.summary.selectedNodeCount, 1);
+  assert.equal(source.debug.summary.nodeCount, 2);
+  assert.equal(source.debug.summary.assetCount, 1);
+  assert.equal(source.debug.summary.diagnosticCount, artifact.diagnostics.length);
+  assert.equal(source.debug.summary.warningCount, 1);
 });
 
 test("reports missing image sources with node identity", async () => {

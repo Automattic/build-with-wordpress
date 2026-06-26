@@ -9,6 +9,15 @@ const refreshButton = document.querySelector<HTMLButtonElement>("#refresh");
 const studioButton = document.querySelector<HTMLButtonElement>("#studio");
 const studioHandoffEndpoint = "http://127.0.0.1:48732/figma-to-wordpress/import";
 
+type StudioHandoffResponse = {
+  success?: boolean;
+  error?: string;
+  requestId?: string;
+  siteName?: string;
+  siteUrl?: string;
+  importSummary?: unknown;
+};
+
 function log(message: string, details?: unknown) {
   if (typeof details === "undefined") {
     console.info(`[Figma to WordPress Studio] ${message}`);
@@ -49,13 +58,16 @@ async function openInStudio() {
     return;
   }
 
+  const handoffId = `figma-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const sourcePayload = toFigmaSourcePayload(currentSelection, currentArtifact, handoffId);
+  const summary = sourcePayload.debug.summary;
+
   if (studioButton) {
     studioButton.disabled = true;
   }
-  setStatus("Sending this Figma file to WordPress Studio...");
+  setStatus(`Sending ${summary.nodeCount} nodes to WordPress Studio...`);
 
   try {
-    const sourcePayload = toFigmaSourcePayload(currentSelection, currentArtifact);
     const response = await fetch(studioHandoffEndpoint, {
       method: "POST",
       headers: {
@@ -66,24 +78,35 @@ async function openInStudio() {
         siteName: currentSelection.name,
       }),
     });
-    const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
+    const data = await response.json().catch(() => null) as StudioHandoffResponse | null;
 
     if (!response.ok || !data?.success) {
-      throw new Error(data?.error || `Studio handoff failed with HTTP ${response.status}.`);
+      const requestRef = data?.requestId ? ` Ref ${data.requestId}.` : "";
+      throw new Error(`${data?.error || `Studio handoff failed with HTTP ${response.status}.`}${requestRef}`);
     }
 
-    setStatus("Studio created the WordPress site and is opening it in your browser.");
+    setStatus(`Studio accepted ${data.siteName || currentSelection.name}${data.siteUrl ? ` at ${data.siteUrl}` : ""}.`);
     sendToPlugin({ type: "notify", message: "Sent to WordPress Studio." });
     log("Studio import handoff accepted.", {
       endpoint: studioHandoffEndpoint,
+      handoffId,
+      requestId: data.requestId,
+      siteName: data.siteName,
+      siteUrl: data.siteUrl,
+      importSummary: data.importSummary,
       schema: sourcePayload.schema,
       selectionScope: sourcePayload.intent.scope,
       pageId: sourcePayload.intent.pageId,
       selectedNodes: sourcePayload.intent.selectedNodeIds.length,
+      sourceSummary: summary,
       debugArtifact: artifactBundleSummary(currentArtifact),
     });
   } catch (error) {
-    console.error("[Figma to WordPress Studio] Studio handoff failed.", error);
+    console.error("[Figma to WordPress Studio] Studio handoff failed.", {
+      handoffId,
+      sourceSummary: summary,
+      error,
+    });
     setStatus(error instanceof Error ? error.message : "Could not reach WordPress Studio.");
   } finally {
     updateActions();

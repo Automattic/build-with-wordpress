@@ -1,5 +1,5 @@
 import type { WebsiteArtifact } from "./index";
-import type { GeneratedArtifact, NormalizedSelection } from "./types";
+import type { GeneratedArtifact, NormalizedSceneNode, NormalizedSelection } from "./types";
 
 export type WebsiteArtifactFileRole = "html" | "css" | "js" | "asset" | "metadata";
 
@@ -17,6 +17,17 @@ export interface WebsiteArtifactBundle {
   entrypoint: "website/index.html";
   files: WebsiteArtifactBundleFile[];
   import_source: "figma-to-wordpress-studio";
+}
+
+export interface FigmaSourceDebugSummary {
+  scope: NormalizedSelection["selectionIntent"]["scope"];
+  pageId: string;
+  selectedNodeCount: number;
+  nodeCount: number;
+  assetCount: number;
+  diagnosticCount: number;
+  warningCount: number;
+  errorCount: number;
 }
 
 export interface FigmaSourcePayload {
@@ -43,14 +54,20 @@ export interface FigmaSourcePayload {
       importAssets: true;
     };
   };
-  debug?: {
+  debug: {
+    handoffId?: string;
+    summary: FigmaSourceDebugSummary;
     generatedArtifact?: GeneratedArtifact["studioImportPayload"];
     diagnostics: GeneratedArtifact["diagnostics"];
     metadata?: GeneratedArtifact["metadata"];
   };
 }
 
-export function toFigmaSourcePayload(selection: NormalizedSelection, artifact?: GeneratedArtifact | null): FigmaSourcePayload {
+export function toFigmaSourcePayload(
+  selection: NormalizedSelection,
+  artifact?: GeneratedArtifact | null,
+  handoffId?: string,
+): FigmaSourcePayload {
   return {
     schema: "wordpress-studio/figma-source/v1",
     source: {
@@ -75,11 +92,31 @@ export function toFigmaSourcePayload(selection: NormalizedSelection, artifact?: 
         importAssets: true,
       },
     },
-    debug: artifact ? {
-      generatedArtifact: artifact.studioImportPayload,
-      diagnostics: artifact.diagnostics,
-      metadata: artifact.metadata,
-    } : undefined,
+    debug: {
+      handoffId,
+      summary: sourceDebugSummary(selection, artifact),
+      generatedArtifact: artifact?.studioImportPayload,
+      diagnostics: artifact?.diagnostics || [],
+      metadata: artifact?.metadata,
+    },
+  };
+}
+
+export function sourceDebugSummary(
+  selection: NormalizedSelection,
+  artifact?: GeneratedArtifact | null,
+): FigmaSourceDebugSummary {
+  const selectedRootNodes = selection.selectedNodes.length ? selection.selectedNodes : [selection.currentPage];
+
+  return {
+    scope: selection.selectionIntent.scope,
+    pageId: selection.selectionIntent.pageId,
+    selectedNodeCount: selection.selectionIntent.selectedNodeIds.length,
+    nodeCount: selectedRootNodes.reduce((count, node) => count + countSceneNodes(node), 0),
+    assetCount: selection.assets.length,
+    diagnosticCount: artifact?.diagnostics.length || 0,
+    warningCount: artifact?.diagnostics.filter((diagnostic) => diagnostic.level === "warning").length || 0,
+    errorCount: artifact?.diagnostics.filter((diagnostic) => diagnostic.level === "error").length || 0,
   };
 }
 
@@ -91,6 +128,10 @@ export function toWebsiteArtifactBundle(artifact: WebsiteArtifact, _selection: N
     files: Object.entries(artifact.files).map(([filePath, content]) => toWebsiteArtifactBundleFile(filePath, content)),
     import_source: "figma-to-wordpress-studio",
   };
+}
+
+function countSceneNodes(node: NormalizedSceneNode): number {
+  return 1 + (node.children || []).reduce((count, child) => count + countSceneNodes(child), 0);
 }
 
 function toWebsiteArtifactBundleFile(filePath: string, content: string): WebsiteArtifactBundleFile {

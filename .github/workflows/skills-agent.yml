@@ -2,6 +2,15 @@ name: Build With WordPress Skills Agent
 
 on:
   workflow_dispatch:
+    inputs:
+      docs_agent_ref:
+        description: Ref of Automattic/docs-agent containing the portable bundle.
+        required: false
+        default: main
+      openai_model:
+        description: OpenAI model to use.
+        required: false
+        default: gpt-5.5
   schedule:
     - cron: '0 9 * * 1'
 
@@ -10,16 +19,73 @@ permissions:
   pull-requests: write
   issues: write
 
+concurrency:
+  group: skills-agent-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   skills-agent:
     name: Maintain Live Skills
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
+    # Execute the skills-agent docs bundle through the runtime-agent-full-run runner so
+    # the agent actually runs and the runner opens a skills documentation PR. docs-agent
+    # is intentionally runner-neutral (its maintain-docs.yml only builds a plan), so
+    # execution is consumer-owned and we call the executing runner directly.
+    uses: Extra-Chill/homeboy-extensions/.github/workflows/runtime-agent-full-run.yml@main
     with:
-      audience: skills
-      base_ref: trunk
-      docs_branch: docs-agent/build-with-wordpress-skills
-      docs_agent_ref: main
-      writable_paths: skills/**,plugins/**/skills/**,plugins/**/README.md
+      runtime_provider: wp-codebox
+      runtime_ref: main
+      runtime_wordpress_version: '7.0'
+      runtime_profile: datamachine-agent-ci
+      runtime_profiles: |
+        {
+          "datamachine-agent-ci": {
+            "id": "datamachine-agent-ci",
+            "runtime_task_ability": "datamachine/run-agent-bundle",
+            "runtime_bundle_ability": "datamachine/run-agent-bundle",
+            "runtime_workflow_ability": "datamachine/execute-workflow",
+            "ability_requirements": ["datamachine/run-agent-bundle"]
+          }
+        }
+      workload_id: skills-maintenance-flow
+      workload_label: Run skills-agent Data Machine agent
+      target_repo: Automattic/build-with-wordpress
+      provider: openai
+      provider_plugin: |
+        {
+          "repo": "WordPress/ai-provider-for-openai",
+          "ref": "trunk",
+          "register_function": "WordPress\\OpenAiAiProvider\\register_provider",
+          "credentials": {
+            "connectors_ai_openai_api_key": "PROVIDER_SECRET_1"
+          }
+        }
+      runtime_execution: |
+        {
+          "kind": "bundle",
+          "source": ".ci/docs-agent/bundles/skills-agent",
+          "input": {
+            "flow_slug": "skills-maintenance-flow"
+          },
+          "metadata": {
+            "bundle_repo": "https://github.com/Automattic/docs-agent.git",
+            "bundle_ref": "${{ github.event_name == 'workflow_dispatch' && inputs.docs_agent_ref || 'main' }}",
+            "bundle_path_in_repo": "bundles/skills-agent"
+          }
+        }
+      prompt: |
+        Maintain live agent skill instructions and generated packaged skill outputs for Build with WordPress.
+
+        Run the skills maintenance flow and make the smallest source-grounded skill update needed for newly merged code, or finish with no changes when the skills are current. Edit live skill instructions under `skills/**`, packaged skill outputs under `plugins/**/skills/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes.
+
+        Use the read-only context aliases `studio` and `wordpress-agent-skills` only as source evidence for integration and packaging behavior.
+
+        Write the skill changes into the runner-provided workspace and leave publication to the runner; it commits the workspace changes and opens the skills pull request.
+      model: ${{ github.event_name == 'workflow_dispatch' && inputs.openai_model || 'gpt-5.5' }}
+      max_turns: 12
+      step_budget: 16
+      time_budget_ms: 600000
+      runtime_dependencies: Automattic/agents-api@main,Extra-Chill/data-machine@main,Extra-Chill/data-machine-code@main
+      validation_dependencies: Automattic/docs-agent@${{ github.event_name == 'workflow_dispatch' && inputs.docs_agent_ref || 'main' }}
       context_repositories: |
         [
           {
@@ -57,4 +123,49 @@ jobs:
             "description": "Generated skill package outputs are committed after build"
           }
         ]
-    secrets: inherit
+      writable_paths: skills/**,plugins/**/skills/**,plugins/**/README.md
+      runner_workspace: |
+        {
+          "enabled": true,
+          "repo": "Automattic/build-with-wordpress",
+          "clone_url": "https://github.com/Automattic/build-with-wordpress.git",
+          "branch": "docs-agent/build-with-wordpress-skills",
+          "branch_prefix": "docs-agent/build-with-wordpress-skills",
+          "from": "origin/trunk",
+          "bootstrap": false
+        }
+      artifact_export_config: |
+        {
+          "pr_title_template": "docs: maintain Build with WordPress live skills",
+          "pr_body_template": "## Build with WordPress live skills\n\nThe skills-agent Data Machine agent (Automattic/docs-agent `bundles/skills-agent`) updated live skill instructions and generated packaged skill outputs in this repository.\n\n- Flow: {task_id}\n- Publication opened by the runtime-agent-full-run runner.\n",
+          "commit_message_template": "docs: maintain live skills"
+        }
+      success_requires_pr: false
+      # Public deps + same-repo target → default GITHUB_TOKEN suffices; no
+      # Homeboy GitHub App token required (runner falls back to GITHUB_TOKEN).
+      require_homeboy_app_token: false
+      required_abilities: |
+        [
+          "datamachine/import-agent",
+          "datamachine/run-flow",
+          "datamachine/drain-job",
+          "datamachine-code/workspace-worktree-add"
+        ]
+      app_token_repos: Automattic/build-with-wordpress,Automattic/docs-agent
+      allowed_repos: |
+        [
+          "Automattic/build-with-wordpress"
+        ]
+      runtime_output_projections: '{"docs_pr_url":"metadata.engine_data.docs_agent.pr_url"}'
+      callback_data: |
+        {
+          "agent_slug": "skills-agent",
+          "pipeline_slug": "skills-pipeline",
+          "flow_slug": "skills-maintenance-flow",
+          "bundle_path": "bundles/skills-agent",
+          "target_repo": "Automattic/build-with-wordpress"
+        }
+      transcript_artifact_name: skills-agent-transcript-${{ github.run_id }}
+      replay_bundle_artifact_name: skills-agent-replay-${{ github.run_id }}
+    secrets:
+      PROVIDER_SECRET_1: ${{ secrets.OPENAI_API_KEY }}

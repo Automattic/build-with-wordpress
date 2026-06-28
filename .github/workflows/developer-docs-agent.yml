@@ -127,8 +127,6 @@ jobs:
           }
         ]
       writable_paths: README.md,docs/**,plugins/**/README.md
-      workspace_contract_checks: >-
-        ${{ github.event_name == 'workflow_dispatch' && '{"paths_exist":[{"path":"README.md"},{"path":"docs/README.md"},{"path":"docs/architecture.md"},{"path":"docs/generated-outputs.md"},{"path":"docs/skills-and-integrations.md"},{"path":"docs/contributor-workflows.md"}],"glob_min_count":[{"glob":"docs/**/*.md","min":5}],"entry_points":[{"path":"README.md","must_link_to":["docs/README.md"]},{"path":"docs/README.md","must_link_to":["docs/architecture.md","docs/generated-outputs.md","docs/skills-and-integrations.md","docs/contributor-workflows.md"]}],"forbidden_phrases":["future coverage","deferred","saved for later"]}' || '{}' }}
       runner_workspace: |
         {
           "enabled": true,

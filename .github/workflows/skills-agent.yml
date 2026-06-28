@@ -141,7 +141,9 @@ jobs:
           "commit_message_template": "docs: maintain live skills"
         }
       success_requires_pr: false
-      require_homeboy_app_token: true
+      # Public deps + same-repo target → default GITHUB_TOKEN suffices; no
+      # Homeboy GitHub App token required (runner falls back to GITHUB_TOKEN).
+      require_homeboy_app_token: false
       required_abilities: |
         [
           "datamachine/import-agent",
@@ -166,6 +168,4 @@ jobs:
       transcript_artifact_name: skills-agent-transcript-${{ github.run_id }}
       replay_bundle_artifact_name: skills-agent-replay-${{ github.run_id }}
     secrets:
-      HOMEBOY_APP_ID: ${{ secrets.HOMEBOY_APP_ID }}
-      HOMEBOY_APP_PRIVATE_KEY: ${{ secrets.HOMEBOY_APP_PRIVATE_KEY }}
       PROVIDER_SECRET_1: ${{ secrets.OPENAI_API_KEY }}

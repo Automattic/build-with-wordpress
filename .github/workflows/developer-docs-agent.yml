@@ -146,7 +146,12 @@ jobs:
           "commit_message_template": "docs: maintain developer documentation"
         }
       success_requires_pr: ${{ github.event_name == 'workflow_dispatch' }}
-      require_homeboy_app_token: true
+      # All checked-out repos (docs-agent bundle, agents-api, data-machine,
+      # data-machine-code) are public and the target is this same repo, so the
+      # default GITHUB_TOKEN (granted contents/pull-requests: write above) can
+      # read deps and open the docs PR. No Homeboy GitHub App token is required;
+      # the runner falls back to GITHUB_TOKEN when app creds are unavailable.
+      require_homeboy_app_token: false
       required_abilities: |
         [
           "datamachine/import-agent",
@@ -171,6 +176,4 @@ jobs:
       transcript_artifact_name: developer-docs-agent-transcript-${{ github.run_id }}
       replay_bundle_artifact_name: developer-docs-agent-replay-${{ github.run_id }}
     secrets:
-      HOMEBOY_APP_ID: ${{ secrets.HOMEBOY_APP_ID }}
-      HOMEBOY_APP_PRIVATE_KEY: ${{ secrets.HOMEBOY_APP_PRIVATE_KEY }}
       PROVIDER_SECRET_1: ${{ secrets.OPENAI_API_KEY }}

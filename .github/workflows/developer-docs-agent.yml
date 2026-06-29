@@ -37,12 +37,15 @@ jobs:
       runtime_ref: main
       runtime_wordpress_version: '7.0'
       runtime_profile: codebox-agent-runtime
+      # No runtime_task_ability: a non-empty runtime_task makes the sandbox run
+      # that ability as a delegated in-sandbox task. The native path leaves
+      # runtime_task empty so wp-codebox runs the agents/chat default handler
+      # (agents-api) directly against the imported docs agent.
       runtime_profiles: |
         {
           "codebox-agent-runtime": {
             "schema": "wp-codebox/runtime-profile/v1",
-            "id": "codebox-agent-runtime",
-            "runtime_task_ability": "wp-codebox/run-agent-task"
+            "id": "codebox-agent-runtime"
           }
         }
       workload_id: ${{ github.event_name == 'workflow_dispatch' && 'technical-docs-bootstrap-flow' || 'technical-docs-maintenance-flow' }}
@@ -57,21 +60,6 @@ jobs:
           "register_function": "WordPress\\OpenAiAiProvider\\register_provider",
           "credentials": {
             "connectors_ai_openai_api_key": "PROVIDER_SECRET_1"
-          }
-        }
-      runtime_task: |
-        {
-          "ability": "wp-codebox/run-agent-task",
-          "input": {
-            "agent": "${{ github.event_name == 'workflow_dispatch' && 'technical-docs-bootstrap-agent' || 'technical-docs-maintenance-agent' }}",
-            "provider": "openai",
-            "model": "${{ github.event_name == 'workflow_dispatch' && inputs.openai_model || 'gpt-5.5' }}",
-            "agent_bundles": [
-              {
-                "source": "/workspace/build-with-wordpress/.ci/docs-agent/bundles/technical-docs-agent/native/${{ github.event_name == 'workflow_dispatch' && 'technical-docs-bootstrap-agent' || 'technical-docs-maintenance-agent' }}.agent.json",
-                "on_conflict": "skip"
-              }
-            ]
           }
         }
       runtime_config: |

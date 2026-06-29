@@ -86,6 +86,23 @@ jobs:
             }
           ]
         }
+      # Mount + activate agents-api as the native runtime substrate inside the
+      # sandbox. runtime_dependencies checks it out to .ci/agents-api, but the
+      # wp-codebox component auto-discovery only probes repo siblings, so declare
+      # it explicitly. This wires WP_CODEBOX_AGENTS_API_PATH and registers the
+      # agents-api default chat handler + runtime agent bundle importer the
+      # native run-agent-task path needs.
+      component_contracts: |
+        [
+          {
+            "slug": "agents-api",
+            "path": ".ci/agents-api",
+            "loadAs": "plugin",
+            "activate": true,
+            "pluginFile": "agents-api/agents-api.php",
+            "required": true
+          }
+        ]
       prompt: |
         Maintain developer-facing documentation for Build with WordPress.
 

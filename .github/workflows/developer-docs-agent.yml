@@ -37,15 +37,23 @@ jobs:
       runtime_ref: main
       runtime_wordpress_version: '7.0'
       runtime_profile: codebox-agent-runtime
-      # No runtime_task_ability: a non-empty runtime_task makes the sandbox run
-      # that ability as a delegated in-sandbox task. The native path leaves
-      # runtime_task empty so wp-codebox runs the agents/chat default handler
-      # (agents-api) directly against the imported docs agent.
+      # runtime-agent-ci requires every profile to declare runtime_task_ability,
+      # so the wp-codebox native profile declares its own run-agent-task ability.
+      # BLOCKED upstream (homeboy-extensions): the wp-codebox executor propagates
+      # this ability into the inner sandbox task_input.runtime_task, and the
+      # sandbox agent-code only runs the native agents/chat default handler when
+      # runtime_task is empty -- a non-empty runtime_task is executed as a
+      # delegated ability, so wp-codebox/run-agent-task self-delegates with an
+      # input that lacks goal ("goal is a required property of input"). The
+      # executor needs to treat its own run-agent-task ability as the native
+      # outer invocation and leave the inner runtime_task empty (no delegation),
+      # the way studio-native calls run-agent-task with no runtime_task.
       runtime_profiles: |
         {
           "codebox-agent-runtime": {
             "schema": "wp-codebox/runtime-profile/v1",
-            "id": "codebox-agent-runtime"
+            "id": "codebox-agent-runtime",
+            "runtime_task_ability": "wp-codebox/run-agent-task"
           }
         }
       workload_id: ${{ github.event_name == 'workflow_dispatch' && 'technical-docs-bootstrap-flow' || 'technical-docs-maintenance-flow' }}

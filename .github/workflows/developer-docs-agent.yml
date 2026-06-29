@@ -68,7 +68,7 @@ jobs:
             "model": "${{ github.event_name == 'workflow_dispatch' && inputs.openai_model || 'gpt-5.5' }}",
             "agent_bundles": [
               {
-                "source": "${{ github.workspace }}/.ci/docs-agent/bundles/technical-docs-agent/native/${{ github.event_name == 'workflow_dispatch' && 'technical-docs-bootstrap-agent' || 'technical-docs-maintenance-agent' }}.agent.json",
+                "source": "/workspace/build-with-wordpress/.ci/docs-agent/bundles/technical-docs-agent/native/${{ github.event_name == 'workflow_dispatch' && 'technical-docs-bootstrap-agent' || 'technical-docs-maintenance-agent' }}.agent.json",
                 "on_conflict": "skip"
               }
             ]
@@ -81,7 +81,7 @@ jobs:
           },
           "agent_bundles": [
             {
-              "source": "${{ github.workspace }}/.ci/docs-agent/bundles/technical-docs-agent/native/${{ github.event_name == 'workflow_dispatch' && 'technical-docs-bootstrap-agent' || 'technical-docs-maintenance-agent' }}.agent.json",
+              "source": "/workspace/build-with-wordpress/.ci/docs-agent/bundles/technical-docs-agent/native/${{ github.event_name == 'workflow_dispatch' && 'technical-docs-bootstrap-agent' || 'technical-docs-maintenance-agent' }}.agent.json",
               "on_conflict": "skip"
             }
           ]

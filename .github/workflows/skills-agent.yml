@@ -10,6 +10,10 @@ permissions:
   pull-requests: write
   issues: write
 
+concurrency:
+  group: skills-agent-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   skills-agent:
     name: Maintain Live Skills
@@ -18,32 +22,7 @@ jobs:
       audience: skills
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-skills
-      docs_agent_ref: main
       writable_paths: skills/**,plugins/**/skills/**,plugins/**/README.md
-      context_repositories: |
-        [
-          {
-            "repo": "Automattic/studio",
-            "ref": "trunk",
-            "alias": "studio",
-            "paths": [
-              "apps/cli/ai/tools/**",
-              "apps/cli/ai/system-prompt.ts",
-              "apps/cli/commands/mcp.ts",
-              "eval/promptfoo.config.yaml"
-            ]
-          },
-          {
-            "repo": "WordPress/agent-skills",
-            "ref": "trunk",
-            "alias": "wordpress-agent-skills",
-            "paths": [
-              "skills/**",
-              "docs/packaging.md",
-              ".github/workflows/ai-skill-maintenance.yml"
-            ]
-          }
-        ]
       verification_commands: |
         [
           "pnpm install --frozen-lockfile",
@@ -57,4 +36,10 @@ jobs:
             "description": "Generated skill package outputs are committed after build"
           }
         ]
-    secrets: inherit
+      prompt: |
+        Maintain live agent skill instructions and generated packaged skill outputs for Build with WordPress.
+
+        Run the native skills maintenance package and make the smallest source-grounded skill update needed for newly merged code, or finish with no changes when the skills are current. Edit live skill instructions under `skills/**`, packaged skill outputs under `plugins/**/skills/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes.
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      EXTERNAL_PACKAGE_SOURCE_POLICY: ${{ secrets.EXTERNAL_PACKAGE_SOURCE_POLICY }}

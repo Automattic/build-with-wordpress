@@ -24,69 +24,7 @@ jobs:
       run_kind: ${{ github.event_name == 'workflow_dispatch' && 'bootstrap' || 'maintenance' }}
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-developer-docs
-      docs_agent_ref: main
       writable_paths: README.md,docs/**,plugins/**/README.md
-      bootstrap_contract: |
-        {
-          "required_paths": [
-            "README.md",
-            "docs/README.md",
-            "docs/architecture.md",
-            "docs/generated-outputs.md",
-            "docs/skills-and-integrations.md",
-            "docs/contributor-workflows.md"
-          ],
-          "required_globs": [
-            {
-              "pattern": "docs/**/*.md",
-              "min": 5
-            }
-          ],
-          "entry_points": [
-            {
-              "path": "README.md",
-              "must_link_to": ["docs/README.md"]
-            },
-            {
-              "path": "docs/README.md",
-              "must_link_to": [
-                "docs/architecture.md",
-                "docs/generated-outputs.md",
-                "docs/skills-and-integrations.md",
-                "docs/contributor-workflows.md"
-              ]
-            }
-          ],
-          "forbidden_phrases": [
-            "future coverage",
-            "deferred",
-            "saved for later"
-          ]
-        }
-      context_repositories: |
-        [
-          {
-            "repo": "Automattic/studio",
-            "ref": "trunk",
-            "alias": "studio",
-            "paths": [
-              "apps/cli/ai/tools/**",
-              "apps/cli/ai/system-prompt.ts",
-              "apps/cli/commands/mcp.ts",
-              "eval/promptfoo.config.yaml"
-            ]
-          },
-          {
-            "repo": "WordPress/agent-skills",
-            "ref": "trunk",
-            "alias": "wordpress-agent-skills",
-            "paths": [
-              "skills/**",
-              "docs/packaging.md",
-              ".github/workflows/ai-skill-maintenance.yml"
-            ]
-          }
-        ]
       verification_commands: |
         [
           "pnpm install --frozen-lockfile",
@@ -103,9 +41,9 @@ jobs:
       prompt: |
         Maintain developer-facing documentation for Build with WordPress.
 
-        Manual dispatch runs the bootstrap flow and should create or improve the initial developer documentation structure if the repository does not already have one. Push-triggered merge checks run the maintenance flow and should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when documentation is current.
+        Manual dispatch runs the native technical documentation bootstrap package. Push-triggered runs use the native technical documentation maintenance package and should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when documentation is current.
 
-        Write the developer documentation as repository docs: `docs/README.md` as the index, focused topic pages under `docs/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes. For the bootstrap surface, prefer `docs/architecture.md`, `docs/generated-outputs.md`, `docs/skills-and-integrations.md`, and `docs/contributor-workflows.md` as the main topic pages.
-
-        Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows. Document agent/plugin configuration files and generated plugin artifacts from those repository docs and plugin README files. Use the read-only context aliases `studio` and `wordpress-agent-skills` only as source evidence for integration behavior.
-    secrets: inherit
+        Write repository documentation with `docs/README.md` as the index, focused topic pages under `docs/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes. Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows.
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      EXTERNAL_PACKAGE_SOURCE_POLICY: ${{ secrets.EXTERNAL_PACKAGE_SOURCE_POLICY }}

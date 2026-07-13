@@ -2,11 +2,6 @@ name: Build With WordPress Skills Agent
 
 on:
   workflow_dispatch:
-    inputs:
-      docs_agent_ref:
-        description: Ref of Automattic/docs-agent containing the native agent package.
-        required: false
-        default: main
   schedule:
     - cron: '0 9 * * 1'
 
@@ -22,13 +17,12 @@ concurrency:
 jobs:
   skills-agent:
     name: Maintain Live Skills
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@7b2df969c34de112ec7ad13189ba94226a7f76f3
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
     with:
       audience: skills
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-skills
       writable_paths: skills/**,plugins/**/skills/**,plugins/**/README.md
-      docs_agent_ref: ${{ github.event_name == 'workflow_dispatch' && inputs.docs_agent_ref || 'main' }}
       verification_commands: |
         [
           "pnpm install --frozen-lockfile",
@@ -48,3 +42,4 @@ jobs:
         Run the native skills maintenance package and make the smallest source-grounded skill update needed for newly merged code, or finish with no changes when the skills are current. Edit live skill instructions under `skills/**`, packaged skill outputs under `plugins/**/skills/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes.
     secrets:
       ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN || github.token }}
+      EXTERNAL_PACKAGE_SOURCE_POLICY: ${{ secrets.EXTERNAL_PACKAGE_SOURCE_POLICY }}

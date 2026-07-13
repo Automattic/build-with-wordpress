@@ -1,7 +1,9 @@
 {
   "schema": "docs-agent/maintain-docs-workflow-interface/v1",
   "producer": "Automattic/docs-agent",
-  "producer_revision": "7b2df969c34de112ec7ad13189ba94226a7f76f3",
+  "producer_ref": "main",
+  "producer_revision": "3a89775c8c804a4e0683102c9bb8e80b17d88b65",
+  "native_runner_revision": "54c2f9a7bc3cd1fe20055d496c83efcfb99afb41",
   "workflow": ".github/workflows/maintain-docs.yml",
   "inputs": [
     "audience",
@@ -12,8 +14,7 @@
     "verification_commands",
     "drift_checks",
     "prompt",
-    "docs_agent_ref",
     "run_agent"
   ],
-  "secrets": ["ACCESS_TOKEN"]
+  "secrets": ["ACCESS_TOKEN", "EXTERNAL_PACKAGE_SOURCE_POLICY"]
 }

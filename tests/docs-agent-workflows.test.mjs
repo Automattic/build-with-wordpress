@@ -28,10 +28,10 @@ for (const workflow of workflows) {
   const usedInputs = [...withBlock.matchAll(/^      ([a-z_]+):/gm)].map((match) => match[1])
   const usedSecrets = [...secretsBlock.matchAll(/^      ([A-Z_]+):/gm)].map((match) => match[1])
 
-  assert.match(source, new RegExp(`uses: ${fixture.producer}/${fixture.workflow}@${fixture.producer_revision}`))
+  assert.match(source, new RegExp(`uses: ${fixture.producer}/${fixture.workflow}@${fixture.producer_ref}`))
   assert.deepEqual(usedInputs, [...new Set(usedInputs)], `${workflow.path} must not declare an input twice`)
   assert.ok(usedInputs.every((input) => fixture.inputs.includes(input)), `${workflow.path} uses an input absent from the producer schema`)
-  assert.deepEqual(usedSecrets, fixture.secrets, `${workflow.path} must forward the producer ACCESS_TOKEN secret`)
+  assert.deepEqual(usedSecrets, fixture.secrets, `${workflow.path} must forward the producer secrets`)
   assert.match(source, new RegExp(`audience: ${workflow.audience}`))
   assert.match(source, new RegExp(`writable_paths: ${workflow.writablePaths.replaceAll("*", "\\*")}`))
   assert.match(source, /base_ref: trunk/)
@@ -40,6 +40,7 @@ for (const workflow of workflows) {
   assert.match(source, /pnpm build/)
   assert.match(source, /pnpm verify/)
   assert.match(source, /git diff --exit-code/)
+  assert.doesNotMatch(source, /docs_agent_ref/)
   assert.doesNotMatch(source, /runtime-agent-full-run|runtime_(?:provider|profile|profiles|execution|dependencies|task|config)|datamachine|homeboy/i)
 
   if (workflow.runKind) {

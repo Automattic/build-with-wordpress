@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - uses: rhysd/actionlint@v1
+      - uses: rhysd/actionlint@v1.7.12
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
         env:

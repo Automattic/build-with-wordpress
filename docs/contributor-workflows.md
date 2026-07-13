@@ -147,7 +147,7 @@ The repository includes GitHub Actions workflows for documentation maintenance a
 - `developer-docs-agent.yml` runs the technical documentation agent lane for bootstrap and maintenance documentation updates.
 - `skills-agent.yml` runs the skills maintenance lane.
 
-Manual documentation bootstrap runs should create or improve the initial documentation structure. Push-triggered merge checks should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when docs are current.
+Manual documentation bootstrap runs should create or improve the initial documentation structure. Push-triggered maintenance runs should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when docs are current.
 
 ### Developer docs workflow contract
 
@@ -165,7 +165,7 @@ When changing the docs workflow, keep this contract aligned with the repository 
 
 `skills-agent.yml` uses the same reusable Docs Agent workflow with `audience: skills`. It is triggered manually and on a weekly Monday schedule, writes only to `skills/**`, generated skill copies under `plugins/**/skills/**`, and plugin README files, and runs the same install, build, verify, and generated-output drift checks. Keep this workflow focused on live skill content; generated package structure and developer documentation belong in the technical docs workflow and the generator/verifier source.
 
-The `CI` workflow runs for pull requests and protected-branch pushes. It checks out Docs Agent at `5344a4bfbda4a0553cc92636258e46a715b1c72d` and WP Codebox at `54c2f9a7bc3cd1fe20055d496c83efcfb99afb41`, then runs `pnpm test`, `pnpm build`, and `pnpm verify`. The workflow contract test rejects any producer revision or schema drift.
+The `CI` workflow provides automated validation for pull requests and configured branch pushes. It checks out Docs Agent at `5344a4bfbda4a0553cc92636258e46a715b1c72d` and WP Codebox at `54c2f9a7bc3cd1fe20055d496c83efcfb99afb41`, then runs `pnpm test`, `pnpm build`, and `pnpm verify`. The workflow contract test rejects any producer revision or schema drift. This repository does not currently require the workflow as a merge gate.
 
 ## Pull request checklist
 

@@ -151,14 +151,12 @@ Manual documentation bootstrap runs should create or improve the initial documen
 
 ### Developer docs workflow contract
 
-`developer-docs-agent.yml` calls the reusable `Automattic/docs-agent/.github/workflows/maintain-docs.yml` workflow for the technical documentation lane. The workflow source defines the documentation maintenance boundary that this repository expects reviewers to enforce:
+`developer-docs-agent.yml` calls the reusable `Automattic/docs-agent/.github/workflows/maintain-docs.yml` workflow for the technical documentation lane. The caller grants its `github.token` the publication permissions declared by the workflow and explicitly forwards `OPENAI_API_KEY` for live runs and the required `EXTERNAL_PACKAGE_SOURCE_POLICY` package allowlist.
 
 - `workflow_dispatch` runs with `run_kind: bootstrap`; pushes to `trunk` run with `run_kind: maintenance`.
 - `docs_branch` is `docs-agent/build-with-wordpress-developer-docs` and `base_ref` is `trunk`.
 - writable documentation paths are limited to `README.md`, `docs/**`, and `plugins/**/README.md`.
-- the bootstrap contract requires the top-level README, `docs/README.md`, and the four topic pages `docs/architecture.md`, `docs/generated-outputs.md`, `docs/skills-and-integrations.md`, and `docs/contributor-workflows.md`.
-- the contract also requires at least five Markdown files under `docs/**`, a README link to `docs/README.md`, docs-index links to each required topic page, and avoidance of backlog-style phrases such as `future coverage`, `deferred`, and `saved for later`.
-- read-only context evidence is scoped to the `studio` and `wordpress-agent-skills` aliases for Studio MCP behavior and skill packaging patterns.
+- Docs Agent selects its native package from the immutable reusable-workflow revision GitHub resolves for the run. The technical bootstrap lane requires a published PR; maintenance permits a no-change result.
 - verification commands are `pnpm install --frozen-lockfile`, `pnpm build`, and `pnpm verify`; the drift check is `git diff --exit-code` so generated package outputs must be committed after a build.
 
 When changing the docs workflow, keep this contract aligned with the repository documentation structure in [the docs index](README.md). When changing generated-output behavior, update the docs and generated files in the same pull request so maintenance runs can finish cleanly.
@@ -166,6 +164,8 @@ When changing the docs workflow, keep this contract aligned with the repository 
 ### Skills workflow contract
 
 `skills-agent.yml` uses the same reusable Docs Agent workflow with `audience: skills`. It is triggered manually and on a weekly Monday schedule, writes only to `skills/**`, generated skill copies under `plugins/**/skills/**`, and plugin README files, and runs the same install, build, verify, and generated-output drift checks. Keep this workflow focused on live skill content; generated package structure and developer documentation belong in the technical docs workflow and the generator/verifier source.
+
+The `CI` workflow runs for pull requests and protected-branch pushes. It checks out Docs Agent at `5344a4bfbda4a0553cc92636258e46a715b1c72d` and WP Codebox at `54c2f9a7bc3cd1fe20055d496c83efcfb99afb41`, then runs `pnpm test`, `pnpm build`, and `pnpm verify`. The workflow contract test rejects any producer revision or schema drift.
 
 ## Pull request checklist
 

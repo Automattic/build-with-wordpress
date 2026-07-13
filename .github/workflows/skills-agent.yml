@@ -41,5 +41,5 @@ jobs:
 
         Run the native skills maintenance package and make the smallest source-grounded skill update needed for newly merged code, or finish with no changes when the skills are current. Edit live skill instructions under `skills/**`, packaged skill outputs under `plugins/**/skills/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes.
     secrets:
-      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN || github.token }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       EXTERNAL_PACKAGE_SOURCE_POLICY: ${{ secrets.EXTERNAL_PACKAGE_SOURCE_POLICY }}

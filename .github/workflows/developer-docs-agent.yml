@@ -45,5 +45,5 @@ jobs:
 
         Write repository documentation with `docs/README.md` as the index, focused topic pages under `docs/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes. Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows.
     secrets:
-      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN || github.token }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       EXTERNAL_PACKAGE_SOURCE_POLICY: ${{ secrets.EXTERNAL_PACKAGE_SOURCE_POLICY }}

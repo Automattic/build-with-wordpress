@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - trunk
+      - feat/native-docs-agent
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Test, Build, and Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Automattic/docs-agent
+          ref: 5344a4bfbda4a0553cc92636258e46a715b1c72d
+          path: .producer/docs-agent
+      - uses: actions/checkout@v4
+        with:
+          repository: Automattic/wp-codebox
+          ref: 54c2f9a7bc3cd1fe20055d496c83efcfb99afb41
+          path: .producer/wp-codebox
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: rhysd/actionlint@v1
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+        env:
+          DOCS_AGENT_DIR: ${{ github.workspace }}/.producer/docs-agent
+          WP_CODEBOX_DIR: ${{ github.workspace }}/.producer/wp-codebox
+      - run: pnpm build
+      - run: pnpm verify

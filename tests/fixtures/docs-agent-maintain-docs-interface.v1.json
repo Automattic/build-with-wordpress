@@ -1,0 +1,19 @@
+{
+  "schema": "docs-agent/maintain-docs-workflow-interface/v1",
+  "producer": "Automattic/docs-agent",
+  "producer_revision": "7b2df969c34de112ec7ad13189ba94226a7f76f3",
+  "workflow": ".github/workflows/maintain-docs.yml",
+  "inputs": [
+    "audience",
+    "run_kind",
+    "base_ref",
+    "docs_branch",
+    "writable_paths",
+    "verification_commands",
+    "drift_checks",
+    "prompt",
+    "docs_agent_ref",
+    "run_agent"
+  ],
+  "secrets": ["ACCESS_TOKEN"]
+}

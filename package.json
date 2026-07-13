@@ -8,7 +8,8 @@
     "build": "node scripts/build-telemetry-mcp.mjs && node scripts/build-plugins.mjs",
     "build:telemetry-mcp": "node scripts/build-telemetry-mcp.mjs",
     "export:cursor": "node scripts/export-cursor-plugin.mjs",
-    "verify": "node scripts/verify-plugins.mjs"
+    "verify": "node scripts/verify-plugins.mjs",
+    "test": "node tests/docs-agent-workflows.test.mjs && actionlint .github/workflows/developer-docs-agent.yml .github/workflows/skills-agent.yml"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

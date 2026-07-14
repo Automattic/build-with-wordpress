@@ -45,6 +45,8 @@ jobs:
         Manual dispatch runs the native technical documentation bootstrap package. Push-triggered runs use the native technical documentation maintenance package and should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when documentation is current.
 
         Write repository documentation with `docs/README.md` as the index, focused topic pages under `docs/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes. Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows.
+
+        Keep the developer documentation current with the native maintenance lanes in `.github/workflows/developer-docs-agent.yml` and `.github/workflows/skills-agent.yml`, including their purpose, writable boundaries, verification contract, and no-op behavior.
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       EXTERNAL_PACKAGE_SOURCE_POLICY: ${{ secrets.EXTERNAL_PACKAGE_SOURCE_POLICY }}

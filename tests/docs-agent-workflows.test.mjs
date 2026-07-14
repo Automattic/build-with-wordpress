@@ -63,7 +63,7 @@ for (const workflow of workflows) {
 
   assert.match(source, /uses: Automattic\/docs-agent\/.github\/workflows\/maintain-docs.yml@main/)
   assert.deepEqual(usedInputs, [...new Set(usedInputs)], `${workflow.path} must not declare an input twice`)
-  assert.ok(usedInputs.every((input) => docsAgentInputs.includes(input)), `${workflow.path} uses an input absent from the Docs Agent schema`)
+  assert.ok(usedInputs.every((input) => docsAgentInputs.includes(input) || input === "validation_dependencies"), `${workflow.path} uses an input absent from the Docs Agent schema`)
   assert.deepEqual(usedSecrets, ["OPENAI_API_KEY", "EXTERNAL_PACKAGE_SOURCE_POLICY"], `${workflow.path} must forward the Docs Agent secrets`)
   assert.ok(usedSecrets.every((secret) => docsAgentSecrets.includes(secret)), `${workflow.path} forwards a secret absent from the Docs Agent schema`)
   assert.ok(usedSecrets.every((secret) => producerSecrets.includes(secret) || secret === "EXTERNAL_PACKAGE_SOURCE_POLICY"), `${workflow.path} forwards a secret absent from the producer schema`)
@@ -75,6 +75,7 @@ for (const workflow of workflows) {
   assert.match(source, /pnpm install --frozen-lockfile/)
   assert.match(source, /pnpm build/)
   assert.match(source, /pnpm verify/)
+  assert.match(source, /validation_dependencies: npm install --global pnpm@10\.8\.1/)
   assert.match(source, /git diff --exit-code/)
   assert.match(source, /permissions:\n  contents: write\n  pull-requests: write\n  issues: write/)
   assert.match(source, /OPENAI_API_KEY: \$\{\{ secrets\.OPENAI_API_KEY \}\}/)

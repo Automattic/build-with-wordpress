@@ -75,6 +75,7 @@ for (const workflow of workflows) {
   assert.match(source, /pnpm install --frozen-lockfile/)
   assert.match(source, /pnpm build/)
   assert.match(source, /pnpm verify/)
+  assert.match(source, /validation_dependencies: npm install --global pnpm@10\.8\.1/)
   assert.match(source, /git diff --exit-code/)
   assert.match(source, /permissions:\n  contents: write\n  pull-requests: write\n  issues: write/)
   assert.match(source, /OPENAI_API_KEY: \$\{\{ secrets\.OPENAI_API_KEY \}\}/)

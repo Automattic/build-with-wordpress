@@ -31,6 +31,7 @@ jobs:
           "pnpm build",
           "pnpm verify"
         ]
+      validation_dependencies: npm install --global pnpm@10.8.1
       drift_checks: |
         [
           {

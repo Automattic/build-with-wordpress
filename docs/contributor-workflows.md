@@ -147,13 +147,13 @@ The repository includes GitHub Actions workflows for documentation maintenance a
 - `developer-docs-agent.yml` runs the technical documentation agent lane for bootstrap and maintenance documentation updates.
 - `skills-agent.yml` runs the skills maintenance lane.
 
-Manual documentation bootstrap runs should create or improve the initial documentation structure. Push-triggered maintenance runs should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when docs are current.
+Manual documentation runs default to maintenance and should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when docs are current. Select bootstrap only to intentionally create or improve the initial documentation structure.
 
 ### Developer docs workflow contract
 
 `developer-docs-agent.yml` calls the reusable `Automattic/docs-agent/.github/workflows/maintain-docs.yml` workflow for the technical documentation lane. The caller grants its `github.token` the publication permissions declared by the workflow and explicitly forwards `OPENAI_API_KEY` for live runs and the required `EXTERNAL_PACKAGE_SOURCE_POLICY` package allowlist.
 
-- `workflow_dispatch` runs with `run_kind: bootstrap`; pushes to `trunk` run with `run_kind: maintenance`.
+- `workflow_dispatch` offers `run_kind` choices of `maintenance` (the default) and `bootstrap`; pushes to `trunk` run with `run_kind: maintenance`.
 - `docs_branch` is `docs-agent/build-with-wordpress-developer-docs` and `base_ref` is `trunk`.
 - writable documentation paths are limited to `README.md`, `docs/**`, and `plugins/**/README.md`.
 - Docs Agent selects its native package from the immutable reusable-workflow revision GitHub resolves for the run. The technical bootstrap lane requires a published PR; maintenance permits a no-change result.

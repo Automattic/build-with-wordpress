@@ -2,6 +2,15 @@ name: Build With WordPress Developer Docs Agent
 
 on:
   workflow_dispatch:
+    inputs:
+      run_kind:
+        description: Documentation run mode
+        required: false
+        default: maintenance
+        type: choice
+        options:
+          - maintenance
+          - bootstrap
   push:
     branches:
       - trunk
@@ -21,7 +30,7 @@ jobs:
     uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
     with:
       audience: technical
-      run_kind: ${{ github.event_name == 'workflow_dispatch' && 'bootstrap' || 'maintenance' }}
+      run_kind: ${{ github.event.inputs.run_kind || 'maintenance' }}
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-developer-docs
       writable_paths: README.md,docs/**,plugins/**/README.md
@@ -42,7 +51,7 @@ jobs:
       prompt: |
         Maintain developer-facing documentation for Build with WordPress.
 
-        Manual dispatch runs the native technical documentation bootstrap package. Push-triggered runs use the native technical documentation maintenance package and should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when documentation is current.
+        Manual dispatch defaults to the native technical documentation maintenance package; select bootstrap only to intentionally re-bootstrap the documentation. Push-triggered runs use the native technical documentation maintenance package and should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when documentation is current.
 
         Write repository documentation with `docs/README.md` as the index, focused topic pages under `docs/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes. Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows.
 

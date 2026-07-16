@@ -85,7 +85,10 @@ for (const workflow of workflows) {
   assert.doesNotMatch(source, /runtime-agent-full-run|runtime_(?:provider|profile|profiles|execution|dependencies|task|config)|datamachine|homeboy/i)
 
   if (workflow.runKind) {
-    assert.match(source, /run_kind: \$\{\{ github\.event_name == 'workflow_dispatch' && 'bootstrap' \|\| 'maintenance' \}\}/)
+    const dispatchInputs = source.match(/  workflow_dispatch:\n    inputs:\n([\s\S]*?)  push:/)?.[1]
+    assert.ok(dispatchInputs, "Developer Docs workflow must offer a manual run mode")
+    assert.match(dispatchInputs, /      run_kind:\n        description: Documentation run mode\n        required: false\n        default: maintenance\n        type: choice\n        options:\n          - maintenance\n          - bootstrap/)
+    assert.match(source, /run_kind: \$\{\{ github\.event\.inputs\.run_kind \|\| 'maintenance' \}\}/)
   } else {
     assert.doesNotMatch(source, /^      run_kind:/m)
   }

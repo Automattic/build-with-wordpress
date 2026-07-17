@@ -4,10 +4,10 @@ import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 
 const root = resolve(new URL("..", import.meta.url).pathname)
-const docsAgentRevision = "397f32e5c82f662199f2c3555e32804ed0365d7f"
+const docsAgentRevision = "e641d0d696aafd27255b5888b35a6ef0cde3f408"
 const docsAgentPackageRevision = "7b2df969c34de112ec7ad13189ba94226a7f76f3"
-const wpCodeboxRevision = "a2b02cd99ba645ba2250bf58c943bdd1eb13e690"
-const wpCodeboxWorkflowRef = "v0.12.23"
+const wpCodeboxProducerRevision = "8db3c937c3b29b2df7ecde3212650942659d18a8"
+const wpCodeboxWorkflowRef = "v0.12.24"
 const docsAgentDir = process.env.DOCS_AGENT_DIR
 const wpCodeboxDir = process.env.WP_CODEBOX_DIR
 
@@ -18,12 +18,13 @@ const revision = (directory) => execFileSync("git", ["-C", directory, "rev-parse
 const readJson = async (directory, path) => JSON.parse(await readFile(resolve(directory, path), "utf8"))
 
 assert.equal(revision(docsAgentDir), docsAgentRevision, "Docs Agent checkout must match the declared producer revision")
-assert.equal(revision(wpCodeboxDir), wpCodeboxRevision, "WP Codebox checkout must match the Docs Agent producer revision")
+assert.equal(revision(wpCodeboxDir), wpCodeboxProducerRevision, "WP Codebox checkout must match the immutable producer revision")
 
 const docsAgentWorkflow = await readFile(resolve(docsAgentDir, ".github/workflows/maintain-docs.yml"), "utf8")
 const wpCodeboxContract = await readJson(wpCodeboxDir, "contracts/run-agent-task-reusable-workflow-interface.v1.json")
 assert.equal(wpCodeboxContract.schema, "wp-codebox/reusable-workflow-interface/v1")
 assert.match(docsAgentWorkflow, new RegExp(`uses: Automattic/wp-codebox/.github/workflows/run-agent-task.yml@${wpCodeboxWorkflowRef}`))
+assert.match(docsAgentWorkflow, new RegExp(`wp_codebox_release_ref: ${wpCodeboxWorkflowRef}`))
 assert.match(docsAgentWorkflow, new RegExp(`DOCS_AGENT_PACKAGE_REVISION: ${docsAgentPackageRevision}`))
 assert.match(docsAgentWorkflow, /OPENAI_API_KEY: \$\{\{ secrets\.OPENAI_API_KEY \}\}/)
 assert.match(docsAgentWorkflow, /ACCESS_TOKEN: \$\{\{ github\.token \}\}/)

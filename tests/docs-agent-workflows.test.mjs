@@ -4,8 +4,10 @@ import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 
 const root = resolve(new URL("..", import.meta.url).pathname)
-const docsAgentRevision = "5344a4bfbda4a0553cc92636258e46a715b1c72d"
-const wpCodeboxRevision = "54c2f9a7bc3cd1fe20055d496c83efcfb99afb41"
+const docsAgentRevision = "397f32e5c82f662199f2c3555e32804ed0365d7f"
+const docsAgentPackageRevision = "7b2df969c34de112ec7ad13189ba94226a7f76f3"
+const wpCodeboxRevision = "a2b02cd99ba645ba2250bf58c943bdd1eb13e690"
+const wpCodeboxWorkflowRef = "v0.12.23"
 const docsAgentDir = process.env.DOCS_AGENT_DIR
 const wpCodeboxDir = process.env.WP_CODEBOX_DIR
 
@@ -21,8 +23,8 @@ assert.equal(revision(wpCodeboxDir), wpCodeboxRevision, "WP Codebox checkout mus
 const docsAgentWorkflow = await readFile(resolve(docsAgentDir, ".github/workflows/maintain-docs.yml"), "utf8")
 const wpCodeboxContract = await readJson(wpCodeboxDir, "contracts/run-agent-task-reusable-workflow-interface.v1.json")
 assert.equal(wpCodeboxContract.schema, "wp-codebox/reusable-workflow-interface/v1")
-assert.match(docsAgentWorkflow, new RegExp(`uses: Automattic/wp-codebox/.github/workflows/run-agent-task.yml@${wpCodeboxRevision}`))
-assert.match(docsAgentWorkflow, /DOCS_AGENT_REVISION: \$\{\{ github\.job_workflow_sha \}\}/)
+assert.match(docsAgentWorkflow, new RegExp(`uses: Automattic/wp-codebox/.github/workflows/run-agent-task.yml@${wpCodeboxWorkflowRef}`))
+assert.match(docsAgentWorkflow, new RegExp(`DOCS_AGENT_PACKAGE_REVISION: ${docsAgentPackageRevision}`))
 assert.match(docsAgentWorkflow, /OPENAI_API_KEY: \$\{\{ secrets\.OPENAI_API_KEY \}\}/)
 assert.match(docsAgentWorkflow, /ACCESS_TOKEN: \$\{\{ github\.token \}\}/)
 assert.match(docsAgentWorkflow, /EXTERNAL_PACKAGE_SOURCE_POLICY: \$\{\{ secrets\.EXTERNAL_PACKAGE_SOURCE_POLICY \}\}/)
@@ -42,12 +44,14 @@ const workflows = [
     path: ".github/workflows/developer-docs-agent.yml",
     audience: "technical",
     runKind: true,
+    revision: docsAgentRevision,
     writablePaths: "README.md,docs/**,plugins/**/README.md",
   },
   {
     path: ".github/workflows/skills-agent.yml",
     audience: "skills",
     runKind: false,
+    revision: "main",
     writablePaths: "skills/**,plugins/**/skills/**,plugins/**/README.md",
   },
 ]
@@ -61,7 +65,7 @@ for (const workflow of workflows) {
   const usedInputs = [...withBlock.matchAll(/^      ([a-z_]+):/gm)].map((match) => match[1])
   const usedSecrets = [...secretsBlock.matchAll(/^      ([A-Z_]+):/gm)].map((match) => match[1])
 
-  assert.match(source, /uses: Automattic\/docs-agent\/.github\/workflows\/maintain-docs.yml@main/)
+  assert.match(source, new RegExp(`uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@${workflow.revision}`))
   assert.deepEqual(usedInputs, [...new Set(usedInputs)], `${workflow.path} must not declare an input twice`)
   assert.ok(usedInputs.every((input) => docsAgentInputs.includes(input) || input === "validation_dependencies"), `${workflow.path} uses an input absent from the Docs Agent schema`)
   assert.deepEqual(usedSecrets, ["OPENAI_API_KEY", "EXTERNAL_PACKAGE_SOURCE_POLICY"], `${workflow.path} must forward the Docs Agent secrets`)
@@ -89,8 +93,10 @@ for (const workflow of workflows) {
     assert.ok(dispatchInputs, "Developer Docs workflow must offer a manual run mode")
     assert.match(dispatchInputs, /      run_kind:\n        description: Documentation run mode\n        required: false\n        default: maintenance\n        type: choice\n        options:\n          - maintenance\n          - bootstrap/)
     assert.match(source, /run_kind: \$\{\{ github\.event\.inputs\.run_kind \|\| 'maintenance' \}\}/)
+    assert.match(source, /require_pr: \$\{\{ github\.event_name == 'workflow_dispatch' \}\}/)
   } else {
     assert.doesNotMatch(source, /^      run_kind:/m)
+    assert.doesNotMatch(source, /^      require_pr:/m)
   }
 }
 

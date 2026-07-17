@@ -27,10 +27,11 @@ concurrency:
 jobs:
   developer-docs-agent:
     name: Maintain Developer Docs
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@397f32e5c82f662199f2c3555e32804ed0365d7f
     with:
       audience: technical
       run_kind: ${{ github.event.inputs.run_kind || 'maintenance' }}
+      require_pr: ${{ github.event_name == 'workflow_dispatch' }}
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-developer-docs
       writable_paths: README.md,docs/**,plugins/**/README.md

@@ -47,6 +47,7 @@ const workflows = [
     runKind: true,
     revision: docsAgentRevision,
     writablePaths: "README.md,docs/**,plugins/**/README.md",
+    driftCheck: "git diff --exit-code -- . ':(top,exclude)README.md' ':(top,glob,exclude)docs/**' ':(top,glob,exclude)plugins/**/README.md'",
   },
   {
     path: ".github/workflows/skills-agent.yml",
@@ -54,6 +55,7 @@ const workflows = [
     runKind: false,
     revision: "main",
     writablePaths: "skills/**,plugins/**/skills/**,plugins/**/README.md",
+    driftCheck: "git diff --exit-code",
   },
 ]
 
@@ -81,7 +83,7 @@ for (const workflow of workflows) {
   assert.match(source, /pnpm build/)
   assert.match(source, /pnpm verify/)
   assert.match(source, /validation_dependencies: npm install --global pnpm@10\.8\.1/)
-  assert.match(source, /git diff --exit-code/)
+  assert.ok(source.includes(`"command": "${workflow.driftCheck}"`), `${workflow.path} must use its scoped drift check`)
   assert.match(source, /permissions:\n  contents: write\n  pull-requests: write\n  issues: write/)
   assert.match(source, /OPENAI_API_KEY: \$\{\{ secrets\.OPENAI_API_KEY \}\}/)
   assert.match(source, /EXTERNAL_PACKAGE_SOURCE_POLICY: \$\{\{ secrets\.EXTERNAL_PACKAGE_SOURCE_POLICY \}\}/)

@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Automattic/docs-agent
-          ref: 53f43bc6433d2631750edabcb458a77db55aa8cb
+          ref: 21dbeeddea7ae29efa68bb1c0590a00bbed93f3d
           path: .producer/docs-agent
       - uses: actions/checkout@v4
         with:

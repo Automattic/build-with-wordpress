@@ -45,8 +45,8 @@ jobs:
       drift_checks: |
         [
           {
-            "command": "git diff --exit-code",
-            "description": "Generated package outputs are committed after build"
+            "command": "git diff --exit-code -- . ':(top,exclude)README.md' ':(top,glob,exclude)docs/**' ':(top,glob,exclude)plugins/**/README.md'",
+            "description": "Generated package outputs outside developer documentation are committed after build"
           }
         ]
       prompt: |

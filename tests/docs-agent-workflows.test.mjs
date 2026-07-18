@@ -4,10 +4,10 @@ import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 
 const root = resolve(new URL("..", import.meta.url).pathname)
-const docsAgentRevision = "a545650da0b880c2725a39678ebbbc54a905e502"
+const docsAgentRevision = "a7f820c231d11c79e598a458059cd34b9ad12dda"
 const docsAgentPackageRevision = "7b2df969c34de112ec7ad13189ba94226a7f76f3"
-const wpCodeboxProducerRevision = "c30df7f99a03007ff9fb5e1ae14bdb5cdc68de87"
-const wpCodeboxWorkflowRef = "v0.12.25"
+const wpCodeboxProducerRevision = "2d5d000f2f43670117b373d1b26a23181ee05480"
+const wpCodeboxWorkflowRef = "v0.12.26"
 const docsAgentDir = process.env.DOCS_AGENT_DIR
 const wpCodeboxDir = process.env.WP_CODEBOX_DIR
 

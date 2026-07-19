@@ -156,16 +156,18 @@ Manual documentation runs default to maintenance and should make the smallest so
 - `workflow_dispatch` offers `run_kind` choices of `maintenance` (the default) and `bootstrap`; pushes to `trunk` run with `run_kind: maintenance`.
 - `docs_branch` is `docs-agent/build-with-wordpress-developer-docs` and `base_ref` is `trunk`.
 - writable documentation paths are limited to `README.md`, `docs/**`, and `plugins/**/README.md`.
-- Docs Agent selects its native package from the immutable reusable-workflow revision GitHub resolves for the run. The technical bootstrap lane requires a published PR; maintenance permits a no-change result.
-- verification commands are `pnpm install --frozen-lockfile`, `pnpm build`, and `pnpm verify`; the drift check is `git diff --exit-code` so generated package outputs must be committed after a build.
+- Docs Agent selects its native package from the reusable workflow revision pinned in this file: `Automattic/docs-agent/.github/workflows/maintain-docs.yml@972ceb8a9ebcfafa1f88edc4fba173065415698a`.
+- manual `workflow_dispatch` runs set `require_pr: true`; push-triggered maintenance runs do not require a PR and may finish with no changes when the documentation already matches source behavior.
+- verification commands are `pnpm install --frozen-lockfile`, `pnpm build`, and `pnpm verify`.
+- the developer-docs drift check is scoped to non-documentation paths: `git diff --exit-code -- . ':(top,exclude)README.md' ':(top,glob,exclude)docs/**' ':(top,glob,exclude)plugins/**/README.md'`. This means the build must not produce uncommitted generated-package or source changes outside the workflow's writable documentation paths.
 
-When changing the docs workflow, keep this contract aligned with the repository documentation structure in [the docs index](README.md). When changing generated-output behavior, update the docs and generated files in the same pull request so maintenance runs can finish cleanly.
+When changing the docs workflow, keep this contract aligned with the repository documentation structure in [the docs index](README.md). When changing generated-output behavior, update the generator, verifier, documentation, and generated files in the same pull request so maintenance runs can finish cleanly.
 
 ### Skills workflow contract
 
-`skills-agent.yml` uses the same reusable Docs Agent workflow with `audience: skills`. It is triggered manually and on a weekly Monday schedule, writes only to `skills/**`, generated skill copies under `plugins/**/skills/**`, and plugin README files, and runs the same install, build, verify, and generated-output drift checks. Keep this workflow focused on live skill content; generated package structure and developer documentation belong in the technical docs workflow and the generator/verifier source.
+`skills-agent.yml` uses the same reusable Docs Agent workflow with `audience: skills` from `Automattic/docs-agent/.github/workflows/maintain-docs.yml@main`. It is triggered manually and on a weekly Monday schedule, writes only to `skills/**`, generated skill copies under `plugins/**/skills/**`, and plugin README files, and runs the same install, build, and verify commands as the developer-docs workflow. Its drift check is intentionally broad: `git diff --exit-code`, so generated skill package output must be committed after the build. The workflow does not pass `run_kind` or `require_pr`; the native skills lane should make the smallest source-grounded skill update needed or finish with no changes when skills are current. Keep this workflow focused on live skill content; generated package structure and developer documentation belong in the technical docs workflow and the generator/verifier source.
 
-The `CI` workflow provides automated validation for pull requests and configured branch pushes. It checks out Docs Agent at `5344a4bfbda4a0553cc92636258e46a715b1c72d` and WP Codebox at `54c2f9a7bc3cd1fe20055d496c83efcfb99afb41`, then runs `pnpm test`, `pnpm build`, and `pnpm verify`. The workflow contract test rejects any producer revision or schema drift. This repository does not currently require the workflow as a merge gate.
+The `CI` workflow provides automated validation for pull requests and pushes to `trunk` and `feat/native-docs-agent`. It checks out Docs Agent at `972ceb8a9ebcfafa1f88edc4fba173065415698a` and WP Codebox at `6457dcae4cb8cf8e76cd174377de8cbee3ee12cb`, installs pnpm 10.8.1, runs `pnpm test`, then runs `pnpm build` and `pnpm verify`. The workflow contract test rejects producer revision, reusable workflow, secret forwarding, writable path, verification command, drift check, or schema drift. This repository does not currently require the workflow as a merge gate.
 
 ## Pull request checklist
 

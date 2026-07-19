@@ -27,7 +27,7 @@ concurrency:
 jobs:
   developer-docs-agent:
     name: Maintain Developer Docs
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@21dbeeddea7ae29efa68bb1c0590a00bbed93f3d
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@972ceb8a9ebcfafa1f88edc4fba173065415698a
     with:
       audience: technical
       run_kind: ${{ github.event.inputs.run_kind || 'maintenance' }}

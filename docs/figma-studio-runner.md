@@ -44,6 +44,29 @@ Implemented now:
 - `blocks-engine/php-transformer/site-artifact/v1` retained as debug/diagnostic context.
 - A Figma UI client that posts the source payload to local Studio.
 
+## Source Payload Contract
+
+`toFigmaSourcePayload()` produces `wordpress-studio/figma-source/v1`. Studio receives it as the `source` property of a JSON request, alongside the Figma document name as `siteName`.
+
+The payload preserves the source needed for a Studio-side transform:
+
+- `source` identifies Figma, includes file and page metadata, and records the export timestamp.
+- `intent` records whether the user selected nodes or the current page, including the page and selected root node IDs.
+- `scenegraph` includes the normalized current page and selected nodes rather than only generated HTML.
+- `assets` carries the normalized exported assets.
+- `transform` requests the `static-site-importer/figma` route with a WordPress target, preserved source scenegraph, asset import, selection scope, page ID, and selected node IDs.
+- `debug` carries a per-request handoff ID, generated artifact context, diagnostics, and metadata.
+
+The debug summary is deterministic from the selected source and generated artifact. It reports the selection scope and page, selected-node count, recursive node count, asset count, and diagnostic, warning, and error counts. When no nodes are selected, node counting falls back to the current page. `generate-artifact.test.mjs` fixes this shape with a selected-node fixture and verifies the route, preservation options, handoff ID, generated artifact, and summary counts.
+
+## Handoff And Diagnostics
+
+The UI posts to `http://127.0.0.1:48732/figma-to-wordpress/import` with `Content-Type: application/json`. The Studio button remains disabled until normalized selection data is available and while a request is active.
+
+Each request receives a `figma-...` handoff ID. On success, Studio may return `requestId`, `siteName`, `siteUrl`, and `importSummary`; the UI displays the accepted site and logs those values with the handoff ID, payload schema, selection identity, source summary, and generated artifact file/entrypoint summary.
+
+A non-2xx response or a response without `success: true` is a failed handoff. The visible error uses Studio's response message when available, appends its request ID for correlation, and otherwise includes the HTTP status. Network and response failures are logged with the same handoff ID and source summary, so Studio and Figma logs can be correlated without treating the debug artifact as the primary import contract.
+
 Not implemented yet:
 
 - Post-import block validation and visual parity checks.

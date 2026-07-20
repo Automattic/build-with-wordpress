@@ -33,7 +33,7 @@ jobs:
       run_kind: ${{ github.event.inputs.run_kind || 'maintenance' }}
       require_pr: ${{ github.event_name == 'workflow_dispatch' }}
       base_ref: trunk
-      docs_branch: docs-agent/build-with-wordpress-developer-docs
+      docs_branch: docs-agent/build-with-wordpress-developer-docs-v2
       writable_paths: README.md,docs/**,plugins/**/README.md
       bootstrap_contract: |
         {
@@ -51,7 +51,7 @@ jobs:
               "plugins/figma-to-wordpress-studio/src/ui.ts",
               "plugins/figma-to-wordpress-studio/tests/generate-artifact.test.mjs"
             ],
-            "requires_documentation_change": true
+            "requires_documentation_change": false
           }
         ]
       verification_commands: |

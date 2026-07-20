@@ -50,7 +50,7 @@ const workflows = [
     revision: docsAgentRevision,
     writablePaths: "README.md,docs/**,plugins/**/README.md",
     driftCheck: "git diff --exit-code -- . ':(top,exclude)README.md' ':(top,glob,exclude)docs/**' ':(top,glob,exclude)plugins/**/README.md'",
-    sourceDelta: /"id": "figma-studio-handoff-diagnostics"[\s\S]*"https:\/\/github\.com\/Automattic\/build-with-wordpress\/pull\/100"[\s\S]*"requires_documentation_change": true/,
+    sourceDelta: /"id": "figma-studio-handoff-diagnostics"[\s\S]*"https:\/\/github\.com\/Automattic\/build-with-wordpress\/pull\/100"[\s\S]*"requires_documentation_change": false/,
     bootstrapContract: true,
   },
   {

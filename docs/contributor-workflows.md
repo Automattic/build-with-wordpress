@@ -154,7 +154,7 @@ Manual documentation runs default to maintenance and should make the smallest so
 `developer-docs-agent.yml` calls the reusable `Automattic/docs-agent/.github/workflows/maintain-docs.yml` workflow for the technical documentation lane. The caller grants its `github.token` the publication permissions declared by the workflow and explicitly forwards `OPENAI_API_KEY` for live runs and the required `EXTERNAL_PACKAGE_SOURCE_POLICY` package allowlist.
 
 - `workflow_dispatch` offers `run_kind` choices of `maintenance` (the default) and `bootstrap`; pushes to `trunk` run with `run_kind: maintenance`.
-- `docs_branch` is `docs-agent/build-with-wordpress-developer-docs` and `base_ref` is `trunk`.
+- `docs_branch` is `docs-agent/build-with-wordpress-developer-docs-v2` and `base_ref` is `trunk`.
 - writable documentation paths are limited to `README.md`, `docs/**`, and `plugins/**/README.md`.
 - Docs Agent selects its native package from the reusable workflow revision pinned in this file: `Automattic/docs-agent/.github/workflows/maintain-docs.yml@7b67d341eea16b75b8e055507d36a8d8e69a1fe3`.
 - maintenance is bounded to the known Figma Studio handoff diagnostics drift from [PR #100](https://github.com/Automattic/build-with-wordpress/pull/100) and requires an evidence-backed documentation update; bootstrap requires `README.md`, `docs/README.md`, at least three topic pages, and a README link to the docs index.

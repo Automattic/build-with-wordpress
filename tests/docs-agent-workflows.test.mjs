@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 
 const root = resolve(new URL("..", import.meta.url).pathname)
-const docsAgentRevision = "f887e392ad93db11efb997ed3669171e67018403"
+const docsAgentRevision = "7b67d341eea16b75b8e055507d36a8d8e69a1fe3"
 const docsAgentPackageRevision = "a39d9db230eb9e0b72ed84465f4d61bd8dda1bab"
 const wpCodeboxProducerRevision = "a6fe2d208e990a8d04104aa74aacbb8d1539fbc1"
 const wpCodeboxWorkflowRef = wpCodeboxProducerRevision

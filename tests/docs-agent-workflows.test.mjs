@@ -4,10 +4,11 @@ import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 
 const root = resolve(new URL("..", import.meta.url).pathname)
-const docsAgentRevision = "972ceb8a9ebcfafa1f88edc4fba173065415698a"
-const docsAgentPackageRevision = "85443eb91c12b2759d8e207f1ae4421407b4cc5e"
-const wpCodeboxProducerRevision = "6457dcae4cb8cf8e76cd174377de8cbee3ee12cb"
-const wpCodeboxWorkflowRef = "v0.12.28"
+const docsAgentRevision = "a39d9db230eb9e0b72ed84465f4d61bd8dda1bab"
+const docsAgentPackageRevision = "85f0d162a7d499fdc1286891371342727d084c88"
+const wpCodeboxProducerRevision = "12a5bb19a97b89d0a78b502fc71adede5b122359"
+const wpCodeboxWorkflowRef = wpCodeboxProducerRevision
+const wpCodeboxReleaseRef = "v0.12.29"
 const docsAgentDir = process.env.DOCS_AGENT_DIR
 const wpCodeboxDir = process.env.WP_CODEBOX_DIR
 
@@ -24,7 +25,7 @@ const docsAgentWorkflow = await readFile(resolve(docsAgentDir, ".github/workflow
 const wpCodeboxContract = await readJson(wpCodeboxDir, "contracts/run-agent-task-reusable-workflow-interface.v1.json")
 assert.equal(wpCodeboxContract.schema, "wp-codebox/reusable-workflow-interface/v1")
 assert.match(docsAgentWorkflow, new RegExp(`uses: Automattic/wp-codebox/.github/workflows/run-agent-task.yml@${wpCodeboxWorkflowRef}`))
-assert.match(docsAgentWorkflow, new RegExp(`wp_codebox_release_ref: ${wpCodeboxWorkflowRef}`))
+assert.match(docsAgentWorkflow, new RegExp(`wp_codebox_release_ref: ${wpCodeboxReleaseRef}`))
 assert.match(docsAgentWorkflow, new RegExp(`DOCS_AGENT_PACKAGE_REVISION: ${docsAgentPackageRevision}`))
 assert.match(docsAgentWorkflow, /OPENAI_API_KEY: \$\{\{ secrets\.OPENAI_API_KEY \}\}/)
 assert.match(docsAgentWorkflow, /ACCESS_TOKEN: \$\{\{ github\.token \}\}/)
@@ -48,14 +49,18 @@ const workflows = [
     revision: docsAgentRevision,
     writablePaths: "README.md,docs/**,plugins/**/README.md",
     driftCheck: "git diff --exit-code -- . ':(top,exclude)README.md' ':(top,glob,exclude)docs/**' ':(top,glob,exclude)plugins/**/README.md'",
+    sourceDelta: /"id": "figma-studio-handoff-diagnostics"[\s\S]*"https:\/\/github\.com\/Automattic\/build-with-wordpress\/pull\/100"[\s\S]*"requires_documentation_change": true/,
+    bootstrapContract: true,
   },
   {
     path: ".github/workflows/skills-agent.yml",
     audience: "skills",
     runKind: false,
-    revision: "main",
+    revision: docsAgentRevision,
     writablePaths: "skills/**,plugins/**/skills/**,plugins/**/README.md",
     driftCheck: "git diff --exit-code",
+    sourceDelta: /"id":"skills-source".*"requires_documentation_change":false/,
+    bootstrapContract: false,
   },
 ]
 
@@ -84,6 +89,7 @@ for (const workflow of workflows) {
   assert.match(source, /pnpm verify/)
   assert.match(source, /validation_dependencies: npm install --global pnpm@10\.8\.1/)
   assert.ok(source.includes(`"command": "${workflow.driftCheck}"`), `${workflow.path} must use its scoped drift check`)
+  assert.match(source, workflow.sourceDelta, `${workflow.path} must declare its bounded source delta`)
   assert.match(source, /permissions:\n  contents: write\n  pull-requests: write\n  issues: write/)
   assert.match(source, /OPENAI_API_KEY: \$\{\{ secrets\.OPENAI_API_KEY \}\}/)
   assert.match(source, /EXTERNAL_PACKAGE_SOURCE_POLICY: \$\{\{ secrets\.EXTERNAL_PACKAGE_SOURCE_POLICY \}\}/)
@@ -97,9 +103,11 @@ for (const workflow of workflows) {
     assert.match(dispatchInputs, /      run_kind:\n        description: Documentation run mode\n        required: false\n        default: maintenance\n        type: choice\n        options:\n          - maintenance\n          - bootstrap/)
     assert.match(source, /run_kind: \$\{\{ github\.event\.inputs\.run_kind \|\| 'maintenance' \}\}/)
     assert.match(source, /require_pr: \$\{\{ github\.event_name == 'workflow_dispatch' \}\}/)
+    assert.match(source, /bootstrap_contract:[\s\S]*"required_paths": \["README\.md", "docs\/README\.md"\][\s\S]*"pattern": "docs\/\*\*\/\*\.md"[\s\S]*"path": "README\.md", "must_link_to": \["docs\/README\.md"\]/)
   } else {
     assert.doesNotMatch(source, /^      run_kind:/m)
     assert.doesNotMatch(source, /^      require_pr:/m)
+    assert.doesNotMatch(source, /^      bootstrap_contract:/m)
   }
 }
 

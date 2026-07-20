@@ -27,7 +27,7 @@ concurrency:
 jobs:
   developer-docs-agent:
     name: Maintain Developer Docs
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@972ceb8a9ebcfafa1f88edc4fba173065415698a
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@a39d9db230eb9e0b72ed84465f4d61bd8dda1bab
     with:
       audience: technical
       run_kind: ${{ github.event.inputs.run_kind || 'maintenance' }}
@@ -35,6 +35,25 @@ jobs:
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-developer-docs
       writable_paths: README.md,docs/**,plugins/**/README.md
+      bootstrap_contract: |
+        {
+          "required_paths": ["README.md", "docs/README.md"],
+          "required_globs": [{"pattern": "docs/**/*.md", "min_count": 3}],
+          "entry_points": [{"path": "README.md", "must_link_to": ["docs/README.md"]}]
+        }
+      source_delta: |
+        [
+          {
+            "id": "figma-studio-handoff-diagnostics",
+            "source_refs": [
+              "https://github.com/Automattic/build-with-wordpress/pull/100",
+              "plugins/figma-to-wordpress-studio/src/payload.ts",
+              "plugins/figma-to-wordpress-studio/src/ui.ts",
+              "plugins/figma-to-wordpress-studio/tests/generate-artifact.test.mjs"
+            ],
+            "requires_documentation_change": true
+          }
+        ]
       verification_commands: |
         [
           "pnpm install --frozen-lockfile",

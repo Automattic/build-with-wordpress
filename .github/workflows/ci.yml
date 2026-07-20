@@ -19,12 +19,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Automattic/docs-agent
-          ref: 972ceb8a9ebcfafa1f88edc4fba173065415698a
+          ref: a39d9db230eb9e0b72ed84465f4d61bd8dda1bab
           path: .producer/docs-agent
       - uses: actions/checkout@v4
         with:
           repository: Automattic/wp-codebox
-          ref: 6457dcae4cb8cf8e76cd174377de8cbee3ee12cb
+          ref: 12a5bb19a97b89d0a78b502fc71adede5b122359
           path: .producer/wp-codebox
       - uses: pnpm/action-setup@v4
         with:

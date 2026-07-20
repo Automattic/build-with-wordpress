@@ -17,12 +17,13 @@ concurrency:
 jobs:
   skills-agent:
     name: Maintain Live Skills
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@main
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@a39d9db230eb9e0b72ed84465f4d61bd8dda1bab
     with:
       audience: skills
       base_ref: trunk
       docs_branch: docs-agent/build-with-wordpress-skills
       writable_paths: skills/**,plugins/**/skills/**,plugins/**/README.md
+      source_delta: '[{"id":"skills-source","source_refs":["skills/**","scripts/**","plugins/**/skills/**"],"requires_documentation_change":false}]'
       verification_commands: |
         [
           "pnpm install --frozen-lockfile",

@@ -27,14 +27,14 @@ concurrency:
 jobs:
   developer-docs-agent:
     name: Maintain Developer Docs
-    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@7b67d341eea16b75b8e055507d36a8d8e69a1fe3
+    uses: Automattic/docs-agent/.github/workflows/maintain-docs.yml@be109aaa1d5b11b37b919351981ed37ca3195446
     with:
       audience: technical
       run_kind: ${{ github.event.inputs.run_kind || 'maintenance' }}
       require_pr: ${{ github.event_name == 'workflow_dispatch' }}
-      base_ref: trunk
-      docs_branch: docs-agent/build-with-wordpress-developer-docs-v2
-      writable_paths: README.md,docs/**,plugins/**/README.md
+      base_ref: test/docs-agent-bootstrap-acceptance-20260720-v2
+      docs_branch: docs-agent/bootstrap-acceptance-20260720-v2-output
+      writable_paths: README.md,docs/**
       bootstrap_contract: |
         {
           "required_paths": ["README.md", "docs/README.md"],
@@ -69,13 +69,11 @@ jobs:
           }
         ]
       prompt: |
-        Maintain developer-facing documentation for Build with WordPress.
+        Bootstrap the intentionally empty Build with WordPress developer documentation surface.
 
-        Manual dispatch defaults to the native technical documentation maintenance package; select bootstrap only to intentionally re-bootstrap the documentation. Push-triggered runs use the native technical documentation maintenance package and should make the smallest source-grounded documentation update needed for newly merged code or finish with no changes when documentation is current.
+        Create `docs/README.md` as the documentation index plus at least `docs/architecture.md` and `docs/contributor-workflows.md`. Ground these pages in repository source, package manifests, workflows, tests, and plugin code. Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows.
 
-        Write repository documentation with `docs/README.md` as the index, focused topic pages under `docs/**`, and `plugins/**/README.md` only when a plugin package needs local developer-facing contract notes. Cover the repository purpose, package layout, generated plugin artifacts, build and verification commands, skill packaging, Studio integration points, and contributor workflows.
-
-        Keep the developer documentation current with the native maintenance lanes in `.github/workflows/developer-docs-agent.yml` and `.github/workflows/skills-agent.yml`, including their purpose, writable boundaries, verification contract, and no-op behavior.
+        Update the root `README.md` to link to `docs/README.md`. Use the workspace write tools to create the required pages, then inspect `workspace_git_status` and `workspace_git_diff` before finishing with concise normal prose.
     secrets:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       EXTERNAL_PACKAGE_SOURCE_POLICY: ${{ secrets.EXTERNAL_PACKAGE_SOURCE_POLICY }}

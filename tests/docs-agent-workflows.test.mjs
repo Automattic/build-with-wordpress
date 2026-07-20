@@ -4,9 +4,9 @@ import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 
 const root = resolve(new URL("..", import.meta.url).pathname)
-const docsAgentRevision = "d1bf324154b4604099ae3209f64519386caf1f48"
+const docsAgentRevision = "305928a4ab2bddea759cf3d88077215ed687f75f"
 const docsAgentPackageRevision = "a39d9db230eb9e0b72ed84465f4d61bd8dda1bab"
-const wpCodeboxProducerRevision = "0227ca7551d8cd98f14242b31e142b50f78dff13"
+const wpCodeboxProducerRevision = "a6fe2d208e990a8d04104aa74aacbb8d1539fbc1"
 const wpCodeboxWorkflowRef = wpCodeboxProducerRevision
 const wpCodeboxReleaseRef = "v0.12.29"
 const docsAgentDir = process.env.DOCS_AGENT_DIR
@@ -26,6 +26,7 @@ const wpCodeboxContract = await readJson(wpCodeboxDir, "contracts/run-agent-task
 assert.equal(wpCodeboxContract.schema, "wp-codebox/reusable-workflow-interface/v1")
 assert.match(docsAgentWorkflow, new RegExp(`uses: Automattic/wp-codebox/.github/workflows/run-agent-task.yml@${wpCodeboxWorkflowRef}`))
 assert.match(docsAgentWorkflow, new RegExp(`wp_codebox_release_ref: ${wpCodeboxReleaseRef}`))
+assert.match(docsAgentWorkflow, new RegExp(`wp_codebox_workflow_ref: ${wpCodeboxProducerRevision}`))
 assert.match(docsAgentWorkflow, new RegExp(`DOCS_AGENT_PACKAGE_REVISION: ${docsAgentPackageRevision}`))
 assert.match(docsAgentWorkflow, /OPENAI_API_KEY: \$\{\{ secrets\.OPENAI_API_KEY \}\}/)
 assert.match(docsAgentWorkflow, /ACCESS_TOKEN: \$\{\{ github\.token \}\}/)

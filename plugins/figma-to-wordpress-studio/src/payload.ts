@@ -57,7 +57,6 @@ export interface FigmaSourcePayload {
   debug: {
     handoffId?: string;
     summary: FigmaSourceDebugSummary;
-    generatedArtifact?: GeneratedArtifact["studioImportPayload"];
     diagnostics: GeneratedArtifact["diagnostics"];
     metadata?: GeneratedArtifact["metadata"];
   };
@@ -95,7 +94,6 @@ export function toFigmaSourcePayload(
     debug: {
       handoffId,
       summary: sourceDebugSummary(selection, artifact),
-      generatedArtifact: artifact?.studioImportPayload,
       diagnostics: artifact?.diagnostics || [],
       metadata: artifact?.metadata,
     },

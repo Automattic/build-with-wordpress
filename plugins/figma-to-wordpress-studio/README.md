@@ -94,7 +94,6 @@ The `Open in WordPress Studio` request body is source-first:
       }
     },
     "debug": {
-      "generatedArtifact": {},
       "diagnostics": []
     }
   },
@@ -102,6 +101,6 @@ The `Open in WordPress Studio` request body is source-first:
 }
 ```
 
-`debug.generatedArtifact` is diagnostic context only. Studio should route from `source`, `scenegraph`, and `transform`, not from a pre-rendered website artifact bundle.
+Studio routes from `source`, `scenegraph`, and `transform`. The generated website artifact remains available in the plugin's local diagnostics but is not duplicated in the handoff request.
 
 See [`../../docs/figma-studio-runner.md`](../../docs/figma-studio-runner.md) for the integration notes.

@@ -270,7 +270,7 @@ test("generates a source-first Figma handoff payload with debug summary", async 
   assert.equal(source.transform.route, "static-site-importer/figma");
   assert.equal(source.transform.options.preserveSourceScenegraph, true);
   assert.equal(source.debug.handoffId, "handoff-123");
-  assert.equal(source.debug.generatedArtifact.schema, "blocks-engine/php-transformer/site-artifact/v1");
+  assert.equal("generatedArtifact" in source.debug, false);
   assert.equal(source.debug.summary.scope, "selected-nodes");
   assert.equal(source.debug.summary.selectedNodeCount, 1);
   assert.equal(source.debug.summary.nodeCount, 2);

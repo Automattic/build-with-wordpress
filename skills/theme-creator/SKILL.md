@@ -1,20 +1,11 @@
 ---
 name: theme-creator
-description: Create a modern WordPress block theme.
+description: "Create a modern WordPress block theme with theme.json configuration, block templates, template parts, and global styles for a Studio-backed site. Use when the user asks to build a WordPress theme, FSE theme, full site editing theme, block-based theme, or requests visual design work involving theme.json, block patterns, or Gutenberg templates."
 ---
 
 # Theme Creator
 
-Use this skill when the user wants a new WordPress theme or a substantial visual overhaul for a local Studio site.
-
-## Ownership
-
-This skill owns:
-
-- block theme implementation rules
-- landing page and template composition
-- WordPress-native layout structure for theme content
-- theme-local artifact placement inside the selected Studio site
+Use this skill when the user asks to create a WordPress theme, build an FSE or block-based theme, design a full site editing layout, configure theme.json, or do a substantial visual overhaul for a local Studio site.
 
 Use `studio` for the review loop after making changes. Use `auditing` when the user wants performance, accessibility, or broader frontend QA after the theme work.
 
@@ -60,24 +51,50 @@ Once you are committed to the theme implementation workflow and before the main 
 - Use proper block markup only.
 - No decorative HTML comments outside block delimiters.
 - Put visual styling in `style.css`.
-- Block themes do not automatically load `style.css` on the front end. You must explicitly enqueue it in `functions.php` with `wp_enqueue_style( '<slug>-style', get_stylesheet_uri() )` on the `wp_enqueue_scripts` hook.
+- Block themes do not automatically load `style.css` on the front end — enqueue it explicitly in `functions.php` (see example below).
 - Enqueue editor styles so the editor resembles the front end.
 - Add `prefers-reduced-motion` handling when using animations.
 
+### functions.php bootstrap
+
+```php
+<?php
+add_action( 'wp_enqueue_scripts', function () {
+    wp_enqueue_style( '<slug>-style', get_stylesheet_uri(), array(), wp_get_theme()->get( 'Version' ) );
+} );
+add_action( 'after_setup_theme', function () {
+    add_editor_style( 'style.css' );
+} );
+```
+
 ## Layout rules
 
-- Choose the layout approach that best fits the brief. Do not force every site into full-width landing-page bands.
-- If you decide full-width sections are appropriate for this site type or brief, use WordPress-native full-width section structure first.
-- For those sections, make the outer top-level `core/group` block use `{"align":"full","layout":{"type":"default"}}`.
-- For full-width landing-page sections, use a strict shell pattern:
-  - outer section: `core/group` with `align:"full"` and `layout.type:"default"`
-  - inner content shell: immediate child `core/group` with `align:"wide"`
-  - primary `core/columns` inside that shell should also use `align:"wide"` when the section is meant to feel expansive
-- Keep readable text and card grids inside an inner container block instead of constraining the outer full-width section itself.
-- Do not leave intermediate groups or columns at constrained or default width between the full-width section and the main content shell unless the design intentionally calls for a narrow reading measure.
+- Choose the layout approach that best fits the brief — not every site needs full-width landing-page bands.
 - Keep `theme.json` layout settings aligned with the design, including sensible `contentSize` and `wideSize` values.
-- Do not rely on CSS alone to make a constrained block look full width when Gutenberg block alignment should carry that responsibility.
-- If screenshots still show boxed or constrained sections after using full-width blocks, inspect wrapper alignment, serialized block markup, template layout, and `theme.json` before adding custom breakout CSS.
+- Use Gutenberg block alignment instead of CSS-only workarounds for full-width sections.
+- If screenshots show boxed sections after using full-width blocks, inspect wrapper alignment, serialized block markup, and `theme.json` before adding custom breakout CSS.
+
+### Full-width section pattern
+
+When full-width sections are appropriate, use this strict shell:
+
+```html
+<!-- wp:group {"align":"full","layout":{"type":"default"}} -->
+<div class="wp-block-group alignfull">
+  <!-- wp:group {"align":"wide"} -->
+  <div class="wp-block-group alignwide">
+    <!-- wp:columns {"align":"wide"} -->
+    <div class="wp-block-columns alignwide">
+      <!-- column content here -->
+    </div>
+    <!-- /wp:columns -->
+  </div>
+  <!-- /wp:group -->
+</div>
+<!-- /wp:group -->
+```
+
+Keep readable text and card grids inside the inner `align:"wide"` shell. Do not leave intermediate groups at constrained width between the full-width outer section and the content shell.
 
 ## Verification flow
 

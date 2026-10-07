@@ -98,6 +98,7 @@ Each build packages the shared `skills/` directory into the surfaces that can co
 | Devin Desktop | `plugins/devin-desktop/` | `.devin/rules/`, `.devin/skills/`, `mcp_config.json` |
 | VS Code Marketplace extension scaffold | `plugins/vscode/` | `package.json`, `extension.js`, `mcp.json`, `skills/` |
 | Zed | `plugins/zed/` | `AGENTS.md`, `.agents/skills/`, `.zed/settings.json` |
+| WordPress.com MCP | `plugins/wordpress-com-mcp/` | `mcp.json` for the hosted WordPress.com MCP server (`@automattic/mcp-wordpress-remote`) |
 
 Some outputs intentionally stop at workspace files or setup guidance because that is what the official agent surface supports today. For example, Pi does not expose built-in MCP configuration, Qodo documents MCP through Agentic Tools or enterprise allow-lists, and Conductor keeps MCP setup in app/provider settings rather than a repository-local MCP file. Devin CLI uses `plugins/devin/` with `AGENTS.md`, `.devin/config.json`, and `.devin/skills/`. Devin Desktop uses `plugins/devin-desktop/` with Devin-native `.devin/rules/`, `.devin/skills/`, and `mcp_config.json`; Cascade's official MCP config destination still uses `~/.codeium/windsurf/mcp_config.json`, and Devin Desktop docs say marketplace extensions cannot be installed. The VS Code output is a generated extension scaffold with the Automattic Marketplace publisher and no Marketplace publishing automation.
 

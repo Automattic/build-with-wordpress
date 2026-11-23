@@ -1,3 +1,4 @@
+**We are not using this repo anymore for any of our own external agent connectors, so it has been archived. Please feel free to fork this is you find it useful and want to continue developing it.**
 # Build with WordPress
 
 Canonical source for WordPress-focused agent skills, MCP setup, and generated packages across coding-agent surfaces.
